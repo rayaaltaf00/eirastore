@@ -6,17 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->string('nama', 100);                          // nama lengkap pengguna
+            $table->string('email', 100)->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('no_hp', 20);                          // nomor HP (hanya angka, 10-15 digit)
+            $table->string('password');                            // password login EiraStore (di-hash)
+            $table->string('role', 20);                            // customer, admin, worker
+            $table->string('status_akun', 20)->default('aktif');   // aktif, nonaktif
             $table->rememberToken();
             $table->timestamps();
         });
@@ -37,13 +37,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };
