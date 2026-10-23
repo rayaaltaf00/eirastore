@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Ulasan extends Model
 {
@@ -31,11 +32,18 @@ class Ulasan extends Model
     }
 
     /**
-     * Customer yang memberi ulasan (lewat pesanan).
-     * Shortcut supaya tidak perlu $ulasan->pesanan->customer
+     * Customer yang memberi ulasan.
+     * Akses langsung lewat tabel pesanan tanpa load pesanan dulu.
      */
-    public function customer(): BelongsTo
+    public function customer()
     {
-        return $this->pesanan->customer();
+        return $this->hasOneThrough(
+            User::class,
+            Pesanan::class,
+            'id',           // pesanan.id
+            'id',           // users.id
+            'pesanan_id',   // ulasan.pesanan_id
+            'customer_id'   // pesanan.customer_id
+        );
     }
 }

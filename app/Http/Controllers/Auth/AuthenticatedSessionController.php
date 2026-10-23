@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Enums\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,7 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
+     * Redirect berdasarkan role setelah login berhasil.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -28,7 +30,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Arahkan sesuai role pengguna
+        return match ($request->user()->role) {
+            Role::Admin  => redirect('/admin/dashboard'),
+            Role::Worker => redirect('/worker/pesanan'),
+            default      => redirect()->intended('/'),  // Customer → halaman tujuan atau beranda
+        };
     }
 
     /**

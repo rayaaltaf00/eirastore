@@ -31,21 +31,39 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'nama'     => ['required', 'string', 'max:100'],
+            'email'    => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:users,email'],
+            'no_hp'    => ['required', 'regex:/^[0-9]{10,15}$/'],   // hanya angka, 10-15 digit
+            'password' => ['required', 'confirmed', Rules\Password::min(8)],
+        ], [
+            // Pesan error bahasa Indonesia
+            'nama.required'     => 'Nama wajib diisi.',
+            'nama.max'          => 'Nama maksimal 100 karakter.',
+            'email.required'    => 'Email wajib diisi.',
+            'email.email'       => 'Format email tidak valid.',
+            'email.unique'      => 'Email sudah terdaftar.',
+            'no_hp.required'    => 'Nomor HP wajib diisi.',
+            'no_hp.regex'       => 'Nomor HP harus berupa angka 10-15 digit.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min'      => 'Password minimal 8 karakter.',
+            'password.confirmed'=> 'Konfirmasi password tidak cocok.',
         ]);
 
+        // Buat akun customer baru — role otomatis customer, status aktif
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'nama'        => $request->nama,
+            'email'       => $request->email,
+            'no_hp'       => $request->no_hp,
+            'password'    => Hash::make($request->password),
+            'role'        => 'customer',
+            'status_akun' => 'aktif',
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Arahkan ke halaman tujuan sebelumnya (jika ada draf pesanan) atau beranda
+        return redirect()->intended('/');
     }
 }

@@ -35,6 +35,7 @@ class LoginRequest extends FormRequest
 
     /**
      * Attempt to authenticate the request's credentials.
+     * Cek juga apakah akun aktif — tolak login jika nonaktif.
      *
      * @throws ValidationException
      */
@@ -47,6 +48,17 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // Cek status akun setelah login berhasil
+        $user = Auth::user();
+        if ($user->status_akun !== 'aktif') {
+            Auth::logout(); // logout paksa karena akun nonaktif
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda telah dinonaktifkan. Hubungi admin untuk informasi lebih lanjut.',
             ]);
         }
 
