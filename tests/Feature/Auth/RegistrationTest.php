@@ -37,4 +37,22 @@ class RegistrationTest extends TestCase
             'status_akun' => 'aktif',
         ]);
     }
+
+    public function test_phone_number_is_sanitized_automatically(): void
+    {
+        $response = $this->post('/register', [
+            'nama' => 'Sanitize Customer',
+            'email' => 'sanitize@example.com',
+            'no_hp' => '+62 812-3456-7890', // format internasional dengan spasi & strip
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        // Harus tersimpan sebagai 081234567890
+        $this->assertDatabaseHas('users', [
+            'email' => 'sanitize@example.com',
+            'no_hp' => '081234567890',
+        ]);
+    }
 }

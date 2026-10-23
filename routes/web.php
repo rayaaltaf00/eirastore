@@ -4,8 +4,13 @@ use Illuminate\Support\Facades\Route;
 
 // ── Halaman Publik ─────────────────────────────────────
 Route::get('/', function () {
-    return view('welcome');
+    $games = \App\Models\Game::aktif()->get();
+    return view('beranda', compact('games'));
 })->name('beranda');
+
+Route::get('/lacak', function () {
+    return view('lacak');
+})->name('lacak.index');
 
 // ── Route Admin (harus login + role admin) ─────────────
 Route::middleware(['auth', 'role:admin'])
@@ -35,7 +40,9 @@ Route::middleware(['auth', 'role:worker'])
 
 // ── Route Customer (harus login) ──────────────────────
 Route::middleware(['auth'])->group(function () {
-    // Route customer akan ditambahkan di fase berikutnya
+    Route::get('/pesanan-saya', function () {
+        return view('customer.pesanan');
+    })->name('pesanan.saya');
 });
 
 require __DIR__.'/auth.php';

@@ -56,6 +56,22 @@ class AuthenticationTest extends TestCase
         $response->assertSessionHasErrors('email');
     }
 
+    public function test_active_user_forced_logout_if_deactivated_during_session(): void
+    {
+        $user = User::factory()->create(['status_akun' => 'aktif']);
+
+        // User login dan beraktivitas normal
+        $this->actingAs($user)->get('/')->assertStatus(200);
+
+        // Admin menonaktifkan akun user di background
+        $user->update(['status_akun' => 'nonaktif']);
+
+        // Request berikutnya harus memicu force-logout dan redirect ke login
+        $response = $this->actingAs($user)->get('/');
+        $response->assertRedirect('/login');
+        $this->assertGuest();
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();

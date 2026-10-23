@@ -1,3 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Custom Gaming Aesthetic Utilities (Anti AI-Slop) ── */
+@layer base {
+    body {
+        @apply bg-brand-darkest text-slate-100 antialiased selection:bg-brand-blue selection:text-white;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+
+    /* Scrollbar modern dan halus */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #090D16;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #1E293B;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #334155;
+    }
+}
+
+@layer utilities {
+    /* Glass border halus */
+    .border-glass {
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .border-glass-blue {
+        border-color: rgba(37, 99, 235, 0.3);
+    }
+}

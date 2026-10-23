@@ -30,10 +30,17 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Sanitasi nomor HP: buang spasi/strip/tanda plus, konversi awalan 62 jadi 0
+        $noHp = preg_replace('/[^0-9]/', '', (string) $request->no_hp);
+        if (str_starts_with($noHp, '62')) {
+            $noHp = '0' . substr($noHp, 2);
+        }
+        $request->merge(['no_hp' => $noHp]);
+
         $request->validate([
             'nama'     => ['required', 'string', 'max:100'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:users,email'],
-            'no_hp'    => ['required', 'regex:/^[0-9]{10,15}$/'],   // hanya angka, 10-15 digit
+            'no_hp'    => ['required', 'regex:/^[0-9]{10,15}$/'],   // angka Indonesia 10-15 digit
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
         ], [
             // Pesan error bahasa Indonesia

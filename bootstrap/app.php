@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Cek status akun aktif di setiap request web (force logout jika dinonaktifkan)
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureUserIsActive::class,
+        ]);
+
         // Daftarkan alias middleware 'role' untuk proteksi route berdasarkan role
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
