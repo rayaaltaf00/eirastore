@@ -17,61 +17,56 @@
 </head>
 <body class="bg-brand-darkest text-slate-100 min-h-screen flex flex-col font-sans selection:bg-brand-blue selection:text-white">
 
-    <!-- ── Navbar Storefront (Sticky & Sleek) ── -->
+    <!-- ── Navbar Storefront (2-Row ala Ourastore) ── -->
     <header x-data="{ mobileMenu: false, userDropdown: false }" class="sticky top-0 z-50 bg-brand-darkest/95 backdrop-blur-md border-b border-brand-border">
+        
+        <!-- ═══ Baris 1: Logo + Search Bar + Auth ═══ -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 sm:h-20">
+            <div class="flex items-center justify-between h-16">
                 
                 <!-- Logo & Brand -->
-                <div class="flex items-center space-x-8">
-                    <a href="{{ route('beranda') }}" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue group-hover:scale-105 transition-transform duration-200">
-                            <!-- Gamepad SVG Icon -->
-                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6zm0 2a4 4 0 0 0-3.95 3.39l-.86 4.74A1.5 1.5 0 0 0 3.66 18H6a1 1 0 0 0 .95-.68l.5-1.5A3 3 0 0 1 10.28 14h3.44a3 3 0 0 1 2.83 1.82l.5 1.5a1 1 0 0 0 .95.68h2.34a1.5 1.5 0 0 0 1.47-1.87l-.86-4.74A4 4 0 0 0 17 8H7zm2 2h2v2h2v2h-2v2H9v-2H7v-2h2v-2zm7.5 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm2.5 2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
-                            </svg>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xl font-extrabold tracking-tight text-white flex items-center gap-1">
-                                EIRA<span class="text-brand-cyan">STORE</span>
-                            </span>
-                            <span class="text-[10px] uppercase tracking-wider text-slate-400 font-medium -mt-1">
-                                Game Boosting Pro
-                            </span>
-                        </div>
-                    </a>
+                <a href="{{ route('beranda') }}" class="flex items-center space-x-3 group flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue group-hover:scale-105 transition-transform duration-200">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6zm0 2a4 4 0 0 0-3.95 3.39l-.86 4.74A1.5 1.5 0 0 0 3.66 18H6a1 1 0 0 0 .95-.68l.5-1.5A3 3 0 0 1 10.28 14h3.44a3 3 0 0 1 2.83 1.82l.5 1.5a1 1 0 0 0 .95.68h2.34a1.5 1.5 0 0 0 1.47-1.87l-.86-4.74A4 4 0 0 0 17 8H7zm2 2h2v2h2v2h-2v2H9v-2H7v-2h2v-2zm7.5 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm2.5 2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-extrabold tracking-tight text-white flex items-center gap-1">
+                            EIRA<span class="text-brand-cyan">STORE</span>
+                        </span>
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-medium -mt-1">
+                            Game Boosting Pro
+                        </span>
+                    </div>
+                </a>
 
-                    <!-- Navigasi Desktop -->
-                    <nav class="hidden md:flex items-center space-x-1">
-                        <a href="{{ route('beranda') }}" class="px-3.5 py-2 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('beranda') ? 'text-brand-cyan bg-brand-surface/60' : 'text-slate-300 hover:text-white hover:bg-brand-surface/40' }}">
-                            Beranda
-                        </a>
-                        <a href="#katalog-game" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-brand-surface/40 transition-colors">
-                            Katalog Game
-                        </a>
-                        <a href="#cara-pesan" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-brand-surface/40 transition-colors">
-                            Cara Pesan
-                        </a>
-                        <a href="#keunggulan" class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-brand-surface/40 transition-colors">
-                            Keunggulan
-                        </a>
-                    </nav>
+                <!-- Search Bar (Tengah, Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md mx-6">
+                    <form action="{{ route('beranda') }}" method="GET" class="w-full relative">
+                        <input 
+                            type="text" 
+                            name="q" 
+                            value="{{ request('q') }}"
+                            placeholder="Cari game atau layanan joki..." 
+                            class="w-full bg-brand-surface border-brand-border text-slate-100 placeholder-slate-500 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:ring-1 focus:ring-brand-blue focus:border-brand-blue transition-colors">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Bagian Kanan (Auth / User Menu) -->
-                <div class="flex items-center space-x-3">
+                <!-- Auth Buttons / User Dropdown -->
+                <div class="flex items-center space-x-3 flex-shrink-0">
                     
                     @guest
-                        <!-- Tombol Masuk (Ghost) -->
                         <a href="{{ route('login') }}" class="hidden sm:inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-brand-surface transition-colors border border-transparent hover:border-brand-border">
                             Masuk
                         </a>
-                        <!-- Tombol Daftar (Solid Brand Accent) -->
                         <a href="{{ route('register') }}" class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blueHover shadow-glow-blue transition-all duration-150">
                             Daftar
                         </a>
                     @else
-                        <!-- Dropdown User Terautentikasi -->
                         <div class="relative" @click.outside="userDropdown = false">
                             <button @click="userDropdown = !userDropdown" class="flex items-center space-x-3 px-3 py-1.5 rounded-xl bg-brand-card hover:bg-brand-surface border border-brand-border transition-colors">
                                 <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-cyan flex items-center justify-center font-bold text-white text-xs">
@@ -101,7 +96,6 @@
                                     <p class="text-sm font-semibold text-white truncate">{{ Auth::user()->email }}</p>
                                 </div>
 
-                                <!-- Role Links (Tampil hanya jika relevan, tersembunyi dari publik) -->
                                 @if(Auth::user()->isAdmin())
                                     <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2 text-sm text-brand-cyan hover:bg-brand-surface hover:text-white transition-colors">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -114,7 +108,6 @@
                                     </a>
                                 @endif
 
-                                <!-- Logout -->
                                 <form method="POST" action="{{ route('logout') }}" class="border-t border-brand-border mt-1 pt-1">
                                     @csrf
                                     <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:bg-brand-surface hover:text-red-300 transition-colors">
@@ -137,10 +130,46 @@
             </div>
         </div>
 
+        <!-- ═══ Baris 2: Navigasi Utama (Desktop) ═══ -->
+        <div class="hidden md:block border-t border-brand-border/50 bg-brand-darkest/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <nav class="flex items-center space-x-1 h-11">
+                    <a href="{{ route('beranda') }}" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ request()->routeIs('beranda') ? 'text-brand-cyan bg-brand-surface/60' : 'text-slate-300 hover:text-white hover:bg-brand-surface/40' }}">
+                        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        Beranda
+                    </a>
+                    <a href="{{ route('beranda') }}#katalog-game" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-brand-surface/40 transition-colors">
+                        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        Katalog Game
+                    </a>
+                    <a href="{{ route('beranda') }}#cara-pesan" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-brand-surface/40 transition-colors">
+                        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                        Cara Pesan
+                    </a>
+                    <a href="{{ route('beranda') }}#keunggulan" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-brand-surface/40 transition-colors">
+                        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                        Keunggulan
+                    </a>
+                    <a href="{{ route('lacak.index') }}" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ request()->routeIs('lacak.index') ? 'text-brand-cyan bg-brand-surface/60' : 'text-slate-300 hover:text-white hover:bg-brand-surface/40' }}">
+                        <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        Lacak Pesanan
+                    </a>
+                </nav>
+            </div>
+        </div>
+
         <!-- Mobile Drawer Menu -->
         <div x-show="mobileMenu" 
              x-transition 
              class="md:hidden border-t border-brand-border bg-brand-darkest px-4 pt-3 pb-5 space-y-2">
+            <!-- Mobile Search -->
+            <form action="{{ route('beranda') }}" method="GET" class="relative mb-3">
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari game atau layanan..." class="w-full bg-brand-surface border-brand-border text-slate-100 placeholder-slate-500 rounded-xl pl-10 pr-4 py-2.5 text-xs focus:ring-1 focus:ring-brand-blue focus:border-brand-blue">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+            </form>
+
             <a href="{{ route('beranda') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-brand-surface hover:text-white">
                 Beranda
             </a>
@@ -152,6 +181,9 @@
             </a>
             <a href="#keunggulan" @click="mobileMenu = false" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-brand-surface hover:text-white">
                 Keunggulan
+            </a>
+            <a href="{{ route('lacak.index') }}" class="block px-3 py-2 rounded-lg text-base font-medium text-slate-200 hover:bg-brand-surface hover:text-white">
+                Lacak Pesanan
             </a>
 
             @guest
@@ -269,7 +301,7 @@
 
             <!-- Bottom Copyright -->
             <div class="mt-12 pt-8 border-t border-brand-border flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-                <p>© 2026 EiraStore. Seluruh hak cipta dilindungi. Sistem Manajemen Joki Game UKOM.</p>
+                <p>© 2026 EiraStore. Seluruh hak cipta dilindungi.</p>
                 <div class="flex items-center space-x-4">
                     <span class="text-slate-600">|</span>
                     <span>Aman & Terpercaya</span>
