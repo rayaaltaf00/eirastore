@@ -130,7 +130,7 @@
                     </p>
 
                     <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#katalog-game" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all duration-200 hover:-translate-y-0.5">
+                        <a href="#katalog-game" @click.prevent="scrollToSection('katalog-game')" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all duration-200 hover:-translate-y-0.5">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                             Pilih Game Sekarang
                         </a>
@@ -179,7 +179,7 @@
         <!-- ========================================================================= -->
         <!-- 3. KATALOG GAME                                                           -->
         <!-- ========================================================================= -->
-        <section id="katalog-game" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
+        <section id="katalog-game" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-36">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                 <div>
                     <div class="inline-flex items-center space-x-2 text-xs font-bold text-brand-cyan uppercase tracking-wider mb-2">
@@ -280,7 +280,7 @@
         <!-- ========================================================================= -->
         <!-- 4. ALUR CARA PEMESANAN                                                    -->
         <!-- ========================================================================= -->
-        <section id="cara-pesan" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24 rounded-3xl bg-brand-card border border-brand-border p-6 sm:p-10">
+        <section id="cara-pesan" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-36 rounded-3xl bg-brand-card border border-brand-border p-6 sm:p-10">
             <div class="text-center max-w-xl mx-auto mb-10">
                 <span class="text-xs font-bold text-brand-cyan uppercase tracking-wider">CARA PESAN</span>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">4 Langkah Mudah Joki di EiraStore</h2>
@@ -337,7 +337,7 @@
         <!-- ========================================================================= -->
         <!-- 5. KEUNGGULAN / KENAPA EIRASTORE                                          -->
         <!-- ========================================================================= -->
-        <section id="keunggulan" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section id="keunggulan" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-36 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="p-6 rounded-2xl bg-brand-card border border-brand-border">
                 <div class="w-10 h-10 rounded-xl bg-brand-blue/20 text-brand-cyan flex items-center justify-center mb-4">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -371,7 +371,7 @@
                 <h3 class="text-xl sm:text-2xl font-black text-white">Siap Pamer Rank Tertinggi ke Temanmu?</h3>
                 <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">Pesan sekarang dan nikmati proses pengerjaan tanpa ribet dengan harga paling kompetitif.</p>
             </div>
-            <a href="#katalog-game" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5">
+            <a href="#katalog-game" @click.prevent="scrollToSection('katalog-game')" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5">
                 Mulai Pesan Sekarang →
             </a>
         </section>
