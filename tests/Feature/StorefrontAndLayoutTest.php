@@ -18,6 +18,20 @@ class StorefrontAndLayoutTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('EIRASTORE');
         $response->assertSee('Layanan Joki');
+        $response->assertSee('navigateToSection');
+        $response->assertSee('navigateToHome');
+        $response->assertSee('#katalog-game');
+        $response->assertSee('#cara-pesan');
+        $response->assertSee('#keunggulan');
+    }
+
+    /** Tes halaman beranda menangani pencarian game dengan aman */
+    public function test_halaman_beranda_menangani_parameter_pencarian(): void
+    {
+        $response = $this->get('/?q=Valorant');
+
+        $response->assertStatus(200);
+        $response->assertSee('Valorant');
     }
 
     /** Tes halaman pelacakan pesanan dapat diakses */

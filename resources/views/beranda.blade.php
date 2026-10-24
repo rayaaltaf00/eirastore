@@ -1,6 +1,6 @@
 <x-storefront-layout title="EiraStore - Layanan Joki Game Tepercaya">
     <div class="space-y-16 sm:space-y-24" x-data="{
-        search: '{{ request('q') }}',
+        search: @js(request('q', '')),
         activeTab: 'all',
         matchGame(name, cat) {
             const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase());
@@ -130,7 +130,7 @@
                     </p>
 
                     <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#katalog-game" @click.prevent="scrollToSection('katalog-game')" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all duration-200 hover:-translate-y-0.5">
+                        <a href="#katalog-game" @click.prevent="navigateToSection('katalog-game')" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all duration-200 hover:-translate-y-0.5">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                             Pilih Game Sekarang
                         </a>
@@ -222,7 +222,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 @if(isset($games) && $games->count() > 0)
                     @foreach($games as $game)
-                        <div x-show="matchGame('{{ $game->nama_game }}', '{{ $game->kategori ?? 'Game' }}')" x-transition>
+                        <div x-show="matchGame(@js($game->nama_game), @js($game->kategori ?? 'Game'))" x-transition>
                             <x-game-card :game="$game" />
                         </div>
                     @endforeach
@@ -371,7 +371,7 @@
                 <h3 class="text-xl sm:text-2xl font-black text-white">Siap Pamer Rank Tertinggi ke Temanmu?</h3>
                 <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl">Pesan sekarang dan nikmati proses pengerjaan tanpa ribet dengan harga paling kompetitif.</p>
             </div>
-            <a href="#katalog-game" @click.prevent="scrollToSection('katalog-game')" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5">
+            <a href="#katalog-game" @click.prevent="navigateToSection('katalog-game')" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5">
                 Mulai Pesan Sekarang →
             </a>
         </section>
