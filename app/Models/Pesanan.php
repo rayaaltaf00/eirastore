@@ -148,9 +148,9 @@ class Pesanan extends Model
         $prefix = "ES-{$tanggal}-";
 
         // Hitung pesanan hari ini untuk nomor urut
-        $jumlahHariIni = static::where('kode_pesanan', 'like', $prefix . '%')->count();
+        $jumlahHariIni = static::where('kode_pesanan', 'like', $prefix.'%')->count();
         $nomor = str_pad($jumlahHariIni + 1, 3, '0', STR_PAD_LEFT);
 
-        return $prefix . $nomor;
+        return $prefix.$nomor;
     }
 }

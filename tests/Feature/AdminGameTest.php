@@ -16,6 +16,7 @@ class AdminGameTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $customer;
 
     protected function setUp(): void
@@ -40,9 +41,9 @@ class AdminGameTest extends TestCase
     {
         $game = Game::create([
             'nama_game' => 'Apex Legends',
-            'kategori'  => 'FPS',
-            'gambar'    => 'games/apex.jpg',
-            'aktif'     => true,
+            'kategori' => 'FPS',
+            'gambar' => 'games/apex.jpg',
+            'aktif' => true,
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('admin.games.index'));
@@ -62,19 +63,19 @@ class AdminGameTest extends TestCase
     public function test_admin_can_store_game_with_image_url(): void
     {
         $response = $this->actingAs($this->admin)->post(route('admin.games.store'), [
-            'nama_game'     => 'Honor of Kings Test',
-            'kategori'      => 'MOBA',
-            'deskripsi'     => 'Game MOBA 5v5 seru',
+            'nama_game' => 'Honor of Kings Test',
+            'kategori' => 'MOBA',
+            'deskripsi' => 'Game MOBA 5v5 seru',
             'gambar_sumber' => 'url',
-            'gambar_url'    => 'https://images.unsplash.com/photo-1542751371-adc38448a05e',
-            'aktif'         => '1',
+            'gambar_url' => 'https://images.unsplash.com/photo-1542751371-adc38448a05e',
+            'aktif' => '1',
         ]);
 
         $response->assertRedirect(route('admin.games.index'));
         $this->assertDatabaseHas('games', [
             'nama_game' => 'Honor of Kings Test',
-            'kategori'  => 'MOBA',
-            'gambar'    => 'https://images.unsplash.com/photo-1542751371-adc38448a05e',
+            'kategori' => 'MOBA',
+            'gambar' => 'https://images.unsplash.com/photo-1542751371-adc38448a05e',
         ]);
     }
 
@@ -85,16 +86,16 @@ class AdminGameTest extends TestCase
         $file = UploadedFile::fake()->image('dota2.jpg', 600, 600);
 
         $response = $this->actingAs($this->admin)->post(route('admin.games.store'), [
-            'nama_game'     => 'Dota 2',
-            'kategori'      => 'MOBA',
-            'deskripsi'     => 'Defense of the Ancients 2',
+            'nama_game' => 'Dota 2',
+            'kategori' => 'MOBA',
+            'deskripsi' => 'Defense of the Ancients 2',
             'gambar_sumber' => 'upload',
             'gambar_upload' => $file,
-            'aktif'         => '1',
+            'aktif' => '1',
         ]);
 
         $response->assertRedirect(route('admin.games.index'));
-        
+
         $game = Game::where('nama_game', 'Dota 2')->first();
         $this->assertNotNull($game);
         $this->assertStringStartsWith('games/', $game->gambar);
@@ -106,7 +107,7 @@ class AdminGameTest extends TestCase
         Game::create(['nama_game' => 'Valorant Test', 'gambar' => 'games/val.jpg', 'aktif' => true]);
 
         $response = $this->actingAs($this->admin)->post(route('admin.games.store'), [
-            'nama_game'     => 'Valorant Test',
+            'nama_game' => 'Valorant Test',
             'gambar_sumber' => 'url',
         ]);
 
@@ -117,24 +118,24 @@ class AdminGameTest extends TestCase
     {
         $game = Game::create([
             'nama_game' => 'Fortnite',
-            'kategori'  => 'BR',
-            'gambar'    => 'games/fn.jpg',
-            'aktif'     => true,
+            'kategori' => 'BR',
+            'gambar' => 'games/fn.jpg',
+            'aktif' => true,
         ]);
 
         $response = $this->actingAs($this->admin)->put(route('admin.games.update', $game), [
-            'nama_game'     => 'Fortnite Battle Royale',
-            'kategori'      => 'Battle Royale',
-            'deskripsi'     => 'Game survival seru',
+            'nama_game' => 'Fortnite Battle Royale',
+            'kategori' => 'Battle Royale',
+            'deskripsi' => 'Game survival seru',
             'gambar_sumber' => 'keep',
-            'aktif'         => '0',
+            'aktif' => '0',
         ]);
 
         $response->assertRedirect(route('admin.games.index'));
         $this->assertDatabaseHas('games', [
-            'id'        => $game->id,
+            'id' => $game->id,
             'nama_game' => 'Fortnite Battle Royale',
-            'aktif'     => 0,
+            'aktif' => 0,
         ]);
     }
 
@@ -151,12 +152,12 @@ class AdminGameTest extends TestCase
     public function test_admin_cannot_delete_game_if_services_exist(): void
     {
         $game = Game::create(['nama_game' => 'Game With Service', 'gambar' => 'games/srv.jpg', 'aktif' => true]);
-        
+
         Layanan::create([
-            'game_id'      => $game->id,
+            'game_id' => $game->id,
             'nama_layanan' => 'Joki Rank',
-            'tipe_harga'   => TipeHarga::Tangga,
-            'aktif'        => true,
+            'tipe_harga' => TipeHarga::Tangga,
+            'aktif' => true,
         ]);
 
         $response = $this->actingAs($this->admin)->delete(route('admin.games.destroy', $game));
@@ -169,17 +170,17 @@ class AdminGameTest extends TestCase
     {
         Game::create([
             'nama_game' => 'Mobile Legends: Bang Bang',
-            'kategori'  => 'MOBA',
-            'gambar'    => 'games/mlbb.jpg',
-            'aktif'     => true,
+            'kategori' => 'MOBA',
+            'gambar' => 'games/mlbb.jpg',
+            'aktif' => true,
         ]);
 
         $response = $this->actingAs($this->admin)->post(route('admin.games.store'), [
-            'nama_game'     => 'Mobile Legend',
-            'kategori'      => 'MOBA',
+            'nama_game' => 'Mobile Legend',
+            'kategori' => 'MOBA',
             'gambar_sumber' => 'url',
-            'gambar_url'    => 'https://example.com/ml.jpg',
-            'aktif'         => '1',
+            'gambar_url' => 'https://example.com/ml.jpg',
+            'aktif' => '1',
         ]);
 
         $response->assertSessionHasErrors(['nama_game']);
@@ -190,17 +191,17 @@ class AdminGameTest extends TestCase
     {
         Game::create([
             'nama_game' => 'Valorant',
-            'kategori'  => 'FPS',
-            'gambar'    => 'games/val.jpg',
-            'aktif'     => true,
+            'kategori' => 'FPS',
+            'gambar' => 'games/val.jpg',
+            'aktif' => true,
         ]);
 
         $response = $this->actingAs($this->admin)->post(route('admin.games.store'), [
-            'nama_game'     => 'Valoran',
-            'kategori'      => 'FPS',
+            'nama_game' => 'Valoran',
+            'kategori' => 'FPS',
             'gambar_sumber' => 'url',
-            'gambar_url'    => 'https://example.com/val.jpg',
-            'aktif'         => '1',
+            'gambar_url' => 'https://example.com/val.jpg',
+            'aktif' => '1',
         ]);
 
         $response->assertSessionHasErrors(['nama_game']);
@@ -211,23 +212,23 @@ class AdminGameTest extends TestCase
     {
         $game = Game::create([
             'nama_game' => 'Genshin Impact',
-            'kategori'  => 'RPG',
-            'gambar'    => 'games/genshin.jpg',
-            'aktif'     => true,
+            'kategori' => 'RPG',
+            'gambar' => 'games/genshin.jpg',
+            'aktif' => true,
         ]);
 
         $response = $this->actingAs($this->admin)->put(route('admin.games.update', $game), [
-            'nama_game'     => 'Genshin Impact',
-            'kategori'      => 'RPG Open World',
-            'deskripsi'     => 'Updated deskripsi',
+            'nama_game' => 'Genshin Impact',
+            'kategori' => 'RPG Open World',
+            'deskripsi' => 'Updated deskripsi',
             'gambar_sumber' => 'url',
-            'gambar_url'    => 'https://example.com/genshin.jpg',
-            'aktif'         => '1',
+            'gambar_url' => 'https://example.com/genshin.jpg',
+            'aktif' => '1',
         ]);
 
         $response->assertRedirect(route('admin.games.index'));
         $this->assertDatabaseHas('games', [
-            'id'       => $game->id,
+            'id' => $game->id,
             'kategori' => 'RPG Open World',
         ]);
     }

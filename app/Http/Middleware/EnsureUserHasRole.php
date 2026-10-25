@@ -16,7 +16,7 @@ class EnsureUserHasRole
      * Cek apakah role user termasuk dalam daftar role yang diizinkan.
      * Jika tidak, kembalikan respons 403 Forbidden.
      *
-     * @param string ...$roles  Daftar role yang diizinkan (dipisah koma di route)
+     * @param  string  ...$roles  Daftar role yang diizinkan (dipisah koma di route)
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Enums\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,11 +30,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Jika customer memiliki draf pesanan yang belum diselesaikan
+        if ($request->user()->role === Role::Customer && $request->session()->has('draft_pesanan')) {
+            return redirect()->route('pesanan.konfirmasi-draf');
+        }
+
         // Arahkan sesuai role pengguna
         return match ($request->user()->role) {
-            Role::Admin  => redirect('/admin/dashboard'),
+            Role::Admin => redirect('/admin/dashboard'),
             Role::Worker => redirect('/worker/pesanan'),
-            default      => redirect()->intended('/'),  // Customer → halaman tujuan atau beranda
+            default => redirect()->intended('/'),  // Customer → halaman tujuan atau beranda
         };
     }
 

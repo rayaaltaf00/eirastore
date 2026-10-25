@@ -80,6 +80,13 @@
 
             <div class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Transaksi & Tim</div>
 
+            <!-- Rekening Pembayaran -->
+            <a href="{{ route('admin.metode-pembayaran.index') }}" 
+               class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.metode-pembayaran.*') ? 'bg-brand-blue text-white shadow-glow-blue font-semibold' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 shrink-0 {{ request()->routeIs('admin.metode-pembayaran.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                Rekening Pembayaran
+            </a>
+
             <!-- Pesanan & Transaksi -->
             <a href="#" class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-brand-surface hover:text-white transition-colors">
                 <svg class="w-5 h-5 mr-3 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>

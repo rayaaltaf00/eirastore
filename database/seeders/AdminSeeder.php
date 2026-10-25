@@ -18,10 +18,10 @@ class AdminSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'admin@eirastore.com'],
             [
-                'nama'        => 'Administrator',
-                'no_hp'       => '081200000000',
-                'password'    => Hash::make('password123'),
-                'role'        => 'admin',
+                'nama' => 'Administrator',
+                'no_hp' => '081200000000',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
                 'status_akun' => 'aktif',
             ]
         );

@@ -35,9 +35,9 @@ class LayananController extends Controller
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_layanan', 'like', "%{$search}%")
-                  ->orWhereHas('game', function ($g) use ($search) {
-                      $g->where('nama_game', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('game', function ($g) use ($search) {
+                        $g->where('nama_game', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -83,29 +83,29 @@ class LayananController extends Controller
         $gameId = $request->input('game_id');
 
         $validated = $request->validate([
-            'game_id'        => ['required', 'exists:games,id'],
-            'nama_layanan'   => [
+            'game_id' => ['required', 'exists:games,id'],
+            'nama_layanan' => [
                 'required',
                 'string',
                 'max:100',
                 Rule::unique('layanan', 'nama_layanan')->where('game_id', $gameId),
             ],
-            'deskripsi'      => ['nullable', 'string'],
-            'gambar_upload'  => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            'gambar_url'     => ['nullable', 'url', 'max:2048'],
-            'tipe_harga'     => ['required', Rule::enum(TipeHarga::class)],
+            'deskripsi' => ['nullable', 'string'],
+            'gambar_upload' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'gambar_url' => ['nullable', 'url', 'max:2048'],
+            'tipe_harga' => ['required', Rule::enum(TipeHarga::class)],
             'estimasi_waktu' => ['nullable', 'string', 'max:50'],
-            'aktif'          => ['nullable', 'boolean'],
+            'aktif' => ['nullable', 'boolean'],
         ], [
-            'game_id.required'      => 'Pilih game induk untuk layanan ini.',
-            'game_id.exists'        => 'Game yang dipilih tidak valid.',
+            'game_id.required' => 'Pilih game induk untuk layanan ini.',
+            'game_id.exists' => 'Game yang dipilih tidak valid.',
             'nama_layanan.required' => 'Nama layanan wajib diisi.',
-            'nama_layanan.unique'   => 'Nama layanan sudah digunakan pada game ini.',
-            'gambar_upload.image'   => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
-            'gambar_upload.max'     => 'Ukuran gambar maksimal adalah 2 MB.',
-            'gambar_url.url'        => 'Format URL gambar tidak valid.',
-            'tipe_harga.required'   => 'Pilih salah satu tipe harga perhitungan.',
-            'tipe_harga.enum'       => 'Tipe harga tidak valid.',
+            'nama_layanan.unique' => 'Nama layanan sudah digunakan pada game ini.',
+            'gambar_upload.image' => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
+            'gambar_upload.max' => 'Ukuran gambar maksimal adalah 2 MB.',
+            'gambar_url.url' => 'Format URL gambar tidak valid.',
+            'tipe_harga.required' => 'Pilih salah satu tipe harga perhitungan.',
+            'tipe_harga.enum' => 'Tipe harga tidak valid.',
         ]);
 
         $fileUpload = $request->file('gambar_upload');
@@ -118,13 +118,13 @@ class LayananController extends Controller
         }
 
         $layanan = Layanan::create([
-            'game_id'        => $validated['game_id'],
-            'nama_layanan'   => $validated['nama_layanan'],
-            'gambar'         => $gambarPath,
-            'deskripsi'      => $validated['deskripsi'] ?? null,
-            'tipe_harga'     => $validated['tipe_harga'],
+            'game_id' => $validated['game_id'],
+            'nama_layanan' => $validated['nama_layanan'],
+            'gambar' => $gambarPath,
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'tipe_harga' => $validated['tipe_harga'],
             'estimasi_waktu' => $validated['estimasi_waktu'] ?? null,
-            'aktif'          => $request->boolean('aktif', true),
+            'aktif' => $request->boolean('aktif', true),
         ]);
 
         return redirect()->route('admin.layanan.items.index', $layanan)
@@ -181,8 +181,8 @@ class LayananController extends Controller
         $targetGameId = $isGameLocked ? $layanan->game_id : $request->input('game_id');
 
         $validated = $request->validate([
-            'game_id'        => [$isGameLocked ? 'nullable' : 'required', 'exists:games,id'],
-            'nama_layanan'   => [
+            'game_id' => [$isGameLocked ? 'nullable' : 'required', 'exists:games,id'],
+            'nama_layanan' => [
                 'required',
                 'string',
                 'max:100',
@@ -190,48 +190,48 @@ class LayananController extends Controller
                     ->where('game_id', $targetGameId)
                     ->ignore($layanan->id),
             ],
-            'deskripsi'      => ['nullable', 'string'],
-            'gambar_upload'  => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            'gambar_url'     => ['nullable', 'url', 'max:2048'],
-            'tipe_harga'     => [$isTipeHargaLocked ? 'nullable' : 'required', Rule::enum(TipeHarga::class)],
+            'deskripsi' => ['nullable', 'string'],
+            'gambar_upload' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'gambar_url' => ['nullable', 'url', 'max:2048'],
+            'tipe_harga' => [$isTipeHargaLocked ? 'nullable' : 'required', Rule::enum(TipeHarga::class)],
             'estimasi_waktu' => ['nullable', 'string', 'max:50'],
-            'aktif'          => ['nullable', 'boolean'],
+            'aktif' => ['nullable', 'boolean'],
         ], [
             'nama_layanan.required' => 'Nama layanan wajib diisi.',
-            'nama_layanan.unique'   => 'Nama layanan sudah digunakan pada game ini.',
-            'gambar_upload.image'   => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
-            'gambar_upload.max'     => 'Ukuran gambar maksimal adalah 2 MB.',
-            'gambar_url.url'        => 'Format URL gambar tidak valid.',
+            'nama_layanan.unique' => 'Nama layanan sudah digunakan pada game ini.',
+            'gambar_upload.image' => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
+            'gambar_upload.max' => 'Ukuran gambar maksimal adalah 2 MB.',
+            'gambar_url.url' => 'Format URL gambar tidak valid.',
         ]);
 
         $gambarPath = $layanan->gambar;
         $fileUpload = $request->file('gambar_upload');
 
         if ($request->boolean('hapus_gambar_khusus')) {
-            if ($layanan->gambar && !str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
+            if ($layanan->gambar && ! str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
                 Storage::disk('public')->delete($layanan->gambar);
             }
             $gambarPath = null;
         } elseif ($fileUpload) {
-            if ($layanan->gambar && !str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
+            if ($layanan->gambar && ! str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
                 Storage::disk('public')->delete($layanan->gambar);
             }
             $gambarPath = $fileUpload->store('layanan', 'public');
         } elseif ($request->filled('gambar_url') && $request->gambar_url !== $layanan->gambar) {
-            if ($layanan->gambar && !str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
+            if ($layanan->gambar && ! str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
                 Storage::disk('public')->delete($layanan->gambar);
             }
             $gambarPath = $request->gambar_url;
         }
 
         $layanan->update([
-            'game_id'        => $isGameLocked ? $layanan->game_id : $validated['game_id'],
-            'nama_layanan'   => $validated['nama_layanan'],
-            'gambar'         => $gambarPath,
-            'deskripsi'      => $validated['deskripsi'] ?? null,
-            'tipe_harga'     => $isTipeHargaLocked ? $layanan->tipe_harga : $validated['tipe_harga'],
+            'game_id' => $isGameLocked ? $layanan->game_id : $validated['game_id'],
+            'nama_layanan' => $validated['nama_layanan'],
+            'gambar' => $gambarPath,
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'tipe_harga' => $isTipeHargaLocked ? $layanan->tipe_harga : $validated['tipe_harga'],
             'estimasi_waktu' => $validated['estimasi_waktu'] ?? null,
-            'aktif'          => $request->boolean('aktif', false),
+            'aktif' => $request->boolean('aktif', false),
         ]);
 
         return redirect()->route('admin.layanan.index', ['game_id' => $layanan->game_id])
@@ -253,7 +253,7 @@ class LayananController extends Controller
         $gameId = $layanan->game_id;
 
         // Hapus berkas poster lokal jika ada di storage
-        if ($layanan->gambar && !str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
+        if ($layanan->gambar && ! str_starts_with($layanan->gambar, 'http') && Storage::disk('public')->exists($layanan->gambar)) {
             Storage::disk('public')->delete($layanan->gambar);
         }
 

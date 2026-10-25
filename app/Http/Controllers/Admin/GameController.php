@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\Layanan;
 use App\Rules\NoSimilarGameName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class GameController extends Controller
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_game', 'like', "%{$search}%")
-                  ->orWhere('kategori', 'like', "%{$search}%");
+                    ->orWhere('kategori', 'like', "%{$search}%");
             });
         }
 
@@ -42,7 +43,7 @@ class GameController extends Controller
         $stats = [
             'total' => Game::count(),
             'aktif' => Game::where('aktif', true)->count(),
-            'total_layanan' => \App\Models\Layanan::count(),
+            'total_layanan' => Layanan::count(),
         ];
 
         return view('admin.games.index', compact('games', 'stats'));
@@ -64,23 +65,23 @@ class GameController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'nama_game'     => ['required', 'string', 'max:100', 'unique:games,nama_game', new NoSimilarGameName()],
-            'kategori'      => ['nullable', 'string', 'max:50'],
-            'deskripsi'     => ['nullable', 'string'],
+            'nama_game' => ['required', 'string', 'max:100', 'unique:games,nama_game', new NoSimilarGameName],
+            'kategori' => ['nullable', 'string', 'max:50'],
+            'deskripsi' => ['nullable', 'string'],
             'gambar_upload' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            'gambar_url'    => ['nullable', 'url', 'max:2048'],
-            'aktif'         => ['nullable', 'boolean'],
+            'gambar_url' => ['nullable', 'url', 'max:2048'],
+            'aktif' => ['nullable', 'boolean'],
         ], [
             'nama_game.required' => 'Nama game wajib diisi.',
-            'nama_game.unique'   => 'Nama game sudah terdaftar.',
-            'gambar_upload.image'=> 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
-            'gambar_upload.max'  => 'Ukuran gambar maksimal adalah 2 MB.',
-            'gambar_url.url'     => 'Format URL gambar tidak valid.',
+            'nama_game.unique' => 'Nama game sudah terdaftar.',
+            'gambar_upload.image' => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
+            'gambar_upload.max' => 'Ukuran gambar maksimal adalah 2 MB.',
+            'gambar_url.url' => 'Format URL gambar tidak valid.',
         ]);
 
         $fileUpload = $request->file('gambar_upload') ?? $request->file('gambar_file');
 
-        if (!$fileUpload && empty($request->gambar_url)) {
+        if (! $fileUpload && empty($request->gambar_url)) {
             return back()->withInput()->withErrors([
                 'gambar' => 'Pilih salah satu: unggah berkas gambar atau masukkan URL gambar.',
             ]);
@@ -95,10 +96,10 @@ class GameController extends Controller
 
         Game::create([
             'nama_game' => $validated['nama_game'],
-            'kategori'  => $validated['kategori'] ?? null,
+            'kategori' => $validated['kategori'] ?? null,
             'deskripsi' => $validated['deskripsi'] ?? null,
-            'gambar'    => $gambarPath,
-            'aktif'     => $request->boolean('aktif', true),
+            'gambar' => $gambarPath,
+            'aktif' => $request->boolean('aktif', true),
         ]);
 
         return redirect()->route('admin.games.index')
@@ -121,18 +122,18 @@ class GameController extends Controller
     public function update(Request $request, Game $game): RedirectResponse
     {
         $validated = $request->validate([
-            'nama_game'     => ['required', 'string', 'max:100', Rule::unique('games', 'nama_game')->ignore($game->id), new NoSimilarGameName($game->id)],
-            'kategori'      => ['nullable', 'string', 'max:50'],
-            'deskripsi'     => ['nullable', 'string'],
+            'nama_game' => ['required', 'string', 'max:100', Rule::unique('games', 'nama_game')->ignore($game->id), new NoSimilarGameName($game->id)],
+            'kategori' => ['nullable', 'string', 'max:50'],
+            'deskripsi' => ['nullable', 'string'],
             'gambar_upload' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            'gambar_url'    => ['nullable', 'url', 'max:2048'],
-            'aktif'         => ['nullable', 'boolean'],
+            'gambar_url' => ['nullable', 'url', 'max:2048'],
+            'aktif' => ['nullable', 'boolean'],
         ], [
             'nama_game.required' => 'Nama game wajib diisi.',
-            'nama_game.unique'   => 'Nama game sudah terdaftar pada game lain.',
-            'gambar_upload.image'=> 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
-            'gambar_upload.max'  => 'Ukuran gambar maksimal adalah 2 MB.',
-            'gambar_url.url'     => 'Format URL gambar tidak valid.',
+            'nama_game.unique' => 'Nama game sudah terdaftar pada game lain.',
+            'gambar_upload.image' => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
+            'gambar_upload.max' => 'Ukuran gambar maksimal adalah 2 MB.',
+            'gambar_url.url' => 'Format URL gambar tidak valid.',
         ]);
 
         $gambarPath = $game->gambar;
@@ -141,13 +142,13 @@ class GameController extends Controller
         // Jika ada unggahan berkas baru
         if ($fileUpload) {
             // Hapus gambar lama jika berkas lokal di disk public
-            if ($game->gambar && !str_starts_with($game->gambar, 'http') && Storage::disk('public')->exists($game->gambar)) {
+            if ($game->gambar && ! str_starts_with($game->gambar, 'http') && Storage::disk('public')->exists($game->gambar)) {
                 Storage::disk('public')->delete($game->gambar);
             }
             $gambarPath = $fileUpload->store('games', 'public');
         } elseif ($request->filled('gambar_url') && $request->gambar_url !== $game->gambar) {
             // Jika memilih URL baru
-            if ($game->gambar && !str_starts_with($game->gambar, 'http') && Storage::disk('public')->exists($game->gambar)) {
+            if ($game->gambar && ! str_starts_with($game->gambar, 'http') && Storage::disk('public')->exists($game->gambar)) {
                 Storage::disk('public')->delete($game->gambar);
             }
             $gambarPath = $request->gambar_url;
@@ -155,10 +156,10 @@ class GameController extends Controller
 
         $game->update([
             'nama_game' => $validated['nama_game'],
-            'kategori'  => $validated['kategori'] ?? null,
+            'kategori' => $validated['kategori'] ?? null,
             'deskripsi' => $validated['deskripsi'] ?? null,
-            'gambar'    => $gambarPath,
-            'aktif'     => $request->boolean('aktif', false),
+            'gambar' => $gambarPath,
+            'aktif' => $request->boolean('aktif', false),
         ]);
 
         return redirect()->route('admin.games.index')
@@ -177,7 +178,7 @@ class GameController extends Controller
         }
 
         // Hapus berkas gambar lokal jika ada
-        if ($game->gambar && !str_starts_with($game->gambar, 'http') && Storage::disk('public')->exists($game->gambar)) {
+        if ($game->gambar && ! str_starts_with($game->gambar, 'http') && Storage::disk('public')->exists($game->gambar)) {
             Storage::disk('public')->delete($game->gambar);
         }
 

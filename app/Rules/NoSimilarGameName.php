@@ -9,6 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 class NoSimilarGameName implements ValidationRule
 {
     protected ?int $ignoreId;
+
     protected float $similarityThreshold;
 
     public function __construct(?int $ignoreId = null, float $similarityThreshold = 75.0)
@@ -30,7 +31,7 @@ class NoSimilarGameName implements ValidationRule
         }
 
         $existingGames = Game::query()
-            ->when($this->ignoreId, fn($q) => $q->where('id', '!=', $this->ignoreId))
+            ->when($this->ignoreId, fn ($q) => $q->where('id', '!=', $this->ignoreId))
             ->get(['id', 'nama_game']);
 
         foreach ($existingGames as $existing) {
@@ -44,6 +45,7 @@ class NoSimilarGameName implements ValidationRule
             // 1. Cek identik setelah normalisasi (misal hanya beda spasi atau tanda baca)
             if ($normalizedInput === $normalizedExisting) {
                 $fail("Nama game sudah digunakan atau terlalu identik dengan game '{$existingName}'.");
+
                 return;
             }
 
@@ -53,6 +55,7 @@ class NoSimilarGameName implements ValidationRule
                 $lev = levenshtein($normalizedInput, $normalizedExisting);
                 if ($lev <= 2 && $maxLen > 4) {
                     $fail("Nama game terlalu mirip (terdeteksi kemungkinan salah ketik/typo) dengan game '{$existingName}'.");
+
                     return;
                 }
             }
@@ -61,6 +64,7 @@ class NoSimilarGameName implements ValidationRule
             similar_text($normalizedInput, $normalizedExisting, $percent);
             if ($percent >= $this->similarityThreshold) {
                 $fail(sprintf("Nama game terlalu mirip dengan game yang sudah ada: '%s' (Tingkat kemiripan %.0f%%).", $existingName, $percent));
+
                 return;
             }
 
@@ -71,6 +75,7 @@ class NoSimilarGameName implements ValidationRule
             $shorterStem = rtrim($shorter, 's');
             if (strlen($shorterStem) >= 6 && str_starts_with($longer, $shorterStem)) {
                 $fail("Nama game memiliki kemiripan judul utama dengan game '{$existingName}'. Silakan periksa katalog game yang sudah ada.");
+
                 return;
             }
         }
@@ -83,6 +88,7 @@ class NoSimilarGameName implements ValidationRule
     protected function normalizeString(string $str): string
     {
         $lower = mb_strtolower($str, 'UTF-8');
+
         return preg_replace('/[^a-z0-9]/', '', $lower) ?? '';
     }
 }

@@ -61,38 +61,38 @@ class LayananItemController extends Controller
         $tipeHarga = $layanan->tipe_harga->value;
 
         $validated = $request->validate([
-            'jenis'      => ['required', 'in:utama,tambahan'],
-            'kategori'   => ['nullable', 'string', 'max:100'],
-            'nama'       => ['required', 'string', 'max:150'],
-            'urutan'     => ['required', 'integer', 'min:0'],
-            'harga'      => ['required', 'numeric', 'min:0'],
+            'jenis' => ['required', 'in:utama,tambahan'],
+            'kategori' => ['nullable', 'string', 'max:100'],
+            'nama' => ['required', 'string', 'max:150'],
+            'urutan' => ['required', 'integer', 'min:0'],
+            'harga' => ['required', 'numeric', 'min:0'],
             'nilai_maks' => ['nullable', 'integer', 'min:1'],
-            'satuan'     => ['nullable', 'string', 'max:50'],
-            'parent_id'  => [
+            'satuan' => ['nullable', 'string', 'max:50'],
+            'parent_id' => [
                 'nullable',
                 Rule::exists('layanan_item', 'id')
                     ->where('layanan_id', $layanan->id)
                     ->where('jenis', 'utama'),
             ],
-            'aktif'      => ['nullable', 'boolean'],
+            'aktif' => ['nullable', 'boolean'],
         ], [
-            'nama.required'   => 'Nama item tingkatan wajib diisi.',
+            'nama.required' => 'Nama item tingkatan wajib diisi.',
             'urutan.required' => 'Nomor urutan wajib diisi.',
-            'harga.required'  => 'Harga wajib diisi.',
+            'harga.required' => 'Harga wajib diisi.',
         ]);
 
         $this->validateBusinessRules($request, $layanan);
 
         $layanan->items()->create([
-            'parent_id'  => $validated['parent_id'] ?? null,
-            'jenis'      => $validated['jenis'],
-            'kategori'   => $validated['kategori'] ?? null,
-            'nama'       => $validated['nama'],
-            'urutan'     => $validated['urutan'],
-            'harga'      => $validated['harga'],
+            'parent_id' => $validated['parent_id'] ?? null,
+            'jenis' => $validated['jenis'],
+            'kategori' => $validated['kategori'] ?? null,
+            'nama' => $validated['nama'],
+            'urutan' => $validated['urutan'],
+            'harga' => $validated['harga'],
             'nilai_maks' => $validated['nilai_maks'] ?? null,
-            'satuan'     => $validated['satuan'] ?? null,
-            'aktif'      => $request->boolean('aktif', true),
+            'satuan' => $validated['satuan'] ?? null,
+            'aktif' => $request->boolean('aktif', true),
         ]);
 
         return redirect()->route('admin.layanan.items.index', $layanan)
@@ -124,35 +124,35 @@ class LayananItemController extends Controller
     public function update(Request $request, Layanan $layanan, LayananItem $item): RedirectResponse
     {
         $validated = $request->validate([
-            'jenis'      => ['required', 'in:utama,tambahan'],
-            'kategori'   => ['nullable', 'string', 'max:100'],
-            'nama'       => ['required', 'string', 'max:150'],
-            'urutan'     => ['required', 'integer', 'min:0'],
-            'harga'      => ['required', 'numeric', 'min:0'],
+            'jenis' => ['required', 'in:utama,tambahan'],
+            'kategori' => ['nullable', 'string', 'max:100'],
+            'nama' => ['required', 'string', 'max:150'],
+            'urutan' => ['required', 'integer', 'min:0'],
+            'harga' => ['required', 'numeric', 'min:0'],
             'nilai_maks' => ['nullable', 'integer', 'min:1'],
-            'satuan'     => ['nullable', 'string', 'max:50'],
-            'parent_id'  => [
+            'satuan' => ['nullable', 'string', 'max:50'],
+            'parent_id' => [
                 'nullable',
                 Rule::exists('layanan_item', 'id')
                     ->where('layanan_id', $layanan->id)
                     ->where('jenis', 'utama')
                     ->whereNot('id', $item->id),
             ],
-            'aktif'      => ['nullable', 'boolean'],
+            'aktif' => ['nullable', 'boolean'],
         ]);
 
         $this->validateBusinessRules($request, $layanan, $item);
 
         $item->update([
-            'parent_id'  => $validated['parent_id'] ?? null,
-            'jenis'      => $validated['jenis'],
-            'kategori'   => $validated['kategori'] ?? null,
-            'nama'       => $validated['nama'],
-            'urutan'     => $validated['urutan'],
-            'harga'      => $validated['harga'],
+            'parent_id' => $validated['parent_id'] ?? null,
+            'jenis' => $validated['jenis'],
+            'kategori' => $validated['kategori'] ?? null,
+            'nama' => $validated['nama'],
+            'urutan' => $validated['urutan'],
+            'harga' => $validated['harga'],
             'nilai_maks' => $validated['nilai_maks'] ?? null,
-            'satuan'     => $validated['satuan'] ?? null,
-            'aktif'      => $request->boolean('aktif', false),
+            'satuan' => $validated['satuan'] ?? null,
+            'aktif' => $request->boolean('aktif', false),
         ]);
 
         return redirect()->route('admin.layanan.items.index', $layanan)
@@ -211,14 +211,14 @@ class LayananItemController extends Controller
                     ]);
                 }
 
-                if (!empty($parentId)) {
+                if (! empty($parentId)) {
                     throw ValidationException::withMessages([
                         'parent_id' => 'Layanan bertipe Tangga tidak mendukung item induk (parent).',
                     ]);
                 }
             } else {
                 // jenis == tambahan
-                if (!empty($parentId)) {
+                if (! empty($parentId)) {
                     throw ValidationException::withMessages([
                         'parent_id' => 'Item tambahan tidak dapat memiliki item induk.',
                     ]);
@@ -228,7 +228,7 @@ class LayananItemController extends Controller
 
         // Aturan Tipe Progres (Persen)
         elseif ($tipe === 'progres') {
-            if (!empty($nilaiMaks)) {
+            if (! empty($nilaiMaks)) {
                 throw ValidationException::withMessages([
                     'nilai_maks' => 'Untuk tipe Progres, nilai maks harus dikosongkan (persentase otomatis 0 s.d 100%).',
                 ]);
@@ -241,9 +241,9 @@ class LayananItemController extends Controller
                     ]);
                 }
 
-                if (!empty($parentId)) {
+                if (! empty($parentId)) {
                     $parent = LayananItem::find($parentId);
-                    if ($parent && !empty($parent->parent_id)) {
+                    if ($parent && ! empty($parent->parent_id)) {
                         throw ValidationException::withMessages([
                             'parent_id' => 'Hierarki hanya diperbolehkan satu tingkat (wilayah di bawah region).',
                         ]);
@@ -251,7 +251,7 @@ class LayananItemController extends Controller
                 }
             } else {
                 // tambahan
-                if (!empty($parentId)) {
+                if (! empty($parentId)) {
                     throw ValidationException::withMessages([
                         'parent_id' => 'Item tambahan tidak dapat memiliki item induk.',
                     ]);
@@ -261,14 +261,14 @@ class LayananItemController extends Controller
 
         // Aturan Tipe Pilihan (Item)
         elseif ($tipe === 'pilihan') {
-            if (!empty($parentId)) {
+            if (! empty($parentId)) {
                 throw ValidationException::withMessages([
                     'parent_id' => 'Layanan bertipe Pilihan tidak mendukung item induk.',
                 ]);
             }
 
             // satuan dan nilai_maks boleh diisi bersama bila item bisa dipesan dalam kuantitas
-            if (!empty($satuan) && empty($nilaiMaks)) {
+            if (! empty($satuan) && empty($nilaiMaks)) {
                 throw ValidationException::withMessages([
                     'nilai_maks' => 'Bila satuan diisi, batas kuantitas pemesanan (nilai maks) wajib diisi.',
                 ]);

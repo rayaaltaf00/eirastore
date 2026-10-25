@@ -28,7 +28,7 @@ class UserFactory extends Factory
             'nama' => fake()->name(),                          // nama lengkap
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'no_hp' => '08' . fake()->numerify('##########'),  // nomor HP random 12 digit
+            'no_hp' => '08'.fake()->numerify('##########'),  // nomor HP random 12 digit
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'customer',                              // default customer
             'status_akun' => 'aktif',

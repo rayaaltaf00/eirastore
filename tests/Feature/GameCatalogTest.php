@@ -17,26 +17,26 @@ class GameCatalogTest extends TestCase
     {
         $game = Game::create([
             'nama_game' => 'Mobile Legends',
-            'kategori'  => 'MOBA',
+            'kategori' => 'MOBA',
             'deskripsi' => 'Game MOBA terpopuler di Indonesia',
-            'gambar'    => 'games/ml.jpg',
-            'aktif'     => true,
+            'gambar' => 'games/ml.jpg',
+            'aktif' => true,
         ]);
 
         $layanan = Layanan::create([
-            'game_id'      => $game->id,
+            'game_id' => $game->id,
             'nama_layanan' => 'Joki Rank Bintang',
-            'tipe_harga'   => TipeHarga::Tangga,
-            'aktif'        => true,
+            'tipe_harga' => TipeHarga::Tangga,
+            'aktif' => true,
         ]);
 
         LayananItem::create([
             'layanan_id' => $layanan->id,
-            'nama'       => 'Grandmaster',
-            'harga'      => 7000,
+            'nama' => 'Grandmaster',
+            'harga' => 7000,
             'nilai_maks' => 5,
-            'urutan'     => 1,
-            'aktif'      => true,
+            'urutan' => 1,
+            'aktif' => true,
         ]);
 
         $response = $this->get(route('game.show', $game));
@@ -51,8 +51,8 @@ class GameCatalogTest extends TestCase
     {
         $game = Game::create([
             'nama_game' => 'Game Nonaktif',
-            'gambar'    => 'games/off.jpg',
-            'aktif'     => false,
+            'gambar' => 'games/off.jpg',
+            'aktif' => false,
         ]);
 
         $response = $this->get(route('game.show', $game));

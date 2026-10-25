@@ -33,36 +33,36 @@ class RegisteredUserController extends Controller
         // Sanitasi nomor HP: buang spasi/strip/tanda plus, konversi awalan 62 jadi 0
         $noHp = preg_replace('/[^0-9]/', '', (string) $request->no_hp);
         if (str_starts_with($noHp, '62')) {
-            $noHp = '0' . substr($noHp, 2);
+            $noHp = '0'.substr($noHp, 2);
         }
         $request->merge(['no_hp' => $noHp]);
 
         $request->validate([
-            'nama'     => ['required', 'string', 'max:100'],
-            'email'    => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:users,email'],
-            'no_hp'    => ['required', 'regex:/^[0-9]{10,15}$/'],   // angka Indonesia 10-15 digit
+            'nama' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:users,email'],
+            'no_hp' => ['required', 'regex:/^[0-9]{10,15}$/'],   // angka Indonesia 10-15 digit
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
         ], [
             // Pesan error bahasa Indonesia
-            'nama.required'     => 'Nama wajib diisi.',
-            'nama.max'          => 'Nama maksimal 100 karakter.',
-            'email.required'    => 'Email wajib diisi.',
-            'email.email'       => 'Format email tidak valid.',
-            'email.unique'      => 'Email sudah terdaftar.',
-            'no_hp.required'    => 'Nomor HP wajib diisi.',
-            'no_hp.regex'       => 'Nomor HP harus berupa angka 10-15 digit.',
+            'nama.required' => 'Nama wajib diisi.',
+            'nama.max' => 'Nama maksimal 100 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'no_hp.required' => 'Nomor HP wajib diisi.',
+            'no_hp.regex' => 'Nomor HP harus berupa angka 10-15 digit.',
             'password.required' => 'Password wajib diisi.',
-            'password.min'      => 'Password minimal 8 karakter.',
-            'password.confirmed'=> 'Konfirmasi password tidak cocok.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
         // Buat akun customer baru — role otomatis customer, status aktif
         $user = User::create([
-            'nama'        => $request->nama,
-            'email'       => $request->email,
-            'no_hp'       => $request->no_hp,
-            'password'    => Hash::make($request->password),
-            'role'        => 'customer',
+            'nama' => $request->nama,
+            'email' => $request->email,
+            'no_hp' => $request->no_hp,
+            'password' => Hash::make($request->password),
+            'role' => 'customer',
             'status_akun' => 'aktif',
         ]);
 
@@ -70,7 +70,12 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Arahkan ke halaman tujuan sebelumnya (jika ada draf pesanan) atau beranda
+        // Jika customer memiliki draf pesanan di sesi, arahkan ke halaman konfirmasi
+        if ($request->session()->has('draft_pesanan')) {
+            return redirect()->route('pesanan.konfirmasi-draf');
+        }
+
+        // Arahkan ke halaman tujuan sebelumnya atau beranda
         return redirect()->intended('/');
     }
 }

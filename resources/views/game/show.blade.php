@@ -204,10 +204,10 @@
                                 @endif
                             </div>
 
-                            <!-- Tombol Pilih Layanan (diarahkan ke alur order) -->
-                            <a href="{{ route('beranda') }}#cara-pesan" 
+                            <!-- Tombol Pesan Layanan (diarahkan ke form order kalkulator) -->
+                            <a href="{{ route('pesanan.create', $layanan) }}" 
                                class="inline-flex items-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-blue to-brand-cyan text-white text-xs font-bold hover:opacity-95 shadow-glow-blue transition-all group-hover:shadow-[0_0_20px_rgba(14,165,233,0.35)] shrink-0">
-                                <span>Pilih Layanan</span>
+                                <span>Pesan Sekarang</span>
                                 <svg class="w-3.5 h-3.5 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                             </a>
                         </div>

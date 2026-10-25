@@ -21,10 +21,10 @@ class KatalogSeeder extends Seeder
         $mlbb = Game::updateOrCreate(
             ['nama_game' => 'Mobile Legends: Bang Bang'],
             [
-                'kategori'  => 'MOBA',
+                'kategori' => 'MOBA',
                 'deskripsi' => 'Layanan joki rank bintang dan paket winrate hero Mobile Legends terlengkap dengan worker Mythical Immortal terpercaya.',
-                'gambar'    => 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-                'aktif'     => true,
+                'gambar' => 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
+                'aktif' => true,
             ]
         );
 
@@ -32,11 +32,11 @@ class KatalogSeeder extends Seeder
         $mlbbRank = Layanan::updateOrCreate(
             ['game_id' => $mlbb->id, 'nama_layanan' => 'Joki Rank Bintang'],
             [
-                'gambar'         => 'https://images.unsplash.com/photo-1563089145-599997674d42?w=800&auto=format&fit=crop&q=80',
-                'tipe_harga'     => TipeHarga::Tangga,
-                'deskripsi'      => 'Joki push rank per bintang/tier dari rank awal hingga rank tujuan yang Anda inginkan.',
+                'gambar' => 'https://images.unsplash.com/photo-1563089145-599997674d42?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Tangga,
+                'deskripsi' => 'Joki push rank per bintang/tier dari rank awal hingga rank tujuan yang Anda inginkan.',
                 'estimasi_waktu' => '1 - 3 Hari',
-                'aktif'          => true,
+                'aktif' => true,
             ]
         );
 
@@ -56,14 +56,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $mlbbRank->id, 'nama' => $rank['nama']],
                 [
-                    'parent_id'  => null,
-                    'jenis'      => 'utama',
-                    'kategori'   => null,
-                    'harga'      => $rank['harga'],
-                    'satuan'     => 'bintang',
+                    'parent_id' => null,
+                    'jenis' => 'utama',
+                    'kategori' => null,
+                    'harga' => $rank['harga'],
+                    'satuan' => 'bintang',
                     'nilai_maks' => $rank['nilai_maks'],
-                    'urutan'     => $rank['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $rank['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -72,11 +72,11 @@ class KatalogSeeder extends Seeder
         $mlbbClassic = Layanan::updateOrCreate(
             ['game_id' => $mlbb->id, 'nama_layanan' => 'Joki Winrate Classic'],
             [
-                'gambar'         => 'https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=800&auto=format&fit=crop&q=80',
-                'tipe_harga'     => TipeHarga::Pilihan,
-                'deskripsi'      => 'Tingkatkan winrate hero favorit Anda di mode Classic bersama worker eks-top global.',
+                'gambar' => 'https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Pilihan,
+                'deskripsi' => 'Tingkatkan winrate hero favorit Anda di mode Classic bersama worker eks-top global.',
                 'estimasi_waktu' => '3 - 8 Jam',
-                'aktif'          => true,
+                'aktif' => true,
             ]
         );
 
@@ -90,14 +90,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $mlbbClassic->id, 'nama' => $pilih['nama']],
                 [
-                    'parent_id'  => null,
-                    'jenis'      => 'utama',
-                    'kategori'   => 'Paket Match',
-                    'harga'      => $pilih['harga'],
-                    'satuan'     => $pilih['satuan'],
+                    'parent_id' => null,
+                    'jenis' => 'utama',
+                    'kategori' => 'Paket Match',
+                    'harga' => $pilih['harga'],
+                    'satuan' => $pilih['satuan'],
                     'nilai_maks' => $pilih['nilai_maks'],
-                    'urutan'     => $pilih['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $pilih['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -106,11 +106,11 @@ class KatalogSeeder extends Seeder
         $mlbbGendong = Layanan::updateOrCreate(
             ['game_id' => $mlbb->id, 'nama_layanan' => 'Joki Gendong (Mabar Pro)'],
             [
-                'gambar'         => 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
-                'tipe_harga'     => TipeHarga::Pilihan,
-                'deskripsi'      => 'Main bareng (party) dengan pro player kami, akun tetap Anda mainkan sendiri dengan aman.',
+                'gambar' => 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Pilihan,
+                'deskripsi' => 'Main bareng (party) dengan pro player kami, akun tetap Anda mainkan sendiri dengan aman.',
                 'estimasi_waktu' => '2 - 4 Jam',
-                'aktif'          => true,
+                'aktif' => true,
             ]
         );
 
@@ -124,14 +124,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $mlbbGendong->id, 'nama' => $item['nama']],
                 [
-                    'parent_id'  => null,
-                    'jenis'      => 'utama',
-                    'kategori'   => 'Paket Mabar',
-                    'harga'      => $item['harga'],
-                    'satuan'     => $item['satuan'],
+                    'parent_id' => null,
+                    'jenis' => 'utama',
+                    'kategori' => 'Paket Mabar',
+                    'harga' => $item['harga'],
+                    'satuan' => $item['satuan'],
                     'nilai_maks' => $item['nilai_maks'],
-                    'urutan'     => $item['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $item['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -142,10 +142,10 @@ class KatalogSeeder extends Seeder
         $genshin = Game::updateOrCreate(
             ['nama_game' => 'Genshin Impact'],
             [
-                'kategori'  => 'RPG',
+                'kategori' => 'RPG',
                 'deskripsi' => 'Jasa eksplorasi region 100%, Spiral Abyss 36 Star, Oculus hunting, dan Archon Quest terpercaya tanpa menggunakan bot atau program ilegal.',
-                'gambar'    => 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=800&auto=format&fit=crop&q=80',
-                'aktif'     => true,
+                'gambar' => 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=800&auto=format&fit=crop&q=80',
+                'aktif' => true,
             ]
         );
 
@@ -153,11 +153,11 @@ class KatalogSeeder extends Seeder
         $genshinExplore = Layanan::updateOrCreate(
             ['game_id' => $genshin->id, 'nama_layanan' => 'Eksplorasi Map 100%'],
             [
-                'gambar'         => 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
-                'tipe_harga'     => TipeHarga::Progres,
-                'deskripsi'      => 'Joki eksplorasi sub-wilayah hingga 100% tuntas semua peti dan tantangan teka-teki.',
+                'gambar' => 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Progres,
+                'deskripsi' => 'Joki eksplorasi sub-wilayah hingga 100% tuntas semua peti dan tantangan teka-teki.',
                 'estimasi_waktu' => '2 - 5 Hari',
-                'aktif'          => true,
+                'aktif' => true,
             ]
         );
 
@@ -165,14 +165,14 @@ class KatalogSeeder extends Seeder
         $mondstadt = LayananItem::updateOrCreate(
             ['layanan_id' => $genshinExplore->id, 'nama' => 'Wilayah Mondstadt'],
             [
-                'parent_id'  => null,
-                'jenis'      => 'utama',
-                'kategori'   => 'Region',
-                'harga'      => 0,
-                'satuan'     => null,
+                'parent_id' => null,
+                'jenis' => 'utama',
+                'kategori' => 'Region',
+                'harga' => 0,
+                'satuan' => null,
                 'nilai_maks' => null,
-                'urutan'     => 1,
-                'aktif'      => true,
+                'urutan' => 1,
+                'aktif' => true,
             ]
         );
 
@@ -188,14 +188,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $genshinExplore->id, 'nama' => $sub['nama']],
                 [
-                    'parent_id'  => $mondstadt->id,
-                    'jenis'      => 'utama',
-                    'kategori'   => 'Sub-Wilayah',
-                    'harga'      => $sub['harga'],
-                    'satuan'     => 'persen',
+                    'parent_id' => $mondstadt->id,
+                    'jenis' => 'utama',
+                    'kategori' => 'Sub-Wilayah',
+                    'harga' => $sub['harga'],
+                    'satuan' => 'persen',
                     'nilai_maks' => null,
-                    'urutan'     => $sub['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $sub['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -204,14 +204,14 @@ class KatalogSeeder extends Seeder
         $liyue = LayananItem::updateOrCreate(
             ['layanan_id' => $genshinExplore->id, 'nama' => 'Wilayah Liyue'],
             [
-                'parent_id'  => null,
-                'jenis'      => 'utama',
-                'kategori'   => 'Region',
-                'harga'      => 0,
-                'satuan'     => null,
+                'parent_id' => null,
+                'jenis' => 'utama',
+                'kategori' => 'Region',
+                'harga' => 0,
+                'satuan' => null,
                 'nilai_maks' => null,
-                'urutan'     => 2,
-                'aktif'      => true,
+                'urutan' => 2,
+                'aktif' => true,
             ]
         );
 
@@ -227,14 +227,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $genshinExplore->id, 'nama' => $sub['nama']],
                 [
-                    'parent_id'  => $liyue->id,
-                    'jenis'      => 'utama',
-                    'kategori'   => 'Sub-Wilayah',
-                    'harga'      => $sub['harga'],
-                    'satuan'     => 'persen',
+                    'parent_id' => $liyue->id,
+                    'jenis' => 'utama',
+                    'kategori' => 'Sub-Wilayah',
+                    'harga' => $sub['harga'],
+                    'satuan' => 'persen',
                     'nilai_maks' => null,
-                    'urutan'     => $sub['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $sub['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -243,11 +243,11 @@ class KatalogSeeder extends Seeder
         $genshinAbyss = Layanan::updateOrCreate(
             ['game_id' => $genshin->id, 'nama_layanan' => 'Spiral Abyss & Paket Story'],
             [
-                'gambar'         => 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80',
-                'tipe_harga'     => TipeHarga::Pilihan,
-                'deskripsi'      => 'Jasa clear Spiral Abyss Full 36 Star dan pengerjaan Chapter Archon Quest.',
+                'gambar' => 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Pilihan,
+                'deskripsi' => 'Jasa clear Spiral Abyss Full 36 Star dan pengerjaan Chapter Archon Quest.',
                 'estimasi_waktu' => '1 - 3 Jam',
-                'aktif'          => true,
+                'aktif' => true,
             ]
         );
 
@@ -262,14 +262,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $genshinAbyss->id, 'nama' => $pkg['nama']],
                 [
-                    'parent_id'  => null,
-                    'jenis'      => 'utama',
-                    'kategori'   => 'Tantangan & Quest',
-                    'harga'      => $pkg['harga'],
-                    'satuan'     => $pkg['satuan'],
+                    'parent_id' => null,
+                    'jenis' => 'utama',
+                    'kategori' => 'Tantangan & Quest',
+                    'harga' => $pkg['harga'],
+                    'satuan' => $pkg['satuan'],
                     'nilai_maks' => $pkg['nilai_maks'],
-                    'urutan'     => $pkg['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $pkg['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -280,21 +280,21 @@ class KatalogSeeder extends Seeder
         $valorant = Game::updateOrCreate(
             ['nama_game' => 'Valorant'],
             [
-                'kategori'  => 'FPS',
+                'kategori' => 'FPS',
                 'deskripsi' => 'Joki Competitive Tier Rank Valorant dikerjakan oleh Immortal/Radiant worker profesional tanpa third party.',
-                'gambar'    => 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-                'aktif'     => true,
+                'gambar' => 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
+                'aktif' => true,
             ]
         );
 
         $valRank = Layanan::updateOrCreate(
             ['game_id' => $valorant->id, 'nama_layanan' => 'Joki Tier Competitive'],
             [
-                'gambar'         => 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
-                'tipe_harga'     => TipeHarga::Tangga,
-                'deskripsi'      => 'Push rank tier dari Iron hingga Radiant dengan perhitungan harga per divisi.',
+                'gambar' => 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Tangga,
+                'deskripsi' => 'Push rank tier dari Iron hingga Radiant dengan perhitungan harga per divisi.',
                 'estimasi_waktu' => '1 - 4 Hari',
-                'aktif'          => true,
+                'aktif' => true,
             ]
         );
 
@@ -313,14 +313,14 @@ class KatalogSeeder extends Seeder
             LayananItem::updateOrCreate(
                 ['layanan_id' => $valRank->id, 'nama' => $tier['nama']],
                 [
-                    'parent_id'  => null,
-                    'jenis'      => 'utama',
-                    'kategori'   => 'Competitive Tier',
-                    'harga'      => $tier['harga'],
-                    'satuan'     => 'tier',
+                    'parent_id' => null,
+                    'jenis' => 'utama',
+                    'kategori' => 'Competitive Tier',
+                    'harga' => $tier['harga'],
+                    'satuan' => 'tier',
                     'nilai_maks' => $tier['nilai_maks'],
-                    'urutan'     => $tier['urutan'],
-                    'aktif'      => true,
+                    'urutan' => $tier['urutan'],
+                    'aktif' => true,
                 ]
             );
         }
@@ -331,20 +331,20 @@ class KatalogSeeder extends Seeder
         Game::updateOrCreate(
             ['nama_game' => 'Free Fire'],
             [
-                'kategori'  => 'Battle Royale',
+                'kategori' => 'Battle Royale',
                 'deskripsi' => 'Joki Push Rank Battle Royale & Clash Squad Free Fire sampai Master & Grandmaster.',
-                'gambar'    => 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=80',
-                'aktif'     => true,
+                'gambar' => 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=80',
+                'aktif' => true,
             ]
         );
 
         Game::updateOrCreate(
             ['nama_game' => 'Honor of Kings'],
             [
-                'kategori'  => 'MOBA',
+                'kategori' => 'MOBA',
                 'deskripsi' => 'Joki rank game Honor of Kings (HOK) Global server terpercaya dan pengerjaan kilat.',
-                'gambar'    => 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
-                'aktif'     => true,
+                'gambar' => 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
+                'aktif' => true,
             ]
         );
     }

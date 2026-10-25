@@ -15,8 +15,11 @@ class AdminLayananItemTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Layanan $layananTangga;
+
     private Layanan $layananProgres;
+
     private Layanan $layananPilihan;
 
     protected function setUp(): void
@@ -27,24 +30,24 @@ class AdminLayananItemTest extends TestCase
         $game = Game::create(['nama_game' => 'Mobile Legends', 'gambar' => 'games/ml.jpg', 'aktif' => true]);
 
         $this->layananTangga = Layanan::create([
-            'game_id'      => $game->id,
+            'game_id' => $game->id,
             'nama_layanan' => 'Rank Tangga',
-            'tipe_harga'   => TipeHarga::Tangga,
-            'aktif'        => true,
+            'tipe_harga' => TipeHarga::Tangga,
+            'aktif' => true,
         ]);
 
         $this->layananProgres = Layanan::create([
-            'game_id'      => $game->id,
+            'game_id' => $game->id,
             'nama_layanan' => 'Explore Progres',
-            'tipe_harga'   => TipeHarga::Progres,
-            'aktif'        => true,
+            'tipe_harga' => TipeHarga::Progres,
+            'aktif' => true,
         ]);
 
         $this->layananPilihan = Layanan::create([
-            'game_id'      => $game->id,
+            'game_id' => $game->id,
             'nama_layanan' => 'Paket Pilihan',
-            'tipe_harga'   => TipeHarga::Pilihan,
-            'aktif'        => true,
+            'tipe_harga' => TipeHarga::Pilihan,
+            'aktif' => true,
         ]);
     }
 
@@ -53,10 +56,10 @@ class AdminLayananItemTest extends TestCase
         $response = $this->actingAs($this->admin)->post(
             route('admin.layanan.items.store', $this->layananTangga),
             [
-                'jenis'      => 'utama',
-                'nama'       => 'Grandmaster',
-                'urutan'     => 1,
-                'harga'      => 5000,
+                'jenis' => 'utama',
+                'nama' => 'Grandmaster',
+                'urutan' => 1,
+                'harga' => 5000,
                 'nilai_maks' => null,
             ]
         );
@@ -68,19 +71,19 @@ class AdminLayananItemTest extends TestCase
     {
         LayananItem::create([
             'layanan_id' => $this->layananTangga->id,
-            'nama'       => 'Grandmaster',
-            'urutan'     => 1,
-            'harga'      => 5000,
+            'nama' => 'Grandmaster',
+            'urutan' => 1,
+            'harga' => 5000,
             'nilai_maks' => 5,
         ]);
 
         $response = $this->actingAs($this->admin)->post(
             route('admin.layanan.items.store', $this->layananTangga),
             [
-                'jenis'      => 'utama',
-                'nama'       => 'Epic',
-                'urutan'     => 1,
-                'harga'      => 7000,
+                'jenis' => 'utama',
+                'nama' => 'Epic',
+                'urutan' => 1,
+                'harga' => 7000,
                 'nilai_maks' => 5,
             ]
         );
@@ -94,11 +97,11 @@ class AdminLayananItemTest extends TestCase
         $response = $this->actingAs($this->admin)->post(
             route('admin.layanan.items.store', $this->layananProgres),
             [
-                'parent_id'  => null,
-                'jenis'      => 'utama',
-                'nama'       => 'Mondstadt',
-                'urutan'     => 1,
-                'harga'      => 20000, // Harga harus 0
+                'parent_id' => null,
+                'jenis' => 'utama',
+                'nama' => 'Mondstadt',
+                'urutan' => 1,
+                'harga' => 20000, // Harga harus 0
                 'nilai_maks' => null,
             ]
         );
@@ -110,30 +113,30 @@ class AdminLayananItemTest extends TestCase
     {
         $parent = LayananItem::create([
             'layanan_id' => $this->layananProgres->id,
-            'nama'       => 'Mondstadt',
-            'urutan'     => 1,
-            'harga'      => 0,
-            'parent_id'  => null,
+            'nama' => 'Mondstadt',
+            'urutan' => 1,
+            'harga' => 0,
+            'parent_id' => null,
         ]);
 
         $response = $this->actingAs($this->admin)->post(
             route('admin.layanan.items.store', $this->layananProgres),
             [
-                'parent_id'  => $parent->id,
-                'jenis'      => 'utama',
-                'nama'       => 'Starfell Valley',
-                'urutan'     => 1,
-                'harga'      => 35000,
-                'satuan'     => 'persen',
+                'parent_id' => $parent->id,
+                'jenis' => 'utama',
+                'nama' => 'Starfell Valley',
+                'urutan' => 1,
+                'harga' => 35000,
+                'satuan' => 'persen',
             ]
         );
 
         $response->assertRedirect(route('admin.layanan.items.index', $this->layananProgres));
         $this->assertDatabaseHas('layanan_item', [
             'layanan_id' => $this->layananProgres->id,
-            'parent_id'  => $parent->id,
-            'nama'       => 'Starfell Valley',
-            'harga'      => 35000,
+            'parent_id' => $parent->id,
+            'nama' => 'Starfell Valley',
+            'harga' => 35000,
         ]);
     }
 
@@ -143,11 +146,11 @@ class AdminLayananItemTest extends TestCase
         $response = $this->actingAs($this->admin)->post(
             route('admin.layanan.items.store', $this->layananPilihan),
             [
-                'jenis'      => 'utama',
-                'nama'       => 'Paket Quest',
-                'urutan'     => 1,
-                'harga'      => 25000,
-                'satuan'     => 'chapter',
+                'jenis' => 'utama',
+                'nama' => 'Paket Quest',
+                'urutan' => 1,
+                'harga' => 25000,
+                'satuan' => 'chapter',
                 'nilai_maks' => null,
             ]
         );
@@ -159,9 +162,9 @@ class AdminLayananItemTest extends TestCase
     {
         $item = LayananItem::create([
             'layanan_id' => $this->layananTangga->id,
-            'nama'       => 'Warrior',
-            'urutan'     => 1,
-            'harga'      => 3000,
+            'nama' => 'Warrior',
+            'urutan' => 1,
+            'harga' => 3000,
             'nilai_maks' => 3,
         ]);
 

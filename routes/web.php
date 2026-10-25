@@ -3,12 +3,16 @@
 use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\LayananController;
 use App\Http\Controllers\Admin\LayananItemController;
+use App\Http\Controllers\Admin\MetodePembayaranController;
 use App\Http\Controllers\GameCatalogController;
+use App\Http\Controllers\PesananController;
+use App\Models\Game;
 use Illuminate\Support\Facades\Route;
 
 // ── Halaman Publik ─────────────────────────────────────
 Route::get('/', function () {
-    $games = \App\Models\Game::aktif()->get();
+    $games = Game::aktif()->get();
+
     return view('beranda', compact('games'));
 })->name('beranda');
 
@@ -34,6 +38,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::resource('layanan.items', LayananItemController::class)->except(['show'])->parameters([
             'items' => 'item',
         ]);
+
+        // Fase 5: Pengelolaan Rekening Pembayaran Dinamis
+        Route::resource('metode-pembayaran', MetodePembayaranController::class)->except(['show']);
     });
 
 // ── Route Worker (harus login + role worker) ───────────
@@ -49,11 +56,29 @@ Route::middleware(['auth', 'role:worker'])
         // Route lainnya akan ditambahkan di fase berikutnya
     });
 
-// ── Route Customer (harus login) ──────────────────────
+// ── Form Pemesanan Publik (Bisa diakses tanpa login) ──
+Route::get('/layanan/{layanan}/pesan', [PesananController::class, 'create'])->name('pesanan.create');
+Route::post('/layanan/{layanan}/pesan', [PesananController::class, 'store'])->name('pesanan.store');
+
+// ── Route Customer / Pengguna Terautentikasi ───────────
 Route::middleware(['auth'])->group(function () {
-    Route::get('/pesanan-saya', function () {
-        return view('customer.pesanan');
-    })->name('pesanan.saya');
+    // Alur konfirmasi draf pesanan
+    Route::get('/pesanan/konfirmasi-draf', [PesananController::class, 'konfirmasiDraft'])->name('pesanan.konfirmasi-draf');
+    Route::post('/pesanan/konfirmasi-draf', [PesananController::class, 'prosesKonfirmasiDraft'])->name('pesanan.konfirmasi-draf.proses');
+    Route::delete('/pesanan/konfirmasi-draf', [PesananController::class, 'batalkanDraft'])->name('pesanan.konfirmasi-draf.batal');
+
+    // Pesanan saya (C-08)
+    Route::get('/pesanan-saya', [PesananController::class, 'pesananSaya'])->name('pesanan.saya');
+
+    // Detail pesanan, invoice checkout & countdown (C-08)
+    Route::get('/pesanan/{pesanan:kode_pesanan}', [PesananController::class, 'show'])->name('pesanan.show');
+
+    // Batalkan pesanan mandiri
+    Route::post('/pesanan/{pesanan:kode_pesanan}/batalkan', [PesananController::class, 'batalkan'])->name('pesanan.batalkan');
+
+    // Unggah dan unduh bukti transfer (C-09)
+    Route::post('/pesanan/{pesanan:kode_pesanan}/bukti', [PesananController::class, 'unggahBukti'])->name('pesanan.bukti.unggah');
+    Route::get('/pesanan/{pesanan:kode_pesanan}/bukti', [PesananController::class, 'unduhBukti'])->name('pesanan.bukti.unduh');
 });
 
 require __DIR__.'/auth.php';

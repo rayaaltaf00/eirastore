@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,10 +14,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Buat akun Admin default & Katalog Joki
+        // Buat akun Admin default, Katalog Joki, dan Rekening Pembayaran
         $this->call([
             AdminSeeder::class,
             KatalogSeeder::class,
+            MetodePembayaranSeeder::class,
         ]);
     }
 }

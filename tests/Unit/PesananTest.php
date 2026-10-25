@@ -13,7 +13,7 @@ class PesananTest extends TestCase
 
     public function test_pesanan_casts_and_password_encryption(): void
     {
-        $pesanan = new Pesanan();
+        $pesanan = new Pesanan;
         $pesanan->kode_pesanan = 'ES-20261025-001';
         $pesanan->id_akun_game = '12345678';
         $pesanan->login_via = 'Moonton';

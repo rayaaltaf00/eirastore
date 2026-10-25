@@ -33,7 +33,8 @@ class Game extends Model
         if (str_starts_with($this->gambar, 'http://') || str_starts_with($this->gambar, 'https://')) {
             return $this->gambar;
         }
-        return asset('storage/' . $this->gambar);
+
+        return asset('storage/'.$this->gambar);
     }
 
     // ── Relasi ──────────────────────────────────────────

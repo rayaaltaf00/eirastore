@@ -14,7 +14,7 @@ class GameCatalogController extends Controller
     public function show(Game $game): View
     {
         // Hanya game aktif yang dapat diakses publik
-        abort_if(!$game->aktif, 404);
+        abort_if(! $game->aktif, 404);
 
         $layananList = $game->layanan()
             ->aktif()

@@ -34,11 +34,12 @@ class Layanan extends Model
     /** URL poster layanan joki (fleksibel: URL eksternal, storage lokal, atau fallback ke gambar game) */
     public function getGambarUrlAttribute(): string
     {
-        if (!empty($this->gambar)) {
+        if (! empty($this->gambar)) {
             if (str_starts_with($this->gambar, 'http://') || str_starts_with($this->gambar, 'https://')) {
                 return $this->gambar;
             }
-            return asset('storage/' . $this->gambar);
+
+            return asset('storage/'.$this->gambar);
         }
 
         // Fallback ke gambar game pemilik jika layanan belum memiliki poster tersendiri
