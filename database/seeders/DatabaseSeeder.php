@@ -15,9 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Buat akun Admin default
+        // Buat akun Admin default & Katalog Joki
         $this->call([
             AdminSeeder::class,
+            KatalogSeeder::class,
         ]);
     }
 }

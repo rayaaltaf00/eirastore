@@ -14,11 +14,14 @@ class Layanan extends Model
     protected $fillable = [
         'game_id',
         'nama_layanan',
+        'gambar',
         'deskripsi',
         'tipe_harga',
         'estimasi_waktu',
         'aktif',
     ];
+
+    protected $appends = ['gambar_url'];
 
     protected function casts(): array
     {
@@ -26,6 +29,24 @@ class Layanan extends Model
             'tipe_harga' => TipeHarga::class,
             'aktif' => 'boolean',
         ];
+    }
+
+    /** URL poster layanan joki (fleksibel: URL eksternal, storage lokal, atau fallback ke gambar game) */
+    public function getGambarUrlAttribute(): string
+    {
+        if (!empty($this->gambar)) {
+            if (str_starts_with($this->gambar, 'http://') || str_starts_with($this->gambar, 'https://')) {
+                return $this->gambar;
+            }
+            return asset('storage/' . $this->gambar);
+        }
+
+        // Fallback ke gambar game pemilik jika layanan belum memiliki poster tersendiri
+        if ($this->game?->gambar_url) {
+            return $this->game->gambar_url;
+        }
+
+        return asset('images/game-placeholder.jpg');
     }
 
     // ── Relasi ──────────────────────────────────────────

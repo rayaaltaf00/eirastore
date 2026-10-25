@@ -10,10 +10,9 @@
 
 @php
     $title = $game ? $game->nama_game : $nama;
-    $cat = $game && isset($game->kategori) ? $game->kategori : $kategori;
-    $dev = $game && isset($game->developer) ? $game->developer : $developer;
-    $imageField = $game ? ($game->gambar ?? $game->thumbnail ?? null) : $thumbnail;
-    $thumb = $imageField ? (str_starts_with($imageField, 'http') ? $imageField : asset('storage/' . $imageField)) : null;
+    $cat = $game && !empty($game->kategori) ? $game->kategori : $kategori;
+    $subtitle = $game ? ($game->kategori ?? 'Game Online') : ($developer ?? 'Game Online');
+    $thumb = $game ? $game->gambar_url : ($thumbnail ? (str_starts_with($thumbnail, 'http') ? $thumbnail : asset('storage/' . $thumbnail)) : null);
     $link = $game ? (Route::has('game.show') ? route('game.show', $game->id) : url('/game/' . $game->id)) : $href;
 @endphp
 
@@ -46,7 +45,7 @@
                 {{ $title }}
             </h3>
             <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">
-                {{ $dev }}
+                {{ $subtitle }}
             </p>
         </div>
 

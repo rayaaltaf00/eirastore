@@ -9,16 +9,31 @@ class Game extends Model
 {
     protected $fillable = [
         'nama_game',
+        'kategori',
         'deskripsi',
         'gambar',
         'aktif',
     ];
+
+    protected $appends = ['gambar_url'];
 
     protected function casts(): array
     {
         return [
             'aktif' => 'boolean',
         ];
+    }
+
+    /** URL gambar fleksibel (mendukung URL eksternal atau file lokal di storage) */
+    public function getGambarUrlAttribute(): string
+    {
+        if (empty($this->gambar)) {
+            return asset('images/game-placeholder.jpg');
+        }
+        if (str_starts_with($this->gambar, 'http://') || str_starts_with($this->gambar, 'https://')) {
+            return $this->gambar;
+        }
+        return asset('storage/' . $this->gambar);
     }
 
     // ── Relasi ──────────────────────────────────────────

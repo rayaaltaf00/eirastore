@@ -7,10 +7,10 @@
 
     <title>{{ $title ?? 'Panel Admin - EiraStore' }}</title>
 
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -39,9 +39,9 @@
                 <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue">
                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6z"/></svg>
                 </div>
-                <div>
-                    <span class="text-base font-extrabold text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
-                    <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-400">Panel Admin</span>
+                <div class="flex flex-col leading-none">
+                    <span class="font-display font-black text-base tracking-wider text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
+                    <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-400 mt-1">Control Panel</span>
                 </div>
             </a>
             <!-- Close button on mobile -->
@@ -65,14 +65,16 @@
             <div class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Katalog & Layanan</div>
 
             <!-- Kelola Game -->
-            <a href="#" class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-brand-surface hover:text-white transition-colors">
-                <svg class="w-5 h-5 mr-3 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <a href="{{ route('admin.games.index') }}" 
+               class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.games.*') ? 'bg-brand-blue text-white shadow-glow-blue font-semibold' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 shrink-0 {{ request()->routeIs('admin.games.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Kelola Game
             </a>
 
             <!-- Kelola Layanan -->
-            <a href="#" class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-brand-surface hover:text-white transition-colors">
-                <svg class="w-5 h-5 mr-3 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            <a href="{{ route('admin.layanan.index') }}" 
+               class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ (request()->routeIs('admin.layanan.*') || request()->routeIs('admin.layanan.items.*')) ? 'bg-brand-blue text-white shadow-glow-blue font-semibold' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 shrink-0 {{ (request()->routeIs('admin.layanan.*') || request()->routeIs('admin.layanan.items.*')) ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                 Kelola Layanan
             </a>
 
@@ -174,7 +176,8 @@
 
         <!-- Main Workspace -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-8">
-            {{ $slot }}
+            {{ $slot ?? '' }}
+            @yield('content')
         </main>
     </div>
 

@@ -3,9 +3,21 @@
         search: @js(request('q', '')),
         activeTab: 'all',
         matchGame(name, cat) {
-            const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase());
-            const matchesTab = this.activeTab === 'all' || cat.toLowerCase().includes(this.activeTab.toLowerCase());
-            return matchesSearch && matchesTab;
+            const matchesSearch = (name || '').toLowerCase().includes(this.search.toLowerCase());
+            if (!matchesSearch) return false;
+            if (this.activeTab === 'all') return true;
+
+            const c = (cat || '').toLowerCase();
+            if (this.activeTab === 'fps') {
+                return c.includes('fps') || c.includes('shooter');
+            }
+            if (this.activeTab === 'battle-royale') {
+                return c.includes('battle royale') || c.includes('royale');
+            }
+            if (this.activeTab === 'rpg') {
+                return c.includes('rpg') || c.includes('open world') || c.includes('adventure');
+            }
+            return c.includes(this.activeTab.toLowerCase());
         }
     }">
 
@@ -211,10 +223,16 @@
                     FPS & Shooter
                 </button>
                 <button 
+                    @click="activeTab = 'battle-royale'" 
+                    :class="activeTab === 'battle-royale' ? 'bg-brand-blue text-white shadow-glow-blue' : 'bg-brand-surface text-slate-400 hover:text-white border border-brand-border'"
+                    class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200">
+                    Battle Royale
+                </button>
+                <button 
                     @click="activeTab = 'rpg'" 
                     :class="activeTab === 'rpg' ? 'bg-brand-blue text-white shadow-glow-blue' : 'bg-brand-surface text-slate-400 hover:text-white border border-brand-border'"
                     class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200">
-                    RPG / Battle Royale
+                    RPG & Adventure
                 </button>
             </div>
 

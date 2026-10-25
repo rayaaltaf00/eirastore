@@ -36,6 +36,7 @@ class Pesanan extends Model
     protected function casts(): array
     {
         return [
+            'password_akun_game' => 'encrypted', // Enkripsi simetris AES-256 untuk kredensial game
             'data_tambahan' => 'array',         // otomatis encode/decode JSON
             'total_harga' => 'decimal:2',
             'status' => StatusPesanan::class,    // cast ke enum StatusPesanan

@@ -7,10 +7,10 @@
 
     <title>{{ $title ?? 'EiraStore - Layanan Joki Game Cepat & Terpercaya' }}</title>
 
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -125,12 +125,15 @@
                             <path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6zm0 2a4 4 0 0 0-3.95 3.39l-.86 4.74A1.5 1.5 0 0 0 3.66 18H6a1 1 0 0 0 .95-.68l.5-1.5A3 3 0 0 1 10.28 14h3.44a3 3 0 0 1 2.83 1.82l.5 1.5a1 1 0 0 0 .95.68h2.34a1.5 1.5 0 0 0 1.47-1.87l-.86-4.74A4 4 0 0 0 17 8H7zm2 2h2v2h2v2h-2v2H9v-2H7v-2h2v-2zm7.5 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm2.5 2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
                         </svg>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="text-xl font-extrabold tracking-tight text-white flex items-center gap-1">
-                            EIRA<span class="text-brand-cyan">STORE</span>
-                        </span>
-                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-medium -mt-1">
-                            Game Boosting Pro
+                    <div class="flex flex-col leading-none">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-display font-black text-xl tracking-wider text-white">
+                                EIRA<span class="text-brand-cyan">STORE</span>
+                            </span>
+                            <span class="inline-block w-1.5 h-1.5 rounded-full bg-brand-cyan shadow-[0_0_8px_#0ea5e9]"></span>
+                        </div>
+                        <span class="text-[9px] font-bold tracking-[0.22em] uppercase text-slate-400 mt-1">
+                            Joki & Game Services
                         </span>
                     </div>
                 </a>
@@ -199,6 +202,11 @@
                                     <a href="{{ route('worker.pesanan') }}" class="flex items-center px-4 py-2 text-sm text-brand-cyan hover:bg-brand-surface hover:text-white transition-colors">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                         Pesanan Saya (Worker)
+                                    </a>
+                                @else
+                                    <a href="{{ route('pesanan.saya') }}" class="flex items-center px-4 py-2 text-sm text-brand-cyan hover:bg-brand-surface hover:text-white transition-colors">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                        Pesanan Saya
                                     </a>
                                 @endif
 
@@ -317,6 +325,28 @@
                         Daftar
                     </a>
                 </div>
+            @else
+                <div class="pt-3 border-t border-brand-border space-y-1">
+                    @if(Auth::user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-brand-cyan hover:bg-brand-surface">
+                            Panel Admin
+                        </a>
+                    @elseif(Auth::user()->isWorker())
+                        <a href="{{ route('worker.pesanan') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-brand-cyan hover:bg-brand-surface">
+                            Pesanan Saya (Worker)
+                        </a>
+                    @else
+                        <a href="{{ route('pesanan.saya') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-brand-cyan hover:bg-brand-surface">
+                            Pesanan Saya
+                        </a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-red-400 hover:bg-brand-surface">
+                            Keluar ({{ Auth::user()->nama }})
+                        </button>
+                    </form>
+                </div>
             @endguest
         </div>
     </header>
@@ -346,7 +376,8 @@
 
     <!-- ── Main Content Slot ── -->
     <main class="flex-1">
-        {{ $slot }}
+        {{ $slot ?? '' }}
+        @yield('content')
     </main>
 
     <!-- ── Footer Modern (Inspirasi Ourastore) ── -->
@@ -360,7 +391,7 @@
                         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue">
                             <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6z"/></svg>
                         </div>
-                        <span class="text-lg font-extrabold text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
+                        <span class="font-display font-black text-lg tracking-wider text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
                     </div>
                     <p class="text-sm text-slate-400 leading-relaxed">
                         Platform penyedia layanan joki game terpercaya, cepat, dan profesional. Dikerjakan oleh worker terverifikasi dengan keamanan akun terjamin 100%.
