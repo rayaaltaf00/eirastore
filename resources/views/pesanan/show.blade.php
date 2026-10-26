@@ -202,25 +202,48 @@
                                 <label class="block text-xs font-semibold text-slate-300 mb-1.5">
                                     Foto / Screenshot Bukti Transfer <span class="text-rose-400">*</span>
                                 </label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-brand-border border-dashed rounded-2xl bg-brand-surface/60 hover:border-slate-500 transition-colors">
-                                    <div class="space-y-2 text-center">
+
+                                <!-- Dropzone & Live Image Preview -->
+                                <div class="mt-1 p-4 border-2 border-brand-border border-dashed rounded-2xl bg-brand-surface/60 transition-all">
+                                    <!-- Jika belum memilih file -->
+                                    <div x-show="!filePreviewUrl" class="space-y-2 text-center py-4">
                                         <svg class="mx-auto h-10 w-10 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-xs text-slate-400 justify-center">
-                                            <label for="bukti_transfer" class="relative cursor-pointer rounded-md font-bold text-brand-cyan hover:underline">
-                                                <span>Pilih Berkas Gambar</span>
+                                            <label for="bukti_transfer" class="relative cursor-pointer rounded-xl px-4 py-2 bg-brand-blue/20 hover:bg-brand-blue/30 text-brand-cyan border border-brand-blue/30 font-bold transition-all">
+                                                <span>Pilih Berkas Struk</span>
                                                 <input id="bukti_transfer" name="bukti_transfer" type="file" accept="image/jpeg,image/png,image/webp" required class="sr-only" @change="previewImage">
                                             </label>
                                         </div>
-                                        <p class="text-[11px] text-slate-500">JPG, PNG, atau WebP hingga 2MB</p>
-                                        <p x-show="fileName" x-text="fileName" class="text-xs font-bold text-white pt-1"></p>
+                                        <p class="text-[11px] text-slate-400">Format JPG, PNG, atau WebP (Maksimal 2 MB)</p>
+                                    </div>
+
+                                    <!-- Live Preview Setelah File Dipilih -->
+                                    <div x-show="filePreviewUrl" x-cloak class="space-y-3">
+                                        <div class="relative rounded-xl overflow-hidden border border-brand-border bg-black/60 max-w-sm mx-auto p-2">
+                                            <img :src="filePreviewUrl" alt="Pratinjau Bukti Transfer" class="w-full max-h-60 object-contain rounded-lg mx-auto">
+                                            <button type="button" @click="hapusFileTerpilih"
+                                                    class="absolute top-4 right-4 p-2 rounded-xl bg-rose-500/90 hover:bg-rose-600 text-white shadow-lg transition-all"
+                                                    title="Hapus foto dan pilih ulang">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center justify-between px-2 text-xs">
+                                            <span class="text-emerald-400 font-semibold flex items-center gap-1.5 truncate max-w-[240px]">
+                                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                <span x-text="fileName"></span>
+                                            </span>
+                                            <label for="bukti_transfer" class="text-brand-cyan hover:underline cursor-pointer font-bold shrink-0">
+                                                Ganti Berkas
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <button type="submit"
-                                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-blue to-brand-cyan text-white text-sm font-bold shadow-glow-blue hover:opacity-95 transition-all text-center">
+                                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-blue to-brand-cyan text-white text-sm font-bold shadow-glow-blue hover:opacity-95 active:scale-[0.99] transition-all text-center">
                                 Kirim Bukti Pembayaran
                             </button>
                         </form>
@@ -233,7 +256,7 @@
                         <div class="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs space-y-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-base">⚠️</span>
-                                <strong class="font-bold text-white text-sm">Admin Meminta Revisi Data Akun Game (C-10)</strong>
+                                <strong class="font-bold text-white text-sm">Admin Meminta Revisi Data Akun Game</strong>
                             </div>
                             @php
                                 $catatanRevisi = $pesanan->riwayatStatus->where('status_baru', \App\Enums\StatusPesanan::PerluRevisiData->value)->last()?->catatan;
@@ -358,12 +381,37 @@
                         </div>
 
                         @if($pesanan->pembayaran && $pesanan->pembayaran->bukti_transfer)
-                            <div class="pt-2">
-                                <a href="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" target="_blank"
-                                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs font-bold text-slate-300 hover:text-white hover:border-slate-500 transition-colors">
-                                    <svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    <span>Lihat Struk Bukti Transfer</span>
-                                </a>
+                            <div class="p-4 rounded-2xl bg-brand-surface/70 border border-brand-border space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Struk Bukti Pembayaran Tersimpan
+                                    </span>
+                                    <span class="text-[11px] text-slate-400 font-mono">{{ $pesanan->pembayaran->created_at->format('d M Y, H:i') }} WIB</span>
+                                </div>
+
+                                <div class="relative group rounded-xl overflow-hidden border border-brand-border bg-black/40 max-w-sm">
+                                    <img src="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" 
+                                         alt="Bukti Transfer {{ $pesanan->kode_pesanan }}"
+                                         class="w-full max-h-56 object-cover object-top group-hover:scale-105 transition-transform cursor-pointer"
+                                         @click="previewBuktiModal = true">
+                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                                         @click="previewBuktiModal = true">
+                                        <span class="px-3.5 py-1.5 rounded-xl bg-brand-card/90 text-white text-xs font-bold border border-brand-border shadow-lg flex items-center gap-1.5">
+                                            <svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            Perbesar Gambar
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-1 text-xs">
+                                    <a href="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" target="_blank"
+                                       class="inline-flex items-center gap-1.5 text-brand-cyan hover:underline font-bold">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                        Buka Tab Baru
+                                    </a>
+                                    <span class="text-[11px] text-emerald-400 font-medium">✓ Bukti tersimpan rapi</span>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -387,12 +435,37 @@
                         </div>
 
                         @if($pesanan->pembayaran && $pesanan->pembayaran->bukti_transfer)
-                            <div class="pt-2">
-                                <a href="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" target="_blank"
-                                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs font-bold text-slate-300 hover:text-white hover:border-slate-500 transition-colors">
-                                    <svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    <span>Lihat Struk Bukti Transfer</span>
-                                </a>
+                            <div class="p-4 rounded-2xl bg-brand-surface/70 border border-brand-border space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Struk Bukti Pembayaran Tersimpan
+                                    </span>
+                                    <span class="text-[11px] text-slate-400 font-mono">{{ $pesanan->pembayaran->created_at->format('d M Y, H:i') }} WIB</span>
+                                </div>
+
+                                <div class="relative group rounded-xl overflow-hidden border border-brand-border bg-black/40 max-w-sm">
+                                    <img src="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" 
+                                         alt="Bukti Transfer {{ $pesanan->kode_pesanan }}"
+                                         class="w-full max-h-56 object-cover object-top group-hover:scale-105 transition-transform cursor-pointer"
+                                         @click="previewBuktiModal = true">
+                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                                         @click="previewBuktiModal = true">
+                                        <span class="px-3.5 py-1.5 rounded-xl bg-brand-card/90 text-white text-xs font-bold border border-brand-border shadow-lg flex items-center gap-1.5">
+                                            <svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            Perbesar Gambar
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-1 text-xs">
+                                    <a href="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" target="_blank"
+                                       class="inline-flex items-center gap-1.5 text-brand-cyan hover:underline font-bold">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                        Buka Tab Baru
+                                    </a>
+                                    <span class="text-[11px] text-emerald-400 font-medium">✓ Bukti siap diverifikasi Admin</span>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -589,6 +662,37 @@
         </div>
     </div>
 
+    <!-- ============================================== -->
+    <!-- MODAL PREVIEW BUKTI TRANSFER CUSTOMER          -->
+    <!-- ============================================== -->
+    @if($pesanan->pembayaran && $pesanan->pembayaran->bukti_transfer)
+        <div x-show="previewBuktiModal" x-cloak
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+             @keydown.escape.window="previewBuktiModal = false">
+            <div class="relative max-w-2xl w-full bg-brand-card border border-brand-border rounded-3xl p-6 shadow-card"
+                 @click.away="previewBuktiModal = false">
+                <div class="flex items-center justify-between pb-3 border-b border-brand-border mb-4">
+                    <h4 class="text-xs font-bold text-white uppercase tracking-wider">Struk Bukti Transfer: {{ $pesanan->kode_pesanan }}</h4>
+                    <button type="button" @click="previewBuktiModal = false" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+                </div>
+                <div class="max-h-[75vh] overflow-auto rounded-2xl bg-black/50 p-2 text-center">
+                    <img src="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" alt="Struk Transfer" class="w-full object-contain mx-auto rounded-xl">
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs">
+                    <a href="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" target="_blank"
+                       class="text-brand-cyan hover:underline font-bold inline-flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        Buka Gambar Ukuran Asli
+                    </a>
+                    <button type="button" @click="previewBuktiModal = false"
+                            class="px-5 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs font-bold text-white hover:bg-white/10 transition-colors">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
 </div>
 
 @push('scripts')
@@ -601,8 +705,10 @@ function checkoutPage(initialSeconds) {
         seconds: '00',
         timer: null,
         fileName: '',
+        filePreviewUrl: null,
         qrisModal: null,
         showBatalModal: false,
+        previewBuktiModal: false,
 
         init() {
             this.updateDisplay();
@@ -635,7 +741,24 @@ function checkoutPage(initialSeconds) {
             const file = e.target.files[0];
             if (file) {
                 this.fileName = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+                if (this.filePreviewUrl) {
+                    URL.revokeObjectURL(this.filePreviewUrl);
+                }
+                this.filePreviewUrl = URL.createObjectURL(file);
+            } else {
+                this.fileName = '';
+                this.filePreviewUrl = null;
             }
+        },
+
+        hapusFileTerpilih() {
+            const input = document.getElementById('bukti_transfer');
+            if (input) input.value = '';
+            if (this.filePreviewUrl) {
+                URL.revokeObjectURL(this.filePreviewUrl);
+            }
+            this.fileName = '';
+            this.filePreviewUrl = null;
         },
 
         salinRekening(nomor, bank) {

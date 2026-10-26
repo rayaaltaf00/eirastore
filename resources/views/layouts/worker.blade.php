@@ -13,6 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Styles & Scripts -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-brand-darkest text-slate-100 min-h-screen flex font-sans selection:bg-brand-blue selection:text-white" x-data="{ sidebarOpen: false }">

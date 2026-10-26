@@ -75,7 +75,93 @@
     @endif
 
     <!-- =============================================================== -->
-    <!-- ALUR KHUSUS: BANNER SIAP DITUGASKAN KE WORKER (PRD A-25)         -->
+    <!-- PIPELINE INDIKATOR STATUS VERIFIKASI (3 TAHAPAN JELAS)          -->
+    <!-- =============================================================== -->
+    <div class="p-5 rounded-2xl bg-brand-card/90 border border-brand-border shadow-card">
+        <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-brand-border/60">
+            <span class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Progres Verifikasi & Penugasan Pesanan
+            </span>
+            <span class="text-[11px] text-slate-400">Ikuti 3 tahapan verifikasi di bawah ini</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- Tahap 1: Data Akun Game -->
+            <div class="p-3 rounded-xl border flex items-center gap-3 {{ $pesanan->data_disetujui ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : ($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiData ? 'bg-orange-500/10 border-orange-500/40 text-orange-300' : 'bg-brand-surface border-brand-border text-slate-300') }}">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 {{ $pesanan->data_disetujui ? 'bg-emerald-500 text-white shadow-glow-emerald' : ($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiData ? 'bg-orange-500 text-white' : 'bg-slate-700 text-white') }}">
+                    {{ $pesanan->data_disetujui ? '✓' : '1' }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider block opacity-75">Tahap 1</span>
+                    <strong class="text-xs font-bold block truncate">Data Akun Game</strong>
+                    <span class="text-[10px] block opacity-90 truncate">
+                        @if($pesanan->data_disetujui)
+                            Sudah Disetujui
+                        @elseif($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiData)
+                            Menunggu Revisi Customer
+                        @else
+                            Perlu Verifikasi Admin
+                        @endif
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tahap 2: Bukti Transfer -->
+            @php
+                $bayarOk = $pesanan->pembayaran && $pesanan->pembayaran->status === \App\Enums\StatusPembayaran::Disetujui;
+                $bayarTolak = $pesanan->pembayaran && $pesanan->pembayaran->status === \App\Enums\StatusPembayaran::Ditolak;
+                $bayarAda = (bool) $pesanan->pembayaran;
+            @endphp
+            <div class="p-3 rounded-xl border flex items-center gap-3 {{ $bayarOk ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : ($bayarTolak ? 'bg-rose-500/10 border-rose-500/40 text-rose-300' : ($bayarAda ? 'bg-amber-500/10 border-amber-500/40 text-amber-300' : 'bg-brand-surface border-brand-border text-slate-400')) }}">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 {{ $bayarOk ? 'bg-emerald-500 text-white shadow-glow-emerald' : ($bayarTolak ? 'bg-rose-500 text-white' : ($bayarAda ? 'bg-amber-500 text-brand-bg font-black' : 'bg-slate-700 text-slate-400')) }}">
+                    {{ $bayarOk ? '✓' : ($bayarTolak ? '✗' : '2') }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider block opacity-75">Tahap 2</span>
+                    <strong class="text-xs font-bold block truncate">Bukti Pembayaran</strong>
+                    <span class="text-[10px] block opacity-90 truncate">
+                        @if($bayarOk)
+                            Pembayaran Sah (Lunas)
+                        @elseif($bayarTolak)
+                            Pembayaran Ditolak
+                        @elseif($bayarAda)
+                            Perlu Cek Bukti Transfer
+                        @else
+                            Belum Ada Bukti Transfer
+                        @endif
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tahap 3: Penugasan Worker -->
+            @php
+                $workerOk = (bool) $pesanan->worker_id;
+                $siapDitugaskan = $pesanan->status === \App\Enums\StatusPesanan::SiapDitugaskan;
+            @endphp
+            <div class="p-3 rounded-xl border flex items-center gap-3 {{ $workerOk ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' : ($siapDitugaskan ? 'bg-brand-cyan/15 border-brand-cyan text-brand-cyan shadow-glow-blue' : 'bg-brand-surface border-brand-border text-slate-400') }}">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs shrink-0 {{ $workerOk ? 'bg-emerald-500 text-white shadow-glow-emerald' : ($siapDitugaskan ? 'bg-brand-cyan text-brand-bg font-black animate-pulse' : 'bg-slate-700 text-slate-400') }}">
+                    {{ $workerOk ? '✓' : '3' }}
+                </div>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider block opacity-75">Tahap 3</span>
+                    <strong class="text-xs font-bold block truncate">Penugasan Worker</strong>
+                    <span class="text-[10px] block opacity-90 truncate">
+                        @if($workerOk)
+                            Ditugaskan ke: {{ $pesanan->worker->nama }}
+                        @elseif($siapDitugaskan)
+                            Siap Dipilihkan Worker!
+                        @else
+                            Terkunci (Selesaikan Tahap 1 & 2)
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- ALUR KHUSUS: BANNER SIAP DITUGASKAN KE WORKER                   -->
     <!-- =============================================================== -->
     @if($pesanan->status === \App\Enums\StatusPesanan::SiapDitugaskan)
         <div class="p-6 rounded-3xl bg-gradient-to-r from-blue-900/40 via-brand-surface to-brand-card border-2 border-brand-cyan/40 shadow-glow-blue space-y-4">
@@ -84,7 +170,7 @@
                     ⚡
                 </span>
                 <div>
-                    <h2 class="text-base font-black text-white">Pesanan Siap Ditugaskan ke Worker (A-25)</h2>
+                    <h2 class="text-base font-black text-white">Pesanan Siap Ditugaskan ke Worker</h2>
                     <p class="text-xs text-slate-300">Data akun dan bukti pembayaran telah diverifikasi penuh. Tentukan worker aktif yang bertugas memproses order ini.</p>
                 </div>
             </div>
@@ -207,25 +293,41 @@
                     </div>
                 @endif
 
-                <!-- Aksi Persetujuan / Permintaan Revisi Data (A-21 & A-22) -->
+                <!-- Status Persetujuan Data Akun -->
+                @if($pesanan->data_disetujui)
+                    <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">✓</span>
+                            <div>
+                                <strong class="text-xs font-bold text-white block">Data Akun Game Telah Disetujui</strong>
+                                <span class="text-[11px] text-slate-300">Format akun valid dan kredensial siap diproses oleh worker.</span>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">Terverifikasi</span>
+                    </div>
+                @endif
+
+                <!-- Aksi Persetujuan / Permintaan Revisi Data -->
                 @if($pesanan->status === \App\Enums\StatusPesanan::MenungguVerifikasi && ! $pesanan->data_disetujui)
-                    <div class="pt-3 border-t border-brand-border flex items-center gap-3">
+                    <div class="pt-3 border-t border-brand-border flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         <form action="{{ route('admin.pesanan.setujui-data', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
                             @csrf
-                            <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-sm">
-                                ✓ Setujui Data Akun Ini (A-21)
+                            <button type="submit" class="w-full py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                Setujui Data Akun
                             </button>
                         </form>
 
                         <button type="button" @click="modalRevisiData = true"
-                                class="py-2.5 px-4 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500/25 text-xs font-bold transition-all">
-                            Minta Revisi Data (A-22)
+                                class="py-3 px-5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:scale-[0.98] border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            Minta Revisi Data
                         </button>
                     </div>
                 @endif
             </div>
 
-            <!-- KARTU 2: BUKTI PEMBAYARAN & VERIFIKASI (A-23, A-24) -->
+            <!-- KARTU 2: BUKTI PEMBAYARAN & VERIFIKASI -->
             <div class="bg-brand-card/90 border border-brand-border rounded-2xl p-6 shadow-card space-y-5">
                 <div class="flex items-center justify-between pb-3 border-b border-brand-border">
                     <div class="flex items-center gap-2">
@@ -294,19 +396,35 @@
                         </div>
                     </div>
 
-                    <!-- Tombol Aksi Verifikasi Pembayaran (A-23 & A-24) -->
+                    <!-- Status Pembayaran Disetujui -->
+                    @if($pesanan->pembayaran->status === \App\Enums\StatusPembayaran::Disetujui)
+                        <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-base">✓</span>
+                                <div>
+                                    <strong class="text-xs font-bold text-white block">Pembayaran Telah Diverifikasi Sah</strong>
+                                    <span class="text-[11px] text-slate-300">Diverifikasi oleh {{ $pesanan->pembayaran->verifikator->nama ?? 'Admin' }}. Dana telah masuk ke rekening kas toko.</span>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">Lunas</span>
+                        </div>
+                    @endif
+
+                    <!-- Tombol Aksi Verifikasi Pembayaran -->
                     @if($pesanan->status === \App\Enums\StatusPesanan::MenungguVerifikasi && $pesanan->pembayaran->status === \App\Enums\StatusPembayaran::MenungguVerifikasi)
-                        <div class="pt-3 border-t border-brand-border flex items-center gap-3">
+                        <div class="pt-3 border-t border-brand-border flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                             <form action="{{ route('admin.pesanan.setujui-pembayaran', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
                                 @csrf
-                                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-sm">
-                                    ✓ Setujui Bukti Transfer (A-23)
+                                <button type="submit" class="w-full py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                    Setujui Bukti Transfer
                                 </button>
                             </form>
 
                             <button type="button" @click="modalTolakBayar = true"
-                                    class="py-2.5 px-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 text-xs font-bold transition-all">
-                                Tolak Bukti Transfer (A-24)
+                                    class="py-3 px-5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-[0.98] border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                Tolak Bukti Transfer
                             </button>
                         </div>
                     @endif
@@ -440,7 +558,7 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- MODAL 1: MINTA REVISI DATA AKUN GAME (A-22)              -->
+    <!-- MODAL 1: MINTA REVISI DATA AKUN GAME                     -->
     <!-- ======================================================= -->
     <div x-show="modalRevisiData" x-cloak
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
@@ -449,7 +567,7 @@
              @click.away="modalRevisiData = false">
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <span class="text-amber-400">⚠️</span> Instruksi Revisi Data Akun (A-22)
+                    <span class="text-amber-400">⚠️</span> Instruksi Revisi Data Akun Game
                 </h3>
                 <button type="button" @click="modalRevisiData = false" class="text-slate-400 hover:text-white">&times;</button>
             </div>
@@ -485,7 +603,7 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- MODAL 2: TOLAK BUKTI PEMBAYARAN (A-24)                   -->
+    <!-- MODAL 2: TOLAK BUKTI PEMBAYARAN                          -->
     <!-- ======================================================= -->
     <div x-show="modalTolakBayar" x-cloak
          class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
@@ -495,7 +613,7 @@
             <div class="flex items-center justify-between pb-3 border-b border-brand-border">
                 <h3 class="text-base font-bold text-rose-400 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    Tolak Bukti Pembayaran (A-24)
+                    Tolak Bukti Pembayaran
                 </h3>
                 <button type="button" @click="modalTolakBayar = false" class="text-slate-400 hover:text-white">&times;</button>
             </div>

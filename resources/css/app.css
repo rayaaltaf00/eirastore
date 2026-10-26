@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Prevent Alpine.js FOUC (Flash of Unstyled Content) ── */
+[x-cloak] {
+    display: none !important;
+}
+
 /* ── Custom Gaming Aesthetic Utilities (Anti AI-Slop) ── */
 @layer base {
     body {
