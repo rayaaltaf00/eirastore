@@ -110,6 +110,7 @@ class KatalogSeeder extends Seeder
                 'tipe_harga' => TipeHarga::Pilihan,
                 'deskripsi' => 'Main bareng (party) dengan pro player kami, akun tetap Anda mainkan sendiri dengan aman.',
                 'estimasi_waktu' => '2 - 4 Jam',
+                'butuh_login_game' => false,
                 'aktif' => true,
             ]
         );
@@ -239,23 +240,39 @@ class KatalogSeeder extends Seeder
             );
         }
 
-        // Layanan Genshin 2: Spiral Abyss (Tipe: Pilihan)
-        $genshinAbyss = Layanan::updateOrCreate(
-            ['game_id' => $genshin->id, 'nama_layanan' => 'Spiral Abyss & Paket Story'],
-            [
+        // Layanan Genshin 2: Spiral Abyss (Tipe: Pilihan / Paket)
+        $genshinAbyss = Layanan::where('game_id', $genshin->id)
+            ->whereIn('nama_layanan', ['Spiral Abyss & Paket Story', 'Joki Spiral Abyss'])
+            ->first();
+
+        if ($genshinAbyss) {
+            $genshinAbyss->update([
+                'nama_layanan' => 'Joki Spiral Abyss',
                 'gambar' => 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80',
                 'tipe_harga' => TipeHarga::Pilihan,
-                'deskripsi' => 'Jasa clear Spiral Abyss Full 36 Star dan pengerjaan Chapter Archon Quest.',
+                'deskripsi' => 'Jasa clear Spiral Abyss Floor 9 hingga Floor 12 Full 36 Star dikerjakan oleh pro player berpengalaman dan build tim teroptimasi.',
                 'estimasi_waktu' => '1 - 3 Jam',
                 'aktif' => true,
-            ]
-        );
+            ]);
+            // Bersihkan item quest lama jika sebelumnya pernah ada di layanan Spiral Abyss
+            $genshinAbyss->items()->where('nama', 'like', '%Archon Quest%')->delete();
+        } else {
+            $genshinAbyss = Layanan::create([
+                'game_id' => $genshin->id,
+                'nama_layanan' => 'Joki Spiral Abyss',
+                'gambar' => 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Pilihan,
+                'deskripsi' => 'Jasa clear Spiral Abyss Floor 9 hingga Floor 12 Full 36 Star dikerjakan oleh pro player berpengalaman dan build tim teroptimasi.',
+                'estimasi_waktu' => '1 - 3 Jam',
+                'aktif' => true,
+            ]);
+        }
 
         $abyssPackages = [
             ['nama' => 'Spiral Abyss Full Floor 9-12 (36 Star)', 'harga' => 75000, 'satuan' => 'paket', 'nilai_maks' => 1, 'urutan' => 1],
             ['nama' => 'Spiral Abyss Floor 11-12 (18 Star)', 'harga' => 50000, 'satuan' => 'paket', 'nilai_maks' => 1, 'urutan' => 2],
             ['nama' => 'Spiral Abyss Floor 12 Only (9 Star)', 'harga' => 35000, 'satuan' => 'paket', 'nilai_maks' => 1, 'urutan' => 3],
-            ['nama' => 'Archon Quest (Per Chapter/Act)', 'harga' => 45000, 'satuan' => 'chapter', 'nilai_maks' => 10, 'urutan' => 4],
+            ['nama' => 'Spiral Abyss Floor 9-10 (18 Star)', 'harga' => 30000, 'satuan' => 'paket', 'nilai_maks' => 1, 'urutan' => 4],
         ];
 
         foreach ($abyssPackages as $pkg) {
@@ -264,11 +281,86 @@ class KatalogSeeder extends Seeder
                 [
                     'parent_id' => null,
                     'jenis' => 'utama',
-                    'kategori' => 'Tantangan & Quest',
+                    'kategori' => 'Tantangan Abyss',
                     'harga' => $pkg['harga'],
                     'satuan' => $pkg['satuan'],
                     'nilai_maks' => $pkg['nilai_maks'],
                     'urutan' => $pkg['urutan'],
+                    'aktif' => true,
+                ]
+            );
+        }
+
+        // Layanan Genshin 3: Joki Quest & Storyline (Tipe: Pilihan)
+        $genshinQuest = Layanan::updateOrCreate(
+            ['game_id' => $genshin->id, 'nama_layanan' => 'Joki Quest & Storyline'],
+            [
+                'gambar' => 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=80',
+                'tipe_harga' => TipeHarga::Pilihan,
+                'deskripsi' => 'Jasa pengerjaan Archon Quest, World Quest panjang, dan Story Character Quest Genshin Impact cepat, aman, dan tanpa skip alur cerita/lore penting.',
+                'estimasi_waktu' => '1 - 3 Hari',
+                'butuh_login_game' => true,
+                'aktif' => true,
+            ]
+        );
+
+        $questItems = [
+            // Kategori: Archon Quest
+            ['nama' => 'Prologue: The Outlander Who Caught the Wind (Mondstadt)', 'kategori' => 'Archon Quest', 'harga' => 30000, 'urutan' => 1],
+            ['nama' => 'Chapter I: Farewell, Archaic Lord (Liyue)', 'kategori' => 'Archon Quest', 'harga' => 40000, 'urutan' => 2],
+            ['nama' => 'Chapter II: Omnipresence Over Mortals (Inazuma)', 'kategori' => 'Archon Quest', 'harga' => 50000, 'urutan' => 3],
+            ['nama' => 'Chapter III: Truth Amongst the Pages of Purana (Sumeru)', 'kategori' => 'Archon Quest', 'harga' => 65000, 'urutan' => 4],
+            ['nama' => 'Chapter IV: Masquerade of the Guilty (Fontaine)', 'kategori' => 'Archon Quest', 'harga' => 70000, 'urutan' => 5],
+            ['nama' => 'Chapter V: Flowers Resplendent on the Sun-Scorched Passion (Natlan)', 'kategori' => 'Archon Quest', 'harga' => 75000, 'urutan' => 6],
+
+            // Kategori: World Quest
+            ['nama' => 'Aranyaka Quest Series (Sumeru - Lengkap Part I-IV)', 'kategori' => 'World Quest', 'harga' => 120000, 'urutan' => 7],
+            ['nama' => 'Sacred Sakura Cleansing Ritual (Inazuma)', 'kategori' => 'World Quest', 'harga' => 50000, 'urutan' => 8],
+            ['nama' => 'The Chasm Delvers (Liyue Underground)', 'kategori' => 'World Quest', 'harga' => 45000, 'urutan' => 9],
+            ['nama' => 'Golden Slumber & Dirge of Bilqis (Sumeru Desert)', 'kategori' => 'World Quest', 'harga' => 85000, 'urutan' => 10],
+            ['nama' => 'Canticles of Harmony (Fontaine Remuria)', 'kategori' => 'World Quest', 'harga' => 55000, 'urutan' => 11],
+
+            // Kategori: Story Character Quest
+            ['nama' => 'Furina - Animula Choragi Chapter (Act I)', 'kategori' => 'Story Character Quest', 'harga' => 35000, 'urutan' => 12],
+            ['nama' => 'Raiden Shogun - Imperatrix Umbrosa Chapter (Act I & II)', 'kategori' => 'Story Character Quest', 'harga' => 45000, 'urutan' => 13],
+            ['nama' => 'Zhongli - Historia Antiqua Chapter (Act I & II)', 'kategori' => 'Story Character Quest', 'harga' => 40000, 'urutan' => 14],
+            ['nama' => 'Arlecchino - Ignis Purgatorius Chapter (Act I)', 'kategori' => 'Story Character Quest', 'harga' => 35000, 'urutan' => 15],
+            ['nama' => 'Nahida - Sapientia Oromasdis Chapter (Act I & II)', 'kategori' => 'Story Character Quest', 'harga' => 45000, 'urutan' => 16],
+        ];
+
+        foreach ($questItems as $item) {
+            LayananItem::updateOrCreate(
+                ['layanan_id' => $genshinQuest->id, 'nama' => $item['nama']],
+                [
+                    'parent_id' => null,
+                    'jenis' => 'utama',
+                    'kategori' => $item['kategori'],
+                    'harga' => $item['harga'],
+                    'satuan' => 'quest',
+                    'nilai_maks' => 1,
+                    'urutan' => $item['urutan'],
+                    'aktif' => true,
+                ]
+            );
+        }
+
+        // Fasilitas Tambahan Joki Quest (Opsional)
+        $questTambahan = [
+            ['nama' => 'Prioritas Fast-Track (Pengerjaan Lebih Cepat)', 'harga' => 25000, 'urutan' => 1],
+            ['nama' => 'Live Streaming Private Discord saat Pengerjaan', 'harga' => 20000, 'urutan' => 2],
+        ];
+
+        foreach ($questTambahan as $extra) {
+            LayananItem::updateOrCreate(
+                ['layanan_id' => $genshinQuest->id, 'nama' => $extra['nama']],
+                [
+                    'parent_id' => null,
+                    'jenis' => 'tambahan',
+                    'kategori' => 'Ekstra',
+                    'harga' => $extra['harga'],
+                    'satuan' => null,
+                    'nilai_maks' => null,
+                    'urutan' => $extra['urutan'],
                     'aktif' => true,
                 ]
             );

@@ -17,6 +17,7 @@ class Pesanan extends Model
         'customer_id',
         'worker_id',
         'layanan_id',
+        'no_wa_customer',
         'id_akun_game',
         'login_via',
         'username_akun_game',
@@ -116,7 +117,7 @@ class Pesanan extends Model
     /** Cek apakah batas waktu bayar sudah lewat */
     public function sudahKedaluwarsa(): bool
     {
-        return $this->batas_waktu_bayar->isPast();
+        return $this->batas_waktu_bayar ? $this->batas_waktu_bayar->isPast() : false;
     }
 
     /** Cek apakah status pesanan bersifat terminal */
@@ -147,10 +148,24 @@ class Pesanan extends Model
         $tanggal = now()->format('Ymd');
         $prefix = "ES-{$tanggal}-";
 
-        // Hitung pesanan hari ini untuk nomor urut
-        $jumlahHariIni = static::where('kode_pesanan', 'like', $prefix.'%')->count();
-        $nomor = str_pad($jumlahHariIni + 1, 3, '0', STR_PAD_LEFT);
+        $lastOrder = static::where('kode_pesanan', 'like', "{$prefix}%")
+            ->orderByDesc('id')
+            ->first();
 
-        return $prefix.$nomor;
+        $nextNumber = 1;
+        if ($lastOrder) {
+            $lastSuffix = substr($lastOrder->kode_pesanan, strlen($prefix));
+            if (is_numeric($lastSuffix)) {
+                $nextNumber = (int) $lastSuffix + 1;
+            }
+        }
+
+        $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        while (static::where('kode_pesanan', $kode)->exists()) {
+            $nextNumber++;
+            $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        }
+
+        return $kode;
     }
 }

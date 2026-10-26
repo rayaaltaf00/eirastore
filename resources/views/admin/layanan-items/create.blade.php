@@ -78,11 +78,20 @@
                     <input type="text" 
                            id="kategori" 
                            name="kategori" 
+                           list="item-kategori-list"
+                           autocomplete="off"
                            value="{{ old('kategori') }}" 
-                           placeholder="Contoh: Tier Rank, Region Mondstadt, Archon Quest" 
+                           placeholder="Contoh: Archon Quest, World Quest, Story Character Quest" 
                            maxlength="100"
                            class="w-full bg-brand-surface border {{ $errors->has('kategori') ? 'border-red-500' : 'border-brand-border' }} rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-cyan transition-colors">
-                    <p class="text-[11px] text-slate-400 mt-1.5">Opsional. Membantu mengelompokkan item saat memilih di form order.</p>
+                    <datalist id="item-kategori-list">
+                        @if(isset($existingKategori) && $existingKategori->isNotEmpty())
+                            @foreach($existingKategori as $ek)
+                                <option value="{{ $ek }}"></option>
+                            @endforeach
+                        @endif
+                    </datalist>
+                    <p class="text-[11px] text-slate-400 mt-1.5">Opsional. Ketik kategori baru atau pilih dari kategori yang sudah ada di layanan ini.</p>
                     @error('kategori')
                         <p class="text-xs text-red-400 mt-1.5">{{ $message }}</p>
                     @enderror

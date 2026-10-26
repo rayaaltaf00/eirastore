@@ -122,6 +122,7 @@ class CustomerPesananTest extends TestCase
     {
         $payload = [
             'id_akun_game' => '12345678',
+            'no_wa_customer' => '081234567890',
             'login_via' => 'Moonton',
             'username_akun_game' => 'gamer@example.com',
             'password_akun_game' => 'SecretPass123!',
@@ -138,6 +139,7 @@ class CustomerPesananTest extends TestCase
         $draft = session('draft_pesanan');
         $this->assertEquals($this->layananTangga->id, $draft['layanan_id']);
         $this->assertEquals('gamer@example.com', $draft['username_akun_game']);
+        $this->assertEquals('081234567890', $draft['no_wa_customer']);
     }
 
     public function test_authenticated_customer_with_draft_is_redirected_to_confirmation(): void
@@ -146,6 +148,7 @@ class CustomerPesananTest extends TestCase
             'draft_pesanan' => [
                 'layanan_id' => $this->layananTangga->id,
                 'id_akun_game' => '12345678',
+                'no_wa_customer' => '081234567890',
                 'login_via' => 'Moonton',
                 'username_akun_game' => 'gamer@example.com',
                 'password_akun_game' => 'SecretPass123!',
@@ -167,6 +170,7 @@ class CustomerPesananTest extends TestCase
         $draft = [
             'layanan_id' => $this->layananTangga->id,
             'id_akun_game' => '12345678',
+            'no_wa_customer' => '081234567890',
             'login_via' => 'Moonton',
             'username_akun_game' => 'gamer@example.com',
             'password_akun_game' => 'SecretPass123!',
@@ -183,6 +187,7 @@ class CustomerPesananTest extends TestCase
         $this->assertDatabaseHas('pesanan', [
             'customer_id' => $this->customer->id,
             'id_akun_game' => '12345678',
+            'no_wa_customer' => '081234567890',
             'status' => StatusPesanan::MenungguPembayaran->value,
             'total_harga' => 39000, // 5*6000 + 1*9000
         ]);
@@ -209,6 +214,7 @@ class CustomerPesananTest extends TestCase
             'customer_id' => $this->customer->id,
             'layanan_id' => $this->layananTangga->id,
             'id_akun_game' => '11111111',
+            'no_wa_customer' => '081234567890',
             'login_via' => 'Moonton',
             'username_akun_game' => 'user1@example.com',
             'password_akun_game' => 'pass1',
@@ -220,6 +226,7 @@ class CustomerPesananTest extends TestCase
         // Percobaan membuat pesanan kedua
         $payloadKedua = [
             'id_akun_game' => '22222222',
+            'no_wa_customer' => '081234567890',
             'login_via' => 'Moonton',
             'username_akun_game' => 'user2@example.com',
             'password_akun_game' => 'pass2',
@@ -249,6 +256,7 @@ class CustomerPesananTest extends TestCase
             'customer_id' => $this->customer->id,
             'layanan_id' => $this->layananTangga->id,
             'id_akun_game' => '11111111',
+            'no_wa_customer' => '081234567890',
             'login_via' => 'Moonton',
             'username_akun_game' => 'user1@example.com',
             'password_akun_game' => 'pass1',
@@ -270,6 +278,7 @@ class CustomerPesananTest extends TestCase
         // Setelah dibatalkan, customer bebas membuat pesanan baru
         $payloadBaru = [
             'id_akun_game' => '33333333',
+            'no_wa_customer' => '081234567890',
             'login_via' => 'Moonton',
             'username_akun_game' => 'user3@example.com',
             'password_akun_game' => 'pass3',
@@ -389,5 +398,312 @@ class CustomerPesananTest extends TestCase
             ->post(route('pesanan.batalkan', $pesanan->kode_pesanan));
 
         $cancelResponse->assertStatus(403);
+    }
+
+    public function test_gendong_mabar_service_does_not_require_password_or_login_via(): void
+    {
+        $layananGendong = Layanan::create([
+            'game_id' => $this->game->id,
+            'nama_layanan' => 'Joki Gendong MLBB',
+            'slug' => 'joki-gendong-mlbb',
+            'tipe_harga' => TipeHarga::Pilihan,
+            'butuh_login_game' => false,
+            'estimasi_waktu' => '1 - 3 Jam',
+            'aktif' => true,
+            'urutan' => 2,
+        ]);
+
+        $itemPaket = LayananItem::create([
+            'layanan_id' => $layananGendong->id,
+            'nama' => 'Paket Mabar 3 Match',
+            'jenis' => 'utama',
+            'harga' => 30000,
+            'aktif' => true,
+            'urutan' => 1,
+        ]);
+
+        $payload = [
+            'id_akun_game' => '87654321',
+            'zone_id' => '2024',
+            'nickname_game' => 'MabarPro',
+            'no_wa_customer' => '081298765432',
+            'items' => [
+                $itemPaket->id => 1,
+            ],
+            // Tanpa login_via, username_akun_game, password_akun_game
+        ];
+
+        $response = $this->actingAs($this->customer)
+            ->post(route('pesanan.store', $layananGendong), $payload);
+
+        $pesanan = Pesanan::where('id_akun_game', '87654321')->first();
+        $this->assertNotNull($pesanan);
+        $this->assertNull($pesanan->password_akun_game);
+        $this->assertNull($pesanan->username_akun_game);
+        $this->assertEquals('081298765432', $pesanan->no_wa_customer);
+        $this->assertEquals('MabarPro', $pesanan->nickname_game);
+        $response->assertRedirect(route('pesanan.show', $pesanan->kode_pesanan));
+    }
+
+    public function test_invalid_whatsapp_number_fails_validation(): void
+    {
+        $payload = [
+            'id_akun_game' => '12345678',
+            'no_wa_customer' => '12345', // bukan format nomor Indonesia
+            'login_via' => 'Moonton',
+            'username_akun_game' => 'gamer@example.com',
+            'password_akun_game' => 'SecretPass123!',
+            'tier_awal_id' => $this->tierEpic->id,
+            'bintang_awal' => 0,
+            'tier_tujuan_id' => $this->tierLegend->id,
+            'bintang_tujuan' => 1,
+        ];
+
+        $response = $this->actingAs($this->customer)
+            ->post(route('pesanan.store', $this->layananTangga), $payload);
+
+        $response->assertSessionHasErrors('no_wa_customer');
+    }
+
+    public function test_pilihan_order_form_displays_categories_tabs(): void
+    {
+        $layananQuest = Layanan::create([
+            'game_id' => $this->game->id,
+            'nama_layanan' => 'Joki Quest & Storyline',
+            'slug' => 'joki-quest-storyline',
+            'tipe_harga' => TipeHarga::Pilihan,
+            'butuh_login_game' => true,
+            'estimasi_waktu' => '1 - 3 Hari',
+            'aktif' => true,
+            'urutan' => 3,
+        ]);
+
+        LayananItem::create([
+            'layanan_id' => $layananQuest->id,
+            'nama' => 'Chapter I: Farewell, Archaic Lord',
+            'kategori' => 'Archon Quest',
+            'jenis' => 'utama',
+            'harga' => 45000,
+            'urutan' => 1,
+            'aktif' => true,
+        ]);
+
+        LayananItem::create([
+            'layanan_id' => $layananQuest->id,
+            'nama' => 'Tatara Tales (Full 7 Hari)',
+            'kategori' => 'World Quest',
+            'jenis' => 'utama',
+            'harga' => 35000,
+            'urutan' => 2,
+            'aktif' => true,
+        ]);
+
+        $response = $this->actingAs($this->customer)
+            ->get(route('pesanan.create', $layananQuest));
+
+        $response->assertOk();
+        $response->assertViewHas('categories');
+        $response->assertSee('Archon Quest');
+        $response->assertSee('World Quest');
+        $response->assertSee('Chapter I: Farewell, Archaic Lord');
+        $response->assertSee('Tatara Tales (Full 7 Hari)');
+    }
+
+    public function test_customer_can_order_quest_items_across_different_categories(): void
+    {
+        $layananQuest = Layanan::create([
+            'game_id' => $this->game->id,
+            'nama_layanan' => 'Joki Quest & Storyline',
+            'slug' => 'joki-quest-storyline',
+            'tipe_harga' => TipeHarga::Pilihan,
+            'butuh_login_game' => true,
+            'estimasi_waktu' => '1 - 3 Hari',
+            'aktif' => true,
+            'urutan' => 3,
+        ]);
+
+        $archonItem = LayananItem::create([
+            'layanan_id' => $layananQuest->id,
+            'nama' => 'Chapter I: Farewell, Archaic Lord',
+            'kategori' => 'Archon Quest',
+            'jenis' => 'utama',
+            'harga' => 45000,
+            'urutan' => 1,
+            'aktif' => true,
+        ]);
+
+        $worldItem = LayananItem::create([
+            'layanan_id' => $layananQuest->id,
+            'nama' => 'The Chasm Delvers',
+            'kategori' => 'World Quest',
+            'jenis' => 'utama',
+            'harga' => 35000,
+            'urutan' => 2,
+            'aktif' => true,
+        ]);
+
+        $fastTrackTambahan = LayananItem::create([
+            'layanan_id' => $layananQuest->id,
+            'nama' => 'Fast-Track Priority (Selesai Express)',
+            'jenis' => 'tambahan',
+            'harga' => 20000,
+            'urutan' => 1,
+            'aktif' => true,
+        ]);
+
+        $payload = [
+            'id_akun_game' => '700123456',
+            'server_game' => 'Asia',
+            'nickname_game' => 'Traveler',
+            'no_wa_customer' => '081234567890',
+            'login_via' => 'HoYoverse',
+            'username_akun_game' => 'traveler@genshin.com',
+            'password_akun_game' => 'P@sswordGenshin123',
+            'items' => [
+                $archonItem->id => 1,
+                $worldItem->id => 1,
+            ],
+            'item_tambahan_ids' => [
+                $fastTrackTambahan->id,
+            ],
+        ];
+
+        $response = $this->actingAs($this->customer)
+            ->post(route('pesanan.store', $layananQuest), $payload);
+
+        $expectedTotal = 45000 + 35000 + 20000; // 100.000
+
+        $pesanan = Pesanan::where('id_akun_game', '700123456')->first();
+        $this->assertNotNull($pesanan);
+        $this->assertEquals($expectedTotal, $pesanan->total_harga);
+        $this->assertEquals(StatusPesanan::MenungguPembayaran, $pesanan->status);
+
+        // Periksa item pesanan tersimpan
+        $this->assertCount(3, $pesanan->pesananItems);
+        $response->assertRedirect(route('pesanan.show', $pesanan->kode_pesanan));
+    }
+
+    public function test_pesanan_show_renders_successfully_for_all_order_statuses(): void
+    {
+        foreach (StatusPesanan::cases() as $status) {
+            $pesanan = Pesanan::create([
+                'kode_pesanan' => 'ES-' . now()->format('Ymd') . '-' . substr(md5($status->value), 0, 5),
+                'customer_id' => $this->customer->id,
+                'layanan_id' => $this->layananTangga->id,
+                'id_akun_game' => '12345678',
+                'no_wa_customer' => '081234567890',
+                'login_via' => 'Moonton',
+                'username_akun_game' => 'gamer@example.com',
+                'password_akun_game' => 'secret',
+                'total_harga' => 39000,
+                'status' => $status,
+                'batas_waktu_bayar' => now()->addHours(2),
+            ]);
+
+            $response = $this->actingAs($this->customer)
+                ->get(route('pesanan.show', $pesanan->kode_pesanan));
+
+            $response->assertOk();
+            $response->assertSee($pesanan->kode_pesanan);
+            $response->assertSee($status->label());
+        }
+    }
+
+    public function test_customer_can_order_progres_type_service_like_exploration_map(): void
+    {
+        $layananMap = Layanan::create([
+            'game_id' => $this->game->id,
+            'nama_layanan' => 'Joki Eksplorasi Map',
+            'slug' => 'joki-eksplorasi-map',
+            'tipe_harga' => TipeHarga::Progres,
+            'butuh_login_game' => true,
+            'estimasi_waktu' => '2 - 3 Hari',
+            'aktif' => true,
+            'urutan' => 4,
+        ]);
+
+        $itemFontaine = LayananItem::create([
+            'layanan_id' => $layananMap->id,
+            'nama' => 'Fontaine (Belleau Region)',
+            'jenis' => 'utama',
+            'harga' => 150000, // Rp 150.000 untuk 100%
+            'nilai_maks' => 100,
+            'urutan' => 1,
+            'aktif' => true,
+        ]);
+
+        $payload = [
+            'id_akun_game' => '711223344',
+            'server_game' => 'Asia',
+            'nickname_game' => 'Aether',
+            'no_wa_customer' => '081299887766',
+            'login_via' => 'HoYoverse',
+            'username_akun_game' => 'aether@teyvat.com',
+            'password_akun_game' => 'P@ssword123',
+            'progres' => [
+                $itemFontaine->id => [
+                    'awal' => 20,
+                    'tujuan' => 100,
+                ],
+            ],
+            'progres_selected' => [
+                (string) $itemFontaine->id,
+            ],
+        ];
+
+        $response = $this->actingAs($this->customer)
+            ->post(route('pesanan.store', $layananMap), $payload);
+
+        // Delta: 100 - 20 = 80%. Harga: 80 * 1.500 = Rp 120.000
+        $pesanan = Pesanan::where('id_akun_game', '711223344')->first();
+        $this->assertNotNull($pesanan);
+        $this->assertEquals(120000, $pesanan->total_harga);
+        $this->assertEquals('Asia', $pesanan->server_game);
+        $response->assertRedirect(route('pesanan.show', $pesanan->kode_pesanan));
+
+        // Akses halaman show
+        $showResponse = $this->actingAs($this->customer)
+            ->get(route('pesanan.show', $pesanan->kode_pesanan));
+        $showResponse->assertOk();
+        $showResponse->assertSee('120.000');
+        $showResponse->assertSee('Fontaine (Belleau Region)');
+    }
+
+    public function test_whatsapp_number_is_properly_sanitized_and_normalized(): void
+    {
+        $payload = [
+            'id_akun_game' => '998877',
+            'no_wa_customer' => '+62 812-3456-7890', // Format bercampur spasi, strip, dan +62
+            'login_via' => 'Moonton',
+            'username_akun_game' => 'gamer@example.com',
+            'password_akun_game' => 'SecretPass123!',
+            'tier_awal_id' => $this->tierEpic->id,
+            'bintang_awal' => 0,
+            'tier_tujuan_id' => $this->tierLegend->id,
+            'bintang_tujuan' => 1,
+        ];
+
+        $response = $this->actingAs($this->customer)
+            ->post(route('pesanan.store', $this->layananTangga), $payload);
+
+        $pesanan = Pesanan::where('id_akun_game', '998877')->first();
+        $this->assertNotNull($pesanan);
+        $this->assertEquals('081234567890', $pesanan->no_wa_customer);
+    }
+
+    public function test_user_can_update_profile_nama_and_phone(): void
+    {
+        $response = $this->actingAs($this->customer)
+            ->patch(route('profile.update'), [
+                'nama' => 'John Super Customer',
+                'email' => $this->customer->email,
+                'no_hp' => '081234567899',
+            ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->customer->refresh();
+        $this->assertEquals('John Super Customer', $this->customer->nama);
+        $this->assertEquals('John Super Customer', $this->customer->name);
+        $this->assertEquals('081234567899', $this->customer->no_hp);
     }
 }

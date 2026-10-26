@@ -175,4 +175,55 @@ class AdminLayananItemTest extends TestCase
         $response->assertRedirect(route('admin.layanan.items.index', $this->layananTangga));
         $this->assertDatabaseMissing('layanan_item', ['id' => $item->id]);
     }
+
+    public function test_admin_can_filter_items_by_kategori(): void
+    {
+        $itemArchon = LayananItem::create([
+            'layanan_id' => $this->layananPilihan->id,
+            'nama' => 'Prologue: The Outlander',
+            'kategori' => 'Archon Quest',
+            'urutan' => 1,
+            'harga' => 30000,
+            'aktif' => true,
+        ]);
+
+        $itemWorld = LayananItem::create([
+            'layanan_id' => $this->layananPilihan->id,
+            'nama' => 'In The Mountains',
+            'kategori' => 'World Quest',
+            'urutan' => 2,
+            'harga' => 20000,
+            'aktif' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(
+            route('admin.layanan.items.index', ['layanan' => $this->layananPilihan, 'kategori' => 'Archon Quest'])
+        );
+
+        $response->assertOk();
+        $response->assertSee('Prologue: The Outlander');
+        $response->assertDontSee('In The Mountains');
+    }
+
+    public function test_admin_can_create_item_with_kategori(): void
+    {
+        $response = $this->actingAs($this->admin)->post(
+            route('admin.layanan.items.store', $this->layananPilihan),
+            [
+                'jenis' => 'utama',
+                'nama' => 'Story Quest Furina',
+                'kategori' => 'Story Character Quest',
+                'urutan' => 1,
+                'harga' => 25000,
+            ]
+        );
+
+        $response->assertRedirect(route('admin.layanan.items.index', $this->layananPilihan));
+        $this->assertDatabaseHas('layanan_item', [
+            'layanan_id' => $this->layananPilihan->id,
+            'nama' => 'Story Quest Furina',
+            'kategori' => 'Story Character Quest',
+            'harga' => 25000,
+        ]);
+    }
 }

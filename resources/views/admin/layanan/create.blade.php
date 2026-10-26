@@ -273,6 +273,22 @@
                 </div>
             </div>
 
+            <!-- Butuh Login Akun Game -->
+            <div class="flex items-center justify-between p-4 rounded-xl bg-brand-surface/40 border border-brand-border">
+                <div>
+                    <span class="block text-sm font-semibold text-white">Memerlukan Login Akun Game oleh Worker</span>
+                    <span class="block text-xs text-slate-400">Aktifkan jika joki dimainkan langsung oleh worker (membutuhkan email/password game). Nonaktifkan untuk Joki Gendong / Mabar / Party.</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" 
+                           name="butuh_login_game" 
+                           value="1" 
+                           {{ old('butuh_login_game', '1') == '1' ? 'checked' : '' }} 
+                           class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-cyan"></div>
+                </label>
+            </div>
+
             <!-- Status Aktif -->
             <div class="flex items-center justify-between p-4 rounded-xl bg-brand-surface/40 border border-brand-border">
                 <div>

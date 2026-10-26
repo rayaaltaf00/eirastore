@@ -37,6 +37,12 @@ class User extends Authenticatable
         ];
     }
 
+    /** Accessor kompatibilitas name -> nama */
+    public function getNameAttribute(): string
+    {
+        return $this->nama ?? '';
+    }
+
     // ── Relasi ──────────────────────────────────────────
 
     /** Pesanan yang dibuat customer ini */

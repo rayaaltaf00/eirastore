@@ -65,10 +65,27 @@
             @elseif($layanan->tipe_harga->value === 'progres')
                 💡 <strong>Tipe Progres:</strong> Buat Region induk (harga 0), lalu buat item Wilayah turunan di bawahnya dengan harga dasar 100%. Customer akan menginput capaian 0 s.d 100%.
             @else
-                💡 <strong>Tipe Pilihan:</strong> Masukkan paket/item lepas. Bila item dapat dipesan dalam kuantitas harian/kelipatan, isi kolom satuan dan batas nilai maks.
+                💡 <strong>Tipe Pilihan:</strong> Masukkan paket/item lepas. Bila item dapat dikelompokkan (contoh: Archon Quest, World Quest, Story Quest), isi kolom Kategori agar tampil rapi per kategori di halaman checkout customer.
             @endif
         </div>
     </div>
+
+    <!-- Filter Kategori Item (Jika Ada Kategori) -->
+    @if(isset($kategoriList) && $kategoriList->isNotEmpty())
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <span class="text-slate-400 font-semibold shrink-0">Filter Kategori:</span>
+            <a href="{{ route('admin.layanan.items.index', $layanan) }}" 
+               class="px-3 py-1.5 rounded-xl border transition-all {{ !request('kategori') ? 'bg-brand-blue/20 text-brand-cyan border-brand-cyan/40 font-bold' : 'bg-brand-surface border-brand-border text-slate-400 hover:text-white' }}">
+                Semua Item ({{ $layanan->items()->count() }})
+            </a>
+            @foreach($kategoriList as $kat)
+                <a href="{{ route('admin.layanan.items.index', [$layanan, 'kategori' => $kat]) }}" 
+                   class="px-3 py-1.5 rounded-xl border transition-all {{ request('kategori') === $kat ? 'bg-brand-blue/20 text-brand-cyan border-brand-cyan/40 font-bold' : 'bg-brand-surface border-brand-border text-slate-400 hover:text-white' }}">
+                    {{ $kat }} ({{ $layanan->items()->where('kategori', $kat)->count() }})
+                </a>
+            @endforeach
+        </div>
+    @endif
 
     <!-- Items Table Card -->
     <div class="bg-brand-card/90 border border-brand-border rounded-2xl overflow-hidden shadow-card">

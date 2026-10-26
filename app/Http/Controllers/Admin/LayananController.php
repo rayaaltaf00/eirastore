@@ -95,6 +95,7 @@ class LayananController extends Controller
             'gambar_url' => ['nullable', 'url', 'max:2048'],
             'tipe_harga' => ['required', Rule::enum(TipeHarga::class)],
             'estimasi_waktu' => ['nullable', 'string', 'max:50'],
+            'butuh_login_game' => ['nullable', 'boolean'],
             'aktif' => ['nullable', 'boolean'],
         ], [
             'game_id.required' => 'Pilih game induk untuk layanan ini.',
@@ -124,6 +125,7 @@ class LayananController extends Controller
             'deskripsi' => $validated['deskripsi'] ?? null,
             'tipe_harga' => $validated['tipe_harga'],
             'estimasi_waktu' => $validated['estimasi_waktu'] ?? null,
+            'butuh_login_game' => $request->boolean('butuh_login_game', true),
             'aktif' => $request->boolean('aktif', true),
         ]);
 
@@ -195,6 +197,7 @@ class LayananController extends Controller
             'gambar_url' => ['nullable', 'url', 'max:2048'],
             'tipe_harga' => [$isTipeHargaLocked ? 'nullable' : 'required', Rule::enum(TipeHarga::class)],
             'estimasi_waktu' => ['nullable', 'string', 'max:50'],
+            'butuh_login_game' => ['nullable', 'boolean'],
             'aktif' => ['nullable', 'boolean'],
         ], [
             'nama_layanan.required' => 'Nama layanan wajib diisi.',
@@ -231,6 +234,7 @@ class LayananController extends Controller
             'deskripsi' => $validated['deskripsi'] ?? null,
             'tipe_harga' => $isTipeHargaLocked ? $layanan->tipe_harga : $validated['tipe_harga'],
             'estimasi_waktu' => $validated['estimasi_waktu'] ?? null,
+            'butuh_login_game' => $request->boolean('butuh_login_game', true),
             'aktif' => $request->boolean('aktif', false),
         ]);
 

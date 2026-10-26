@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\LayananItemController;
 use App\Http\Controllers\Admin\MetodePembayaranController;
 use App\Http\Controllers\GameCatalogController;
 use App\Http\Controllers\PesananController;
+use App\Http\Controllers\ProfileController;
 use App\Models\Game;
 use Illuminate\Support\Facades\Route;
 
@@ -79,6 +80,11 @@ Route::middleware(['auth'])->group(function () {
     // Unggah dan unduh bukti transfer (C-09)
     Route::post('/pesanan/{pesanan:kode_pesanan}/bukti', [PesananController::class, 'unggahBukti'])->name('pesanan.bukti.unggah');
     Route::get('/pesanan/{pesanan:kode_pesanan}/bukti', [PesananController::class, 'unduhBukti'])->name('pesanan.bukti.unduh');
+
+    // Profil Pengguna
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';

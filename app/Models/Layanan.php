@@ -18,15 +18,17 @@ class Layanan extends Model
         'deskripsi',
         'tipe_harga',
         'estimasi_waktu',
+        'butuh_login_game',
         'aktif',
     ];
 
-    protected $appends = ['gambar_url'];
+    protected $appends = ['gambar_url', 'poster_url'];
 
     protected function casts(): array
     {
         return [
             'tipe_harga' => TipeHarga::class,
+            'butuh_login_game' => 'boolean',
             'aktif' => 'boolean',
         ];
     }
@@ -48,6 +50,12 @@ class Layanan extends Model
         }
 
         return asset('images/game-placeholder.jpg');
+    }
+
+    /** Alias poster_url mengarah ke gambar_url */
+    public function getPosterUrlAttribute(): string
+    {
+        return $this->gambar_url;
     }
 
     // ── Relasi ──────────────────────────────────────────

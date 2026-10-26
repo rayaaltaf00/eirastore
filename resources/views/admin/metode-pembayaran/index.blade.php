@@ -35,13 +35,13 @@
             <table class="w-full text-left text-sm text-slate-300">
                 <thead class="bg-brand-surface/80 text-xs uppercase text-slate-400 border-b border-brand-border">
                     <tr>
-                        <th class="px-6 py-4 font-semibold">Metode / Bank</th>
-                        <th class="px-6 py-4 font-semibold">Jenis</th>
-                        <th class="px-6 py-4 font-semibold">Nomor Rekening</th>
-                        <th class="px-6 py-4 font-semibold">Atas Nama</th>
-                        <th class="px-6 py-4 font-semibold text-center">Urutan</th>
-                        <th class="px-6 py-4 font-semibold text-center">Status</th>
-                        <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                        <th class="px-6 py-4 font-semibold whitespace-nowrap">Metode / Bank</th>
+                        <th class="px-6 py-4 font-semibold whitespace-nowrap">Jenis</th>
+                        <th class="px-6 py-4 font-semibold whitespace-nowrap">Nomor Rekening</th>
+                        <th class="px-6 py-4 font-semibold whitespace-nowrap">Atas Nama</th>
+                        <th class="px-6 py-4 font-semibold text-center whitespace-nowrap">Urutan</th>
+                        <th class="px-6 py-4 font-semibold text-center whitespace-nowrap">Status</th>
+                        <th class="px-6 py-4 font-semibold text-right whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-brand-border/60">
@@ -64,13 +64,13 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($metode->kategori === 'bank')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">Transfer Bank</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 whitespace-nowrap">Transfer Bank</span>
                                 @elseif($metode->kategori === 'ewallet')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">E-Wallet</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20 whitespace-nowrap">E-Wallet</span>
                                 @else
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">QRIS Scan</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">QRIS Scan</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">

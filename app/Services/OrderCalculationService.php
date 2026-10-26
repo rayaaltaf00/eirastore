@@ -151,13 +151,26 @@ class OrderCalculationService
             throw new InvalidArgumentException('Pilihlah minimal satu wilayah dan tentukan progresnya.');
         }
 
+        // Filter hanya item yang dicentang / dipilih bila form mengirimkan array progres_selected
+        $selectedIds = $input['progres_selected'] ?? null;
+        if (is_array($selectedIds)) {
+            $rawProgres = array_intersect_key($rawProgres, array_flip($selectedIds));
+        }
+
         $items = [];
         $totalHarga = 0.0;
 
         foreach ($rawProgres as $itemId => $progresSaatIni) {
-            $progresVal = (float) $progresSaatIni;
-            if ($progresVal < 0 || $progresVal >= 100) {
-                continue; // Lewati jika di luar rentang atau sudah 100%
+            if (is_array($progresSaatIni)) {
+                $progresVal = (float) ($progresSaatIni['awal'] ?? ($progresSaatIni['current'] ?? 0));
+                $targetVal = (float) ($progresSaatIni['tujuan'] ?? ($progresSaatIni['target'] ?? 100));
+            } else {
+                $progresVal = (float) $progresSaatIni;
+                $targetVal = 100.0;
+            }
+
+            if ($progresVal < 0 || $progresVal >= $targetVal) {
+                continue; // Lewati jika di luar rentang atau target sudah tercapai
             }
 
             /** @var LayananItem|null $item */
@@ -166,8 +179,8 @@ class OrderCalculationService
                 continue;
             }
 
-            // Sisa pengerjaan: (100 - progresSaatIni) %
-            $sisaPersen = 100 - $progresVal;
+            // Sisa pengerjaan: (target - progresSaatIni) %
+            $sisaPersen = min(100.0, max(0.0, $targetVal - $progresVal));
             $subtotal = round(($sisaPersen / 100) * (float) $item->harga, 2);
 
             $items[] = [
@@ -208,9 +221,18 @@ class OrderCalculationService
         $totalHarga = 0.0;
 
         foreach ($itemSelections as $key => $val) {
-            // Bisa berformat [id1, id2] atau [id => jumlah]
-            $itemId = is_numeric($key) && is_array($val) ? ($val['id'] ?? null) : (is_numeric($key) && ! is_numeric($val) ? $val : $key);
-            $jumlah = is_array($val) ? ($val['jumlah'] ?? 1) : (is_numeric($val) && ! is_numeric($key) ? 1 : (int) $val);
+            if (is_array($val)) {
+                $itemId = $val['id'] ?? (is_numeric($key) ? null : $key);
+                $jumlah = (int) ($val['jumlah'] ?? 1);
+            } elseif (is_numeric($key) && is_numeric($val) && array_is_list($itemSelections)) {
+                // Format: [10, 12] -> $key = index urut, $val = ID item layanan
+                $itemId = (int) $val;
+                $jumlah = 1;
+            } else {
+                // Format: ['10' => 3] -> $key = ID item, $val = jumlah
+                $itemId = is_numeric($key) ? (int) $key : (is_numeric($val) ? (int) $val : null);
+                $jumlah = is_numeric($val) && ! array_is_list($itemSelections) ? (int) $val : 1;
+            }
 
             if (! $itemId) {
                 continue;
@@ -287,20 +309,6 @@ class OrderCalculationService
      */
     public function generateKodePesanan(): string
     {
-        $todayPrefix = 'ES-'.now()->format('Ymd').'-';
-
-        $lastOrder = Pesanan::where('kode_pesanan', 'like', "{$todayPrefix}%")
-            ->orderByDesc('id')
-            ->first();
-
-        $nextNumber = 1;
-        if ($lastOrder) {
-            $lastSuffix = substr($lastOrder->kode_pesanan, strlen($todayPrefix));
-            if (is_numeric($lastSuffix)) {
-                $nextNumber = (int) $lastSuffix + 1;
-            }
-        }
-
-        return $todayPrefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        return Pesanan::generateKodePesanan();
     }
 }

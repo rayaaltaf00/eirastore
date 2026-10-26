@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Enums\StatusPembayaran;
 use App\Enums\StatusPesanan;
+use App\Enums\TipeHarga;
 use App\Models\Layanan;
 use App\Models\MetodePembayaranTujuan;
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use App\Models\RiwayatStatusPesanan;
+use App\Models\User;
 use App\Services\OrderCalculationService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -49,12 +51,31 @@ class PesananController extends Controller
             ->orderBy('urutan')
             ->get();
 
+        // Kelompokkan wilayah & sub-wilayah jika tipe progres (misal eksplorasi map Genshin)
+        $regions = collect();
+        if ($layanan->tipe_harga === TipeHarga::Progres) {
+            $parents = $itemsUtama->whereNull('parent_id');
+            if ($parents->isNotEmpty()) {
+                $regions = $parents->map(function ($parent) use ($itemsUtama) {
+                    $parent->sub_wilayah = $itemsUtama->where('parent_id', $parent->id)->values();
+
+                    return $parent;
+                })->filter(fn ($p) => $p->sub_wilayah->isNotEmpty())->values();
+            }
+        }
+
+        // Kategori item untuk tipe pilihan (misal: Archon Quest, World Quest, Story Quest)
+        $categories = collect();
+        if ($layanan->tipe_harga === TipeHarga::Pilihan) {
+            $categories = $itemsUtama->pluck('kategori')->filter()->unique()->values();
+        }
+
         // Cek jika ada draft yang tersimpan untuk layanan ini
         $draft = session('draft_pesanan');
         $draftLayananId = $draft['layanan_id'] ?? null;
         $draftData = ($draftLayananId === $layanan->id) ? $draft : null;
 
-        return view('pesanan.create', compact('layanan', 'itemsUtama', 'itemsTambahan', 'draftData'));
+        return view('pesanan.create', compact('layanan', 'itemsUtama', 'itemsTambahan', 'regions', 'categories', 'draftData'));
     }
 
     /**
@@ -66,18 +87,41 @@ class PesananController extends Controller
             return back()->with('error', 'Layanan joki ini sedang tidak aktif.');
         }
 
-        // Validasi input data akun game & data layanan
+        // Sanitasi nomor WhatsApp (buang spasi/strip dan normalkan +62/62 ke 08)
+        if ($request->has('no_wa_customer')) {
+            $rawWa = preg_replace('/[^0-9+]/', '', (string) $request->input('no_wa_customer'));
+            if (str_starts_with($rawWa, '+62')) {
+                $rawWa = '0'.substr($rawWa, 3);
+            } elseif (str_starts_with($rawWa, '62')) {
+                $rawWa = '0'.substr($rawWa, 2);
+            }
+            $request->merge(['no_wa_customer' => $rawWa]);
+        }
+
+        // Aturan validasi dasar
         $rules = [
             'id_akun_game' => ['required', 'string', 'max:100'],
-            'login_via' => ['required', 'string', 'max:30'],
-            'username_akun_game' => ['required', 'string', 'max:100'],
-            'password_akun_game' => ['required', 'string', 'max:100'],
-            'nickname_game' => ['nullable', 'string', 'max:100'],
-            'server_game' => ['nullable', 'string', 'max:50'],
+            'no_wa_customer' => ['required', 'string', 'regex:/^08[1-9][0-9]{6,11}$/'],
             'zone_id' => ['nullable', 'string', 'max:50'],
-            'catatan_login' => ['nullable', 'string', 'max:255'],
+            'server_game' => ['nullable', 'string', 'max:50'],
             'catatan_customer' => ['nullable', 'string', 'max:1000'],
         ];
+
+        // Validasi bersyarat: akun login vs mabar/party (butuh_login_game)
+        if ($layanan->butuh_login_game) {
+            $rules['login_via'] = ['required', 'string', 'max:50'];
+            $rules['username_akun_game'] = ['required', 'string', 'max:100'];
+            $rules['password_akun_game'] = ['required', 'string', 'max:100'];
+            $rules['nickname_game'] = ['nullable', 'string', 'max:100'];
+            $rules['catatan_login'] = ['nullable', 'string', 'max:255'];
+        } else {
+            // Khusus layanan Gendong / Mabar / Party: customer main sendiri, hanya butuh nickname & WhatsApp
+            $rules['nickname_game'] = ['required', 'string', 'max:100'];
+            $rules['login_via'] = ['nullable', 'string', 'max:50'];
+            $rules['username_akun_game'] = ['nullable', 'string', 'max:100'];
+            $rules['password_akun_game'] = ['nullable', 'string', 'max:100'];
+            $rules['catatan_login'] = ['nullable', 'string', 'max:255'];
+        }
 
         // Validasi spesifik per tipe harga
         if ($layanan->tipe_harga->value === 'tangga') {
@@ -87,11 +131,26 @@ class PesananController extends Controller
             $rules['bintang_tujuan'] = ['required', 'integer', 'min:1'];
         } elseif ($layanan->tipe_harga->value === 'progres') {
             $rules['progres'] = ['required', 'array', 'min:1'];
+            $rules['progres_selected'] = ['nullable', 'array'];
         } elseif ($layanan->tipe_harga->value === 'pilihan') {
             $rules['items'] = ['required', 'array', 'min:1'];
         }
 
-        $validated = $request->validate($rules);
+        $validated = $request->validate($rules, [
+            'id_akun_game.required' => 'ID Akun Game wajib diisi.',
+            'no_wa_customer.required' => 'Nomor WhatsApp aktif wajib diisi untuk koordinasi joki.',
+            'no_wa_customer.regex' => 'Format nomor WhatsApp tidak valid. Gunakan format Indonesia yang benar (contoh: 08123456789 atau +628123456789).',
+            'nickname_game.required' => 'Nickname Game wajib diisi agar Worker dapat mengundang Anda ke lobby party.',
+            'login_via.required' => 'Pilih metode login akun game.',
+            'username_akun_game.required' => 'Email atau Username login game wajib diisi.',
+            'password_akun_game.required' => 'Password akun game wajib diisi.',
+        ]);
+
+        if (! $layanan->butuh_login_game) {
+            $validated['login_via'] = 'Mabar / Gendong';
+            $validated['username_akun_game'] = null;
+            $validated['password_akun_game'] = null;
+        }
 
         // Siapkan struktur payload data pesanan
         $payload = array_merge($validated, [
@@ -205,7 +264,14 @@ class PesananController extends Controller
 
         /** @var Layanan $layanan */
         $layanan = Layanan::findOrFail($draft['layanan_id']);
-        $calcResult = $this->calculationService->hitung($layanan, $draft);
+
+        try {
+            $calcResult = $this->calculationService->hitung($layanan, $draft);
+        } catch (Exception $e) {
+            session()->forget('draft_pesanan');
+
+            return redirect()->route('game.show', $layanan->game)->with('error', $e->getMessage());
+        }
 
         $pesanan = $this->createOrderRecord($user->id, $layanan, $draft, $calcResult);
 
@@ -259,8 +325,8 @@ class PesananController extends Controller
         // Rekening pembayaran aktif
         $metodePembayaran = MetodePembayaranTujuan::aktif()->get();
 
-        // Sisa detik untuk countdown
-        $sisaDetik = $pesanan->batas_waktu_bayar
+        // Sisa detik untuk countdown (hanya jika status masih menunggu_pembayaran)
+        $sisaDetik = ($pesanan->status === StatusPesanan::MenungguPembayaran && $pesanan->batas_waktu_bayar)
             ? max(0, (int) now()->diffInSeconds($pesanan->batas_waktu_bayar, false))
             : 0;
 
@@ -305,6 +371,18 @@ class PesananController extends Controller
 
         // Cek kedaluwarsa sebelum menerima unggahan bukti
         if ($pesanan->sudahKedaluwarsa() || $pesanan->status !== StatusPesanan::MenungguPembayaran) {
+            if ($pesanan->sudahKedaluwarsa() && $pesanan->status === StatusPesanan::MenungguPembayaran) {
+                $pesanan->update(['status' => StatusPesanan::Kedaluwarsa]);
+                $pesanan->hapusPasswordAkunGame();
+                RiwayatStatusPesanan::create([
+                    'pesanan_id' => $pesanan->id,
+                    'status_lama' => StatusPesanan::MenungguPembayaran->value,
+                    'status_baru' => StatusPesanan::Kedaluwarsa->value,
+                    'catatan' => 'Batas waktu pembayaran 2 jam telah habis saat mengunggah bukti pembayaran.',
+                    'diubah_oleh' => null,
+                ]);
+            }
+
             return back()->with('error', 'Pesanan ini sudah tidak dalam status menunggu pembayaran atau batas waktu telah habis.');
         }
 
@@ -415,12 +493,13 @@ class PesananController extends Controller
             'customer_id' => $customerId,
             'worker_id' => null,
             'layanan_id' => $layanan->id,
+            'no_wa_customer' => $payload['no_wa_customer'] ?? null,
             'id_akun_game' => $payload['id_akun_game'],
-            'login_via' => $payload['login_via'],
-            'username_akun_game' => $payload['username_akun_game'],
-            'password_akun_game' => $payload['password_akun_game'], // terenkripsi otomatis oleh model cast
+            'login_via' => $payload['login_via'] ?? ($layanan->butuh_login_game ? null : 'Mabar / Gendong'),
+            'username_akun_game' => $payload['username_akun_game'] ?? null,
+            'password_akun_game' => $payload['password_akun_game'] ?? null, // terenkripsi otomatis oleh model cast jika ada
             'nickname_game' => $payload['nickname_game'] ?? null,
-            'server_game' => $payload['server_game'] ?? null,
+            'server_game' => $payload['server_game'] ?? ($payload['zone_id'] ?? null),
             'data_tambahan' => array_filter([
                 'zone_id' => $payload['zone_id'] ?? null,
                 'catatan_login' => $payload['catatan_login'] ?? null,
@@ -433,6 +512,12 @@ class PesananController extends Controller
             'selesai_at' => null,
             'kredensial_dihapus_at' => null,
         ]);
+
+        // Simpan nomor WA ke profil customer jika profil belum memiliki no_hp
+        $customer = User::find($customerId);
+        if ($customer && empty($customer->no_hp) && ! empty($payload['no_wa_customer'])) {
+            $customer->update(['no_hp' => $payload['no_wa_customer']]);
+        }
 
         // Simpan setiap pesanan_item (salinan permanen harga & nama saat dipesan)
         foreach ($calcResult['items'] as $item) {

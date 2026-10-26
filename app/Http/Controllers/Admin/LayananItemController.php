@@ -17,18 +17,30 @@ class LayananItemController extends Controller
      * Tampilkan daftar seluruh item milik sebuah layanan joki.
      * Referensi: A-12
      */
-    public function index(Layanan $layanan): View
+    public function index(Request $request, Layanan $layanan): View
     {
         $layanan->load('game');
 
-        $items = $layanan->items()
+        $query = $layanan->items()
             ->with('parent')
             ->withCount('children')
             ->orderByRaw("CASE WHEN jenis = 'utama' THEN 1 ELSE 2 END")
-            ->orderBy('urutan')
-            ->get();
+            ->orderBy('urutan');
 
-        return view('admin.layanan-items.index', compact('layanan', 'items'));
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        $items = $query->get();
+
+        $kategoriList = $layanan->items()
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->pluck('kategori')
+            ->unique()
+            ->values();
+
+        return view('admin.layanan-items.index', compact('layanan', 'items', 'kategoriList'));
     }
 
     /**
@@ -46,10 +58,20 @@ class LayananItemController extends Controller
             ->orderBy('urutan')
             ->get();
 
+        // Kategori yang sudah ada di layanan ini untuk saran input
+        $existingKategori = $layanan->items()
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->pluck('kategori')
+            ->map(fn ($k) => trim($k))
+            ->filter()
+            ->unique()
+            ->values();
+
         // Cari urutan berikutnya secara otomatis
         $nextUrutan = ($layanan->items()->max('urutan') ?? 0) + 1;
 
-        return view('admin.layanan-items.create', compact('layanan', 'parentCandidates', 'nextUrutan'));
+        return view('admin.layanan-items.create', compact('layanan', 'parentCandidates', 'nextUrutan', 'existingKategori'));
     }
 
     /**
@@ -114,7 +136,16 @@ class LayananItemController extends Controller
             ->orderBy('urutan')
             ->get();
 
-        return view('admin.layanan-items.edit', compact('layanan', 'item', 'parentCandidates'));
+        $existingKategori = $layanan->items()
+            ->whereNotNull('kategori')
+            ->where('kategori', '!=', '')
+            ->pluck('kategori')
+            ->map(fn ($k) => trim($k))
+            ->filter()
+            ->unique()
+            ->values();
+
+        return view('admin.layanan-items.edit', compact('layanan', 'item', 'parentCandidates', 'existingKategori'));
     }
 
     /**

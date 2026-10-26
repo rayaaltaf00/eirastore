@@ -37,6 +37,38 @@ class Game extends Model
         return asset('storage/'.$this->gambar);
     }
 
+    /** Daftar metode login akun yang sesuai dengan jenis game */
+    public function getOpsiLoginAttribute(): array
+    {
+        $nama = strtolower($this->nama_game ?? '');
+
+        if (str_contains($nama, 'mobile legends') || str_contains($nama, 'mlbb')) {
+            return ['Moonton ID', 'Google Play / Gmail', 'VK', 'TikTok', 'Facebook'];
+        }
+
+        if (str_contains($nama, 'genshin') || str_contains($nama, 'honkai') || str_contains($nama, 'star rail')) {
+            return ['HoYoverse Account', 'Google', 'Apple ID', 'Facebook'];
+        }
+
+        if (str_contains($nama, 'free fire')) {
+            return ['Google', 'Facebook', 'VK', 'Twitter / X'];
+        }
+
+        if (str_contains($nama, 'valorant') || str_contains($nama, 'riot')) {
+            return ['Riot Games ID'];
+        }
+
+        if (str_contains($nama, 'pubg')) {
+            return ['Twitter / X', 'Facebook', 'Google Play', 'Apple ID'];
+        }
+
+        if (str_contains($nama, 'honor of kings') || str_contains($nama, 'hok')) {
+            return ['Level Infinite Pass', 'Google', 'Facebook'];
+        }
+
+        return ['Email / Akun Resmi', 'Google', 'Apple ID', 'Facebook', 'Lainnya'];
+    }
+
     // ── Relasi ──────────────────────────────────────────
 
     /** Layanan joki milik game ini */
