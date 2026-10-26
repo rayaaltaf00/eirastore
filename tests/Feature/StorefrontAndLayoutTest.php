@@ -97,4 +97,20 @@ class StorefrontAndLayoutTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Pesanan Ditugaskan');
     }
+
+    /** Tes halaman lacak pesanan jika kode tidak ditemukan */
+    public function test_halaman_lacak_pesanan_menampilkan_pesan_error_jika_tidak_ditemukan(): void
+    {
+        $response = $this->get('/lacak?invoice=ES-99999999-999');
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+    }
+
+    /** Tes artisan command alias pesanan:kedaluwarsakan sesuai PRD 3.7 */
+    public function test_artisan_command_alias_pesanan_kedaluwarsakan_berhasil_dijalankan(): void
+    {
+        $this->artisan('pesanan:kedaluwarsakan')
+            ->assertSuccessful();
+    }
 }

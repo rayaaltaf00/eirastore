@@ -14,6 +14,11 @@ use Illuminate\Console\Command;
 class CekPesananKedaluwarsa extends Command
 {
     /**
+     * Alias command sesuai PRD 3.7 (pesanan:kedaluwarsakan)
+     */
+    protected $aliases = ['pesanan:kedaluwarsakan'];
+
+    /**
      * Execute the console command.
      */
     public function handle(): int

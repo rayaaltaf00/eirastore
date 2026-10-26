@@ -23,6 +23,16 @@ Route::get('/', function () {
 Route::get('/game/{game}', [GameCatalogController::class, 'show'])->name('game.show');
 
 Route::get('/lacak', function () {
+    $kode = trim(request('invoice', ''));
+    if ($kode !== '') {
+        $pesanan = \App\Models\Pesanan::where('kode_pesanan', $kode)->first();
+        if ($pesanan) {
+            return redirect()->route('pesanan.show', $pesanan->kode_pesanan);
+        }
+
+        return back()->with('error', "Pesanan dengan nomor/kode '{$kode}' tidak ditemukan. Mohon periksa kembali kode pesanan Anda.");
+    }
+
     return view('lacak');
 })->name('lacak.index');
 

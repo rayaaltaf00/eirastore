@@ -6,18 +6,26 @@
             </div>
             
             <h1 class="text-2xl font-black text-white">Lacak Pesanan Joki</h1>
-            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Masukkan Nomor Invoice / ID Pesanan Anda untuk memeriksa progres pengerjaan.</p>
+            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Masukkan Nomor Invoice / Kode Pesanan Anda untuk memeriksa progres pengerjaan.</p>
+
+            @if(session('error'))
+                <div class="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-left flex items-center gap-2">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
 
             <form action="{{ route('lacak.index') }}" method="GET" class="mt-6 flex flex-col sm:flex-row gap-2">
                 <div class="relative flex-1">
                     <input 
                         type="text" 
                         name="invoice" 
-                        placeholder="Contoh: INV-20261104-XXXX" 
+                        value="{{ request('invoice') }}"
+                        placeholder="Contoh: ES-20261026-001" 
                         required
                         class="w-full bg-brand-surface border-brand-border text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-brand-blue focus:border-brand-blue transition-colors">
                 </div>
-                <button type="submit" class="px-5 py-3 rounded-xl font-bold text-xs bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all">
+                <button type="submit" class="px-5 py-3 rounded-xl font-bold text-xs bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all cursor-pointer">
                     Cari Pesanan
                 </button>
             </form>
