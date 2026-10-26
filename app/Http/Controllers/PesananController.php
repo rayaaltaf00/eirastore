@@ -479,6 +479,69 @@ class PesananController extends Controller
         return view('customer.pesanan', compact('pesananAktif', 'pesananRiwayat'));
     }
 
+    /**
+     * Simpan perbaikan data akun game oleh customer (C-10).
+     */
+    public function simpanRevisiData(Request $request, Pesanan $pesanan): RedirectResponse
+    {
+        $this->authorizeOwner($pesanan);
+
+        if ($pesanan->status !== StatusPesanan::PerluRevisiData) {
+            return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
+                ->with('error', 'Pesanan ini tidak sedang membutuhkan revisi data akun.');
+        }
+
+        $validated = $request->validate([
+            'id_akun_game'        => ['required', 'string', 'max:100'],
+            'login_via'           => ['nullable', 'string', 'max:30'],
+            'username_akun_game'  => ['nullable', 'string', 'max:100'],
+            'password_akun_game'  => ['nullable', 'string', 'min:4', 'max:255'],
+            'nickname_game'       => ['nullable', 'string', 'max:100'],
+            'server_game'         => ['nullable', 'string', 'max:50'],
+            'zone_id'             => ['nullable', 'string', 'max:50'],
+            'no_wa_customer'      => ['nullable', 'string', 'max:30'],
+            'catatan_customer'    => ['nullable', 'string', 'max:1000'],
+        ], [
+            'id_akun_game.required' => 'ID Akun game wajib diisi.',
+            'password_akun_game.min' => 'Password minimal 4 karakter.',
+        ]);
+
+        $dataTambahan = $pesanan->data_tambahan ?? [];
+        if (isset($validated['zone_id'])) {
+            $dataTambahan['zone_id'] = $validated['zone_id'];
+        }
+
+        $updatePayload = [
+            'id_akun_game'       => $validated['id_akun_game'],
+            'login_via'          => $validated['login_via'] ?? $pesanan->login_via,
+            'username_akun_game' => $validated['username_akun_game'] ?? $pesanan->username_akun_game,
+            'nickname_game'      => $validated['nickname_game'] ?? $pesanan->nickname_game,
+            'server_game'        => $validated['server_game'] ?? $pesanan->server_game,
+            'no_wa_customer'     => $validated['no_wa_customer'] ?? $pesanan->no_wa_customer,
+            'catatan_customer'   => $validated['catatan_customer'] ?? $pesanan->catatan_customer,
+            'data_tambahan'      => $dataTambahan,
+            'status'             => StatusPesanan::MenungguVerifikasi,
+            'data_disetujui'     => false,
+        ];
+
+        // Jika customer mengisi password baru, update terenkripsi
+        if (! empty($validated['password_akun_game'])) {
+            $updatePayload['password_akun_game'] = $validated['password_akun_game'];
+        }
+
+        $pesanan->update($updatePayload);
+
+        $pesanan->catatRiwayat(
+            StatusPesanan::PerluRevisiData->value,
+            StatusPesanan::MenungguVerifikasi->value,
+            Auth::id(),
+            'Customer telah memperbarui data akun game. Menunggu verifikasi ulang oleh Admin.'
+        );
+
+        return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
+            ->with('success', 'Data akun game berhasil diperbarui! Admin akan segera memverifikasi pesanan Anda.');
+    }
+
     // ── Helper Internal ───────────────────────────────────
 
     /**

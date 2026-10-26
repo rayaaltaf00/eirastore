@@ -225,6 +225,148 @@
                             </button>
                         </form>
                     </div>
+                @elseif($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiData)
+                    <!-- =================================================== -->
+                    <!-- FORM REVISI DATA AKUN GAME OLEH CUSTOMER (C-10)     -->
+                    <!-- =================================================== -->
+                    <div class="bg-brand-card/90 border-2 border-orange-500/40 rounded-3xl p-6 sm:p-8 shadow-card space-y-6">
+                        <div class="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">⚠️</span>
+                                <strong class="font-bold text-white text-sm">Admin Meminta Revisi Data Akun Game (C-10)</strong>
+                            </div>
+                            @php
+                                $catatanRevisi = $pesanan->riwayatStatus->where('status_baru', \App\Enums\StatusPesanan::PerluRevisiData->value)->last()?->catatan;
+                            @endphp
+                            @if($catatanRevisi)
+                                <div class="p-3 rounded-xl bg-brand-surface/80 border border-brand-border/60 text-slate-200 text-xs">
+                                    <span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Pesan dari Admin:</span>
+                                    <p class="italic">"{{ $catatanRevisi }}"</p>
+                                </div>
+                            @endif
+                            <p class="text-[11px] text-orange-200/90 leading-relaxed">
+                                Silakan perbaiki data login akun game Anda di bawah ini tanpa perlu membayar ulang. Setelah Anda menekan <strong>Simpan Revisi Data</strong>, status pesanan akan otomatis kembali ke <strong>Menunggu Verifikasi</strong>.
+                            </p>
+                        </div>
+
+                        <form action="{{ route('pesanan.revisi-data', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+                            @csrf
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="id_akun_game" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        ID Akun Game <span class="text-rose-400">*</span>
+                                    </label>
+                                    <input type="text" id="id_akun_game" name="id_akun_game" required
+                                           value="{{ old('id_akun_game', $pesanan->id_akun_game) }}"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label for="login_via" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Metode Login
+                                    </label>
+                                    <input type="text" id="login_via" name="login_via"
+                                           value="{{ old('login_via', $pesanan->login_via) }}"
+                                           placeholder="Moonton / Facebook / Google / dll"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label for="username_akun_game" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Username / Email Login
+                                    </label>
+                                    <input type="text" id="username_akun_game" name="username_akun_game"
+                                           value="{{ old('username_akun_game', $pesanan->username_akun_game) }}"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label for="password_akun_game" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Password Baru (Opsional)
+                                    </label>
+                                    <input type="password" id="password_akun_game" name="password_akun_game"
+                                           placeholder="Kosongkan jika password lama benar"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                    <span class="text-[10px] text-slate-500">Isi hanya jika ingin mengganti password akun.</span>
+                                </div>
+
+                                <div>
+                                    <label for="nickname_game" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Nickname In-Game
+                                    </label>
+                                    <input type="text" id="nickname_game" name="nickname_game"
+                                           value="{{ old('nickname_game', $pesanan->nickname_game) }}"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label for="server_game" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Server Game
+                                    </label>
+                                    <input type="text" id="server_game" name="server_game"
+                                           value="{{ old('server_game', $pesanan->server_game) }}"
+                                           placeholder="Contoh: Asia / Server 101"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label for="zone_id" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Zone ID (Khusus MLBB dll)
+                                    </label>
+                                    <input type="text" id="zone_id" name="zone_id"
+                                           value="{{ old('zone_id', $pesanan->data_tambahan['zone_id'] ?? '') }}"
+                                           placeholder="Contoh: (2123)"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+
+                                <div>
+                                    <label for="no_wa_customer" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Nomor WhatsApp Aktif
+                                    </label>
+                                    <input type="text" id="no_wa_customer" name="no_wa_customer"
+                                           value="{{ old('no_wa_customer', $pesanan->no_wa_customer) }}"
+                                           class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="catatan_customer" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Catatan Tambahan untuk Worker
+                                </label>
+                                <textarea id="catatan_customer" name="catatan_customer" rows="2"
+                                          class="w-full px-4 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none">{{ old('catatan_customer', $pesanan->catatan_customer) }}</textarea>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-95 text-brand-bg text-sm font-black shadow-glow-orange transition-all text-center">
+                                Simpan Revisi Data Akun & Kirim Ulang ke Admin &rarr;
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- KARTU STATUS PEMBAYARAN -->
+                    <div class="bg-brand-card/90 border border-brand-border rounded-3xl p-6 sm:p-8 shadow-card space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 h-10 rounded-xl bg-brand-blue/20 text-brand-cyan border border-brand-blue/30 flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </span>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Status Pembayaran: {{ $pesanan->pembayaran?->status?->label() ?? 'Menunggu Verifikasi' }}</h3>
+                                <p class="text-xs text-slate-400">Pembayaran Anda tetap tersimpan dan tidak perlu ditransfer ulang.</p>
+                            </div>
+                        </div>
+
+                        @if($pesanan->pembayaran && $pesanan->pembayaran->bukti_transfer)
+                            <div class="pt-2">
+                                <a href="{{ route('pesanan.bukti.unduh', $pesanan->kode_pesanan) }}" target="_blank"
+                                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs font-bold text-slate-300 hover:text-white hover:border-slate-500 transition-colors">
+                                    <svg class="w-4 h-4 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <span>Lihat Struk Bukti Transfer</span>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 @else
                     <!-- INFORMASI STATUS PEMBAYARAN SAAT TIDAK MENUNGGU PEMBAYARAN -->
                     <div class="bg-brand-card/90 border border-brand-border rounded-3xl p-6 sm:p-8 shadow-card space-y-4">

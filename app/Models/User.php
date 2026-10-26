@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use App\Enums\StatusPesanan;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -85,5 +86,36 @@ class User extends Authenticatable
     public function isWorker(): bool
     {
         return $this->role === Role::Worker;
+    }
+
+    /** Status pesanan yang dianggap masih aktif dikerjakan oleh worker */
+    public const STATUS_PESANAN_AKTIF_WORKER = [
+        StatusPesanan::Diproses,
+        StatusPesanan::SedangDikerjakan,
+        StatusPesanan::LaporanMasuk,
+        StatusPesanan::PerluRevisiHasil,
+        StatusPesanan::WorkerSelesai,
+        StatusPesanan::MenungguKonfirmasi,
+        StatusPesanan::Dikomplain,
+    ];
+
+    /** Hitung jumlah pesanan aktif yang sedang ditangani worker */
+    public function getJumlahPesananAktifAttribute(): int
+    {
+        return $this->pesananSebagaiWorker()
+            ->whereIn('status', self::STATUS_PESANAN_AKTIF_WORKER)
+            ->count();
+    }
+
+    /** Cek apakah worker memiliki pesanan yang masih berjalan */
+    public function memilikiPesananAktif(): bool
+    {
+        return $this->jumlah_pesanan_aktif > 0;
+    }
+
+    /** Scope untuk query hanya role Worker */
+    public function scopeWorker($query)
+    {
+        return $query->where('role', Role::Worker);
     }
 }
