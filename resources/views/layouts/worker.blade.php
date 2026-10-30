@@ -57,17 +57,27 @@
         <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
             <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Tugas & Pengerjaan</div>
 
-            <!-- Pesanan Saya -->
+            @php
+                $isRiwayat = request()->routeIs('worker.pesanan*') && request('tab') === 'selesai';
+                $isPesananAktif = request()->routeIs('worker.pesanan*') && request('tab') !== 'selesai';
+            @endphp
+
+            <!-- Pesanan Ditugaskan (Tugas Aktif) -->
             <a href="{{ route('worker.pesanan') }}" 
-               class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('worker.pesanan') ? 'bg-brand-blue text-white shadow-glow-blue' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
-                <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                Pesanan Ditugaskan
+               class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ $isPesananAktif ? 'bg-brand-blue text-white shadow-glow-blue font-semibold' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3 shrink-0 {{ $isPesananAktif ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span>Pesanan Ditugaskan</span>
+                </div>
             </a>
 
-            <!-- Riwayat Penyelesaian -->
-            <a href="#" class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-brand-surface hover:text-white transition-colors">
-                <svg class="w-5 h-5 mr-3 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Riwayat Selesai
+            <!-- Riwayat Selesai -->
+            <a href="{{ route('worker.pesanan', ['tab' => 'selesai']) }}" 
+               class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ $isRiwayat ? 'bg-brand-blue text-white shadow-glow-blue font-semibold' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-3 shrink-0 {{ $isRiwayat ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Riwayat Selesai</span>
+                </div>
             </a>
         </nav>
 

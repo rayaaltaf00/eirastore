@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Enums\StatusPesanan;
+use App\Http\Controllers\Controller;
+use App\Models\Pesanan;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class LaporanTransaksiController extends Controller
+{
+    /**
+     * Tampilkan laporan transaksi dan pendapatan pesanan selesai (A-30).
+     */
+    public function index(Request $request): View
+    {
+        $request->validate([
+            'tanggal_mulai' => ['nullable', 'date'],
+            'tanggal_akhir' => ['nullable', 'date', 'after_or_equal:tanggal_mulai'],
+        ], [
+            'tanggal_mulai.date' => 'Format tanggal mulai tidak valid.',
+            'tanggal_akhir.date' => 'Format tanggal akhir tidak valid.',
+            'tanggal_akhir.after_or_equal' => 'Tanggal akhir tidak boleh sebelum tanggal mulai.',
+        ]);
+
+        $tanggalMulai = $request->filled('tanggal_mulai')
+            ? Carbon::parse($request->input('tanggal_mulai'))->startOfDay()
+            : Carbon::now()->startOfMonth()->startOfDay();
+
+        $tanggalAkhir = $request->filled('tanggal_akhir')
+            ? Carbon::parse($request->input('tanggal_akhir'))->endOfDay()
+            : Carbon::now()->endOfDay();
+
+        $query = Pesanan::with(['customer', 'layanan.game', 'worker'])
+            ->where('status', StatusPesanan::Selesai)
+            ->where(function ($q) use ($tanggalMulai, $tanggalAkhir) {
+                $q->whereBetween('selesai_at', [$tanggalMulai, $tanggalAkhir])
+                  ->orWhere(function ($sub) use ($tanggalMulai, $tanggalAkhir) {
+                      $sub->whereNull('selesai_at')
+                          ->whereBetween('updated_at', [$tanggalMulai, $tanggalAkhir]);
+                  });
+            })
+            ->orderByRaw('COALESCE(selesai_at, updated_at) DESC');
+
+        $pesananList = $query->get();
+
+        $totalPesanan = $pesananList->count();
+        $totalPendapatan = (int) $pesananList->sum('total_harga');
+        $rataRataTransaksi = $totalPesanan > 0 ? (int) round($totalPendapatan / $totalPesanan) : 0;
+
+        return view('admin.laporan-transaksi.index', [
+            'pesananList' => $pesananList,
+            'tanggalMulai' => $tanggalMulai->format('Y-m-d'),
+            'tanggalAkhir' => $tanggalAkhir->format('Y-m-d'),
+            'totalPesanan' => $totalPesanan,
+            'totalPendapatan' => $totalPendapatan,
+            'rataRataTransaksi' => $rataRataTransaksi,
+        ]);
+    }
+}

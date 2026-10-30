@@ -14,6 +14,7 @@ class LaporanPenyelesaian extends Model
         'pesanan_id',
         'worker_id',
         'foto_bukti',           // path file di storage privat
+        'catatan',              // catatan opsional dari worker
         'status',
         'diverifikasi_oleh',
         'diverifikasi_at',

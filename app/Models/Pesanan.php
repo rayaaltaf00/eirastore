@@ -74,6 +74,12 @@ class Pesanan extends Model
         return $this->hasMany(PesananItem::class, 'pesanan_id');
     }
 
+    /** Alias untuk pesananItems */
+    public function items(): HasMany
+    {
+        return $this->pesananItems();
+    }
+
     /** Data pembayaran (satu per pesanan) */
     public function pembayaran(): HasOne
     {
@@ -84,6 +90,12 @@ class Pesanan extends Model
     public function laporanPenyelesaian(): HasMany
     {
         return $this->hasMany(LaporanPenyelesaian::class, 'pesanan_id');
+    }
+
+    /** Laporan penyelesaian paling baru */
+    public function laporanTerbaru(): HasOne
+    {
+        return $this->hasOne(LaporanPenyelesaian::class, 'pesanan_id')->latestOfMany();
     }
 
     /** Riwayat perubahan status (timeline) */

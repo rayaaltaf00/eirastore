@@ -116,74 +116,165 @@
         </section>
 
         <!-- ========================================================================= -->
-        <!-- 2. HERO TEXT (Ringkas, di bawah banner)                                    -->
+        <!-- 2. HERO TEXT & RATING HOOK                                                -->
         <!-- ========================================================================= -->
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <!-- Glow background blob -->
             <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-3/4 max-w-3xl h-64 bg-brand-blue/15 blur-[120px] rounded-full pointer-events-none -z-10"></div>
 
-            <div class="relative rounded-3xl bg-gradient-to-b from-brand-card/90 to-brand-card/40 border border-brand-border/80 p-6 sm:p-12 overflow-hidden shadow-2xl">
+            <div class="relative rounded-3xl bg-gradient-to-b from-brand-card/90 to-brand-card/40 border border-brand-border/80 p-6 sm:p-10 lg:p-12 overflow-hidden shadow-2xl">
                 <!-- Grid pattern overlay -->
                 <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0a_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
 
-                <div class="relative z-10 max-w-3xl">
-                    <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-brand-surface border border-brand-border text-brand-cyan text-xs font-semibold mb-6">
-                        <span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
-                        <span>Layanan Joki Game #1 Indonesia</span>
-                    </div>
-
-                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15]">
-                        Tingkatkan Rank Game <br>
-                        <span class="bg-gradient-to-r from-blue-400 via-brand-cyan to-indigo-400 bg-clip-text text-transparent">Cepat, Aman & Bergaransi</span>
-                    </h1>
-
-                    <p class="mt-4 sm:mt-6 text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
-                        EiraStore menyediakan layanan joki profesional untuk Mobile Legends, Valorant, Free Fire, dan game populer lainnya. Dikerjakan langsung oleh tim worker terverifikasi dengan sistem pelacakan progres transparan.
-                    </p>
-
-                    <div class="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#katalog-game" @click.prevent="navigateToSection('katalog-game')" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all duration-200 hover:-translate-y-0.5">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                            Pilih Game Sekarang
-                        </a>
-                        <a href="{{ route('lacak.index') }}" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-surface hover:bg-slate-700 text-slate-200 border border-brand-border transition-all duration-200">
-                            <svg class="w-4 h-4 mr-2 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            Lacak Status Pesanan
-                        </a>
-                    </div>
-
-                    <!-- Trust Points Bar -->
-                    <div class="mt-10 pt-8 border-t border-brand-border/60 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-lg bg-blue-500/10 text-brand-cyan flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-white">Proses Cepat</h4>
-                                <p class="text-[11px] text-slate-400">Worker standby 24/7</p>
-                            </div>
+                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+                    
+                    <!-- Kolom Kiri (7/12): Nilai Utama & Aksi Cepat -->
+                    <div class="lg:col-span-7">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-surface border border-brand-border text-xs font-semibold mb-6 shadow-md shadow-brand-blue/5">
+                            <span class="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></span>
+                            <span class="font-bold text-brand-cyan">Layanan Joki Game #1 Indonesia</span>
                         </div>
 
-                        <div class="flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-white">100% Aman</h4>
-                                <p class="text-[11px] text-slate-400">Privasi akun terjamin</p>
-                            </div>
+                        <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight leading-[1.15]">
+                            Tingkatkan Rank Game <br>
+                            <span class="bg-gradient-to-r from-blue-400 via-brand-cyan to-indigo-400 bg-clip-text text-transparent">Cepat, Aman & Bergaransi</span>
+                        </h1>
+
+                        <p class="mt-4 sm:mt-5 text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                            EiraStore menyediakan layanan joki profesional untuk Mobile Legends, Valorant, Free Fire, dan game populer lainnya. Dikerjakan langsung oleh tim worker terverifikasi dengan sistem pelacakan progres transparan.
+                        </p>
+
+                        <div class="mt-7 flex flex-wrap items-center gap-3.5">
+                            <a href="#katalog-game" @click.prevent="navigateToSection('katalog-game')" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blueHover text-white shadow-glow-blue transition-all duration-200 hover:-translate-y-0.5">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                Pilih Game Sekarang
+                            </a>
+                            <a href="{{ route('lacak.index') }}" class="inline-flex items-center justify-center px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-surface hover:bg-slate-700 text-slate-200 border border-brand-border transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                Lacak Status Pesanan
+                            </a>
                         </div>
 
-                        <div class="col-span-2 sm:col-span-1 flex items-center space-x-3">
-                            <div class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                        <!-- Trust Points Bar -->
+                        <div class="mt-8 pt-6 border-t border-brand-border/60 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-brand-cyan flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">Proses Cepat</h4>
+                                    <p class="text-[10px] text-slate-400">Worker standby 24/7</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-white">Garansi Rank</h4>
-                                <p class="text-[11px] text-slate-400">Target selesai atau refund</p>
+
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">100% Aman</h4>
+                                    <p class="text-[10px] text-slate-400">Privasi akun terjamin</p>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1 flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-white">Garansi Rank</h4>
+                                    <p class="text-[10px] text-slate-400">Target selesai / refund</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Kolom Kanan (5/12): KOTAK RATING & SOCIAL PROOF UTAMA (Pemancing Pelanggan) -->
+                    <div class="lg:col-span-5">
+                        <div class="rounded-2xl bg-brand-surface/90 border border-brand-border/90 p-5 sm:p-6 shadow-xl backdrop-blur-sm space-y-4">
+                            <!-- Header Kartu Rating -->
+                            <div class="flex items-center justify-between pb-3 border-b border-brand-border/60">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-brand-cyan block">Bukti Kepuasan</span>
+                                    <h3 class="text-sm sm:text-base font-bold text-white">Rating Pelanggan</h3>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    Terverifikasi
+                                </span>
+                            </div>
+
+                            <!-- Nilai Rating & Bintang Besar -->
+                            <div class="flex items-center gap-4">
+                                <div class="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight flex items-baseline">
+                                    {{ number_format($rataRataRating ?? 5.0, 1) }}
+                                    <span class="text-xs sm:text-sm text-slate-500 font-normal ml-1">/5.0</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-1 text-amber-400">
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5 fill-amber-400 filter drop-shadow-[0_2px_8px_rgba(251,191,36,0.35)]" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                        @endfor
+                                    </div>
+                                    <p class="text-xs text-slate-300 font-medium">
+                                        Berdasarkan <strong class="text-white">{{ $totalUlasan ?? 0 }} ulasan terverifikasi</strong>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Cuplikan Ulasan Nyata Pelanggan Terbaru -->
+                            @if(isset($ulasanTerbaru) && $ulasanTerbaru->count() > 0)
+                                @php
+                                    $firstReview = $ulasanTerbaru->first();
+                                @endphp
+                                <div class="p-3 rounded-xl bg-brand-card/90 border border-brand-border/60 space-y-2">
+                                    <div class="flex items-center justify-between text-[10px] font-semibold text-slate-400 border-b border-brand-border/40 pb-1.5">
+                                        <span>5 Ulasan Terbaru</span>
+                                        <span class="text-brand-cyan">Terverifikasi</span>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <div class="w-6 h-6 rounded-full bg-brand-blue/20 text-brand-cyan text-[10px] font-bold flex items-center justify-center shrink-0">
+                                                {{ strtoupper(substr($firstReview->pesanan?->customer?->nama ?? 'P', 0, 1)) }}
+                                            </div>
+                                            <span class="text-xs font-bold text-white truncate">{{ $firstReview->pesanan?->customer?->nama ?? 'Pelanggan' }}</span>
+                                        </div>
+                                        <div class="flex items-center text-amber-400">
+                                            @for($s = 1; $s <= 5; $s++)
+                                                <svg class="w-3 h-3 {{ $s <= $firstReview->rating ? 'fill-amber-400' : 'fill-slate-600' }}" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                </svg>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    @if($firstReview->komentar)
+                                        <p class="text-xs text-slate-300 italic line-clamp-2 leading-relaxed">
+                                            "{{ $firstReview->komentar }}"
+                                        </p>
+                                    @endif
+                                    <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1">
+                                        <span class="truncate">{{ $firstReview->pesanan?->layanan?->nama_layanan ?? 'Joki Terverifikasi' }}</span>
+                                        <span class="shrink-0">{{ $firstReview->created_at->diffForHumans() }}</span>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- Indikator Kepuasan & Jaminan -->
+                            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-brand-border/40 text-center">
+                                <div class="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+                                    <span class="text-xs font-bold text-emerald-400 block font-mono">99%</span>
+                                    <span class="text-[10px] text-slate-400">Kepuasan Pelanggan</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-blue-500/5 border border-blue-500/15">
+                                    <span class="text-xs font-bold text-brand-cyan block font-mono">100%</span>
+                                    <span class="text-[10px] text-slate-400">Garansi Akun Aman</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -203,7 +294,7 @@
             </div>
 
             <!-- Category Filter Tabs -->
-            <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none mb-6">
+            <div class="flex items-center space-x-2 overflow-x-auto pb-3 scrollbar-none mb-6">
                 <button 
                     @click="activeTab = 'all'" 
                     :class="activeTab === 'all' ? 'bg-brand-blue text-white shadow-glow-blue' : 'bg-brand-surface text-slate-400 hover:text-white border border-brand-border'"
@@ -236,8 +327,8 @@
                 </button>
             </div>
 
-            <!-- Game Cards Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <!-- Full-Width Game Cards Grid (2 cols mobile, 3 tablet, 4 md, 5 desktop) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
                 @if(isset($games) && $games->count() > 0)
                     @foreach($games as $game)
                         <div x-show="matchGame(@js($game->nama_game), @js($game->kategori ?? 'Game'))" x-transition>
@@ -245,7 +336,7 @@
                         </div>
                     @endforeach
                 @else
-                    <!-- Default Showcase Games (Ketika database belum memiliki seed game) -->
+                    <!-- Default Showcase Games -->
                     <div x-show="matchGame('Mobile Legends: Bang Bang', 'MOBA')" x-transition>
                         <x-game-card 
                             nama="Mobile Legends" 

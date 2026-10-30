@@ -20,4 +20,13 @@ enum StatusLaporan: string
             self::Ditolak => 'Ditolak',
         };
     }
+
+    public function badgeColor(): string
+    {
+        return match ($this) {
+            self::MenungguVerifikasi => 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+            self::Terverifikasi => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+            self::Ditolak => 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+        };
+    }
 }

@@ -31,18 +31,15 @@ class Ulasan extends Model
     }
 
     /**
-     * Customer yang memberi ulasan.
-     * Akses langsung lewat tabel pesanan tanpa load pesanan dulu.
+     * Customer yang memberi ulasan lewat pesanan.
      */
-    public function customer()
+    public function customer(): ?User
     {
-        return $this->hasOneThrough(
-            User::class,
-            Pesanan::class,
-            'id',           // pesanan.id
-            'id',           // users.id
-            'pesanan_id',   // ulasan.pesanan_id
-            'customer_id'   // pesanan.customer_id
-        );
+        return $this->pesanan?->customer;
+    }
+
+    public function getCustomerAttribute(): ?User
+    {
+        return $this->customer();
     }
 }

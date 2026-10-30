@@ -4,7 +4,10 @@
 <div class="space-y-6" x-data="{ 
     modalRevisiData: false, 
     modalTolakBayar: false,
-    previewBuktiModal: false 
+    previewBuktiModal: false,
+    modalRevisiHasil: false,
+    modalNotifikasiSelesai: false,
+    previewLaporanModal: null
 }">
 
     <!-- Top Navigation & Header -->
@@ -200,6 +203,166 @@
                         Tugaskan ke Worker & Mulai Pengerjaan &rarr;
                     </button>
                 </form>
+            @endif
+        </div>
+    @endif
+
+    {{-- Banner Laporan Masuk (A-27 & A-29) --}}
+    @if($pesanan->status === \App\Enums\StatusPesanan::LaporanMasuk)
+        @php
+            $laporanTerbaru = $pesanan->laporanPenyelesaian->where('status', \App\Enums\StatusLaporan::MenungguVerifikasi)->sortByDesc('id')->first()
+                           ?? $pesanan->laporanPenyelesaian->sortByDesc('id')->first();
+        @endphp
+        <div class="p-6 rounded-3xl bg-gradient-to-r from-teal-950/60 via-brand-surface to-brand-card border-2 border-teal-500/50 shadow-glow-blue space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="w-12 h-12 rounded-2xl bg-teal-500/20 text-teal-400 border border-teal-500/40 flex items-center justify-center font-bold text-xl shrink-0">
+                        📋
+                    </span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-teal-500 text-brand-bg">Aksi Diperlukan</span>
+                            <span class="text-xs text-slate-400">Worker: <strong class="text-white">{{ $pesanan->worker->nama ?? 'Worker' }}</strong></span>
+                        </div>
+                        <h2 class="text-lg font-black text-white mt-0.5">Laporan Hasil Pengerjaan Worker Masuk (A-27)</h2>
+                        <p class="text-xs text-slate-300">Periksa bukti foto hasil jokian berikut. Jika sudah sesuai target, klik Verifikasi. Jika belum sesuai, minta Worker merevisi.</p>
+                    </div>
+                </div>
+            </div>
+
+            @if($laporanTerbaru)
+                <div class="p-4 rounded-2xl bg-brand-card/90 border border-brand-border flex flex-col md:flex-row gap-4 items-start">
+                    <button type="button" 
+                            @click="previewLaporanModal = { url: '{{ route('admin.pesanan.bukti-selesai', [$pesanan->kode_pesanan, $laporanTerbaru->id]) }}', title: 'Bukti Penyelesaian {{ $pesanan->kode_pesanan }}' }"
+                            class="relative group rounded-xl overflow-hidden border border-brand-border w-32 h-32 shrink-0 bg-black/40 hover:border-brand-cyan transition-colors">
+                        <img src="{{ route('admin.pesanan.bukti-selesai', [$pesanan->kode_pesanan, $laporanTerbaru->id]) }}" 
+                             alt="Bukti Laporan" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <span class="px-2 py-1 rounded bg-black/80 text-[10px] text-white font-bold">Perbesar</span>
+                        </div>
+                    </button>
+                    <div class="flex-1 space-y-2 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-white">Laporan Waktu: {{ $laporanTerbaru->created_at->format('d F Y, H:i') }} WIB ({{ $laporanTerbaru->created_at->diffForHumans() }})</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $laporanTerbaru->status->badgeColor() }}">
+                                {{ $laporanTerbaru->status->label() }}
+                            </span>
+                        </div>
+                        @if($laporanTerbaru->catatan)
+                            <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60">
+                                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Catatan dari Worker:</span>
+                                <p class="text-slate-200 leading-relaxed">{{ $laporanTerbaru->catatan }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <form action="{{ route('admin.pesanan.verifikasi-laporan', $pesanan->kode_pesanan) }}" method="POST" class="flex-1 w-full">
+                    @csrf
+                    <button type="submit" 
+                            class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        Verifikasi Laporan & Lanjutkan (A-27)
+                    </button>
+                </form>
+
+                <button type="button" @click="modalRevisiHasil = true"
+                        class="w-full sm:w-auto py-3 px-5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-[0.98] border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Minta Revisi Hasil Pengerjaan (A-29)
+                </button>
+            </div>
+        </div>
+    @endif
+
+    {{-- Banner Worker Selesai (A-28) --}}
+    @if($pesanan->status === \App\Enums\StatusPesanan::WorkerSelesai)
+        <div class="p-6 rounded-3xl bg-gradient-to-r from-emerald-950/60 via-brand-surface to-brand-card border-2 border-emerald-500/50 shadow-glow-emerald space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold text-xl shrink-0">
+                    🎉
+                </span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-brand-bg">Terverifikasi Sah</span>
+                        <span class="text-xs text-slate-400">Pengerjaan Joki Selesai</span>
+                    </div>
+                    <h2 class="text-lg font-black text-white mt-0.5">Hasil Pengerjaan Terverifikasi! Teruskan ke Pelanggan (A-28)</h2>
+                    <p class="text-xs text-slate-300">Hasil pengerjaan telah sah. Kirimkan pemberitahuan penyelesaian ke pelanggan agar dapat memeriksa game dan mengonfirmasi hasil.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button type="button" @click="modalNotifikasiSelesai = true"
+                        class="w-full sm:flex-1 py-3 px-5 rounded-xl bg-gradient-to-r from-brand-blue to-brand-cyan hover:opacity-95 active:scale-[0.98] text-white text-xs font-black shadow-glow-blue flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    Kirim Notifikasi Penyelesaian ke Pelanggan (A-28) &rarr;
+                </button>
+            </div>
+        </div>
+    @endif
+
+    {{-- Banner Dikomplain (A-29) --}}
+    @if($pesanan->status === \App\Enums\StatusPesanan::Dikomplain)
+        @php
+            $riwayatKomplain = $pesanan->riwayatStatus->where('status_baru', \App\Enums\StatusPesanan::Dikomplain->value)->sortByDesc('id')->first();
+        @endphp
+        <div class="p-6 rounded-3xl bg-gradient-to-r from-rose-950/60 via-brand-surface to-brand-card border-2 border-rose-500/50 shadow-lg shadow-rose-500/10 space-y-4">
+            <div class="flex items-center gap-3">
+                <span class="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center font-bold text-xl shrink-0">
+                    ⚠️
+                </span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-500 text-white">Komplain Pelanggan</span>
+                        <span class="text-xs text-slate-400">Perlu Tindakan Admin</span>
+                    </div>
+                    <h2 class="text-lg font-black text-white mt-0.5">Pelanggan Mengajukan Komplain Hasil Pengerjaan (C-12)</h2>
+                    <p class="text-xs text-slate-300">Pelanggan melaporkan bahwa hasil jokian belum sesuai target. Berikan instruksi revisi ke Worker agar segera diperbaiki.</p>
+                </div>
+            </div>
+
+            @if($riwayatKomplain && $riwayatKomplain->catatan)
+                <div class="p-4 rounded-2xl bg-brand-surface border border-brand-border/60">
+                    <span class="text-[10px] uppercase font-bold text-rose-400 block mb-1">Alasan Komplain dari Pelanggan:</span>
+                    <p class="text-xs text-slate-200 leading-relaxed font-medium">{{ $riwayatKomplain->catatan }}</p>
+                </div>
+            @endif
+
+            <div class="pt-2">
+                <button type="button" @click="modalRevisiHasil = true"
+                        class="w-full sm:w-auto py-3 px-6 rounded-xl bg-rose-500 hover:bg-rose-400 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Instruksikan Revisi Hasil ke Worker (A-29) &rarr;
+                </button>
+            </div>
+        </div>
+    @endif
+
+    {{-- Banner Perlu Revisi Hasil --}}
+    @if($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiHasil)
+        <div class="p-5 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-300 text-xs flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-black">⏳</span>
+                <div>
+                    <strong class="text-white block font-bold">Sedang Menunggu Revisi dari Worker</strong>
+                    <span>Instruksi perbaikan telah diteruskan ke worker <strong>{{ $pesanan->worker->nama ?? 'Worker' }}</strong>. Menunggu worker melapor ulang.</span>
+                </div>
+            </div>
+            @if($pesanan->worker && $pesanan->worker->no_hp)
+                @php
+                    $workerWaRev = preg_replace('/[^0-9]/', '', $pesanan->worker->no_hp);
+                    if (str_starts_with($workerWaRev, '0')) {
+                        $workerWaRev = '62' . substr($workerWaRev, 1);
+                    }
+                @endphp
+                <a href="https://wa.me/{{ $workerWaRev }}?text=Halo%20{{ urlencode($pesanan->worker->nama) }},%20mohon%20segera%20selesaikan%20revisi%20pesanan%20{{ $pesanan->kode_pesanan }}." 
+                   target="_blank" class="px-3 py-1.5 rounded-lg bg-orange-500 text-brand-bg font-bold text-xs hover:bg-orange-400 shrink-0">
+                    Ingatkan Worker di WA
+                </a>
             @endif
         </div>
     @endif
@@ -481,6 +644,55 @@
                 @endif
             </div>
 
+            <!-- KARTU 3B: RIWAYAT BUKTI & LAPORAN PENYELESAIAN WORKER -->
+            @if($pesanan->laporanPenyelesaian->isNotEmpty())
+                <div class="bg-brand-card/90 border border-brand-border rounded-2xl p-6 shadow-card space-y-4">
+                    <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-white">Bukti Laporan Pengerjaan Worker</h2>
+                        </div>
+                        <span class="text-xs text-slate-400 font-semibold">{{ $pesanan->laporanPenyelesaian->count() }} Laporan Diserahkan</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        @foreach($pesanan->laporanPenyelesaian->sortByDesc('id') as $index => $lap)
+                            <div class="p-3.5 rounded-xl bg-brand-surface border border-brand-border/60 flex flex-col sm:flex-row items-start gap-4">
+                                <button type="button" 
+                                        @click="previewLaporanModal = { url: '{{ route('admin.pesanan.bukti-selesai', [$pesanan->kode_pesanan, $lap->id]) }}', title: 'Bukti #{{ $loop->iteration }} - {{ $pesanan->kode_pesanan }}' }"
+                                        class="relative group rounded-xl overflow-hidden border border-brand-border w-24 h-24 shrink-0 bg-black/40 hover:border-brand-cyan transition-colors">
+                                    <img src="{{ route('admin.pesanan.bukti-selesai', [$pesanan->kode_pesanan, $lap->id]) }}" 
+                                         alt="Bukti Laporan" 
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                        <span class="px-1.5 py-0.5 rounded bg-black/80 text-[9px] text-white font-bold">Perbesar</span>
+                                    </div>
+                                </button>
+                                <div class="flex-1 space-y-1.5 text-xs">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-white">Laporan #{{ $pesanan->laporanPenyelesaian->count() - $loop->index }}</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $lap->status->badgeColor() }}">
+                                            {{ $lap->status->label() }}
+                                        </span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-400">
+                                        Diserahkan: <strong class="text-slate-300">{{ $lap->created_at->format('d/m/Y H:i') }} WIB</strong> ({{ $lap->created_at->diffForHumans() }})
+                                    </div>
+                                    @if($lap->catatan)
+                                        <p class="text-xs text-slate-200 bg-brand-card p-2 rounded-lg border border-brand-border/40">{{ $lap->catatan }}</p>
+                                    @endif
+                                    @if($lap->diverifikasi_at)
+                                        <div class="text-[10px] text-slate-500">
+                                            Diverifikasi oleh: {{ $lap->verifikator->nama ?? 'Admin' }} pada {{ $lap->diverifikasi_at->format('d/m/Y H:i') }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
         </div>
 
         <!-- ======================================================= -->
@@ -667,6 +879,146 @@
             </div>
         </div>
     @endif
+
+    <!-- ======================================================= -->
+    <!-- MODAL 4: MINTA REVISI HASIL PENGERJAAN WORKER (A-29)   -->
+    <!-- ======================================================= -->
+    <div x-show="modalRevisiHasil" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+         @keydown.escape.window="modalRevisiHasil = false">
+        <div class="bg-brand-card border border-brand-border rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-card"
+             @click.away="modalRevisiHasil = false">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <h3 class="text-base font-bold text-rose-400 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Minta Revisi Hasil Pengerjaan (A-29)
+                </h3>
+                <button type="button" @click="modalRevisiHasil = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+
+            <p class="text-xs text-slate-300">
+                Tuliskan catatan detail untuk Worker <strong class="text-white">{{ $pesanan->worker->nama ?? 'Worker' }}</strong> mengenai bagian hasil jokian yang belum sesuai (misal: rank belum tercapai, bintang kurang, atau screenshot tidak jelas).
+            </p>
+
+            <form action="{{ route('admin.pesanan.minta-revisi-hasil', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="catatan_revisi_hasil" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        Catatan Instruksi Revisi untuk Worker <span class="text-rose-400">*</span>
+                    </label>
+                    <textarea id="catatan_revisi_hasil" name="catatan" rows="4" required minlength="5" maxlength="1000"
+                              placeholder="Contoh: Rank masih di Mythic 15 bintang, pesanan memesan hingga Mythic 25 bintang. Mohon lanjutkan pengerjaan dan lampirkan bukti baru."
+                              class="w-full px-3 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-rose-400 focus:outline-none"></textarea>
+                    <span class="text-[10px] text-slate-500">Minimal 5 karakter, maksimal 1000 karakter.</span>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" @click="modalRevisiHasil = false"
+                            class="px-4 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs font-semibold text-slate-300 hover:text-white transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors">
+                        Kirim Perintah Revisi ke Worker
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- MODAL 5: KIRIM NOTIFIKASI PENYELESAIAN CUSTOMER (A-28) -->
+    <!-- ======================================================= -->
+    <div x-show="modalNotifikasiSelesai" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+         @keydown.escape.window="modalNotifikasiSelesai = false">
+        <div class="bg-brand-card border border-brand-border rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-card"
+             @click.away="modalNotifikasiSelesai = false">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <span class="text-brand-cyan">🚀</span> Kirim Notifikasi Penyelesaian (A-28)
+                </h3>
+                <button type="button" @click="modalNotifikasiSelesai = false" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+
+            <p class="text-xs text-slate-300">
+                Status pesanan akan diubah menjadi <strong class="text-brand-cyan">Menunggu Konfirmasi</strong>. Customer akan dapat memeriksa hasil jokian di detail pesanan dan memiliki opsi untuk Menyetujui Hasil atau Mengajukan Komplain.
+            </p>
+
+            <form action="{{ route('admin.pesanan.kirim-notifikasi-selesai', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="pesan_singkat" class="block text-xs font-semibold text-slate-300 mb-1.5">
+                        Pesan Singkat untuk Pelanggan <span class="text-slate-500 font-normal">(Opsional)</span>
+                    </label>
+                    <textarea id="pesan_singkat" name="pesan_singkat" rows="3" maxlength="1000"
+                              placeholder="Contoh: Pesanan joki kamu sudah selesai dengan selamat! Silakan cek akun game kamu ya kak."
+                              class="w-full px-3 py-2.5 rounded-xl bg-brand-surface border border-brand-border text-white text-xs focus:border-brand-cyan focus:outline-none"></textarea>
+                    <span class="text-[10px] text-slate-500">Maksimal 1000 karakter.</span>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between gap-3">
+                    <div>
+                        <strong class="block font-bold">Kirim juga ke WhatsApp Pelanggan?</strong>
+                        <span class="text-[11px] text-emerald-400/80">Kirim tautan konfirmasi langsung ke nomor WA pelanggan.</span>
+                    </div>
+                    @if($pesanan->no_wa_customer)
+                        @php
+                            $waCleanCust = preg_replace('/[^0-9]/', '', $pesanan->no_wa_customer);
+                            if (str_starts_with($waCleanCust, '0')) {
+                                $waCleanCust = '62' . substr($waCleanCust, 1);
+                            }
+                            $waTeks = "Halo kak " . ($pesanan->customer->nama ?? '') . ", pesanan joki " . $pesanan->kode_pesanan . " di EiraStore telah SELESAI dikerjakan! Silakan cek hasil di dalam game dan konfirmasi pesanan kamu di: " . route('pesanan.show', $pesanan->kode_pesanan);
+                        @endphp
+                        <a href="https://wa.me/{{ $waCleanCust }}?text={{ urlencode($waTeks) }}" 
+                           target="_blank"
+                           class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs whitespace-nowrap shrink-0 transition-colors">
+                            Buka WA
+                        </a>
+                    @endif
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" @click="modalNotifikasiSelesai = false"
+                            class="px-4 py-2 rounded-xl bg-brand-surface border border-brand-border text-xs font-semibold text-slate-300 hover:text-white transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-blue to-brand-cyan text-white text-xs font-black shadow-glow-blue hover:opacity-95 transition-all">
+                        Kirim & Perbarui Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- MODAL 6: PREVIEW FULLSCREEN LAPORAN WORKER              -->
+    <!-- ======================================================= -->
+    <div x-show="previewLaporanModal" x-cloak
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+         @keydown.escape.window="previewLaporanModal = null">
+        <div class="relative max-w-3xl w-full bg-brand-card border border-brand-border rounded-2xl p-5 shadow-card"
+             @click.away="previewLaporanModal = null">
+            <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider" x-text="previewLaporanModal?.title ?? 'Bukti Penyelesaian'"></h4>
+                <button type="button" @click="previewLaporanModal = null" class="text-slate-400 hover:text-white text-lg">&times;</button>
+            </div>
+            <div class="mt-4 max-h-[75vh] overflow-auto rounded-xl flex items-center justify-center bg-black/40">
+                <template x-if="previewLaporanModal">
+                    <img :src="previewLaporanModal.url" :alt="previewLaporanModal.title" class="max-w-full max-h-[70vh] object-contain rounded-lg">
+                </template>
+            </div>
+            <div class="mt-3 flex justify-between items-center text-xs">
+                <span class="text-slate-400 text-[11px]">Screenshot pengerjaan disimpan di storage privat.</span>
+                <template x-if="previewLaporanModal">
+                    <a :href="previewLaporanModal.url" target="_blank" class="text-brand-cyan hover:underline font-semibold flex items-center gap-1">
+                        Buka Tab Penuh &rarr;
+                    </a>
+                </template>
+            </div>
+        </div>
+    </div>
 
 </div>
 @endsection

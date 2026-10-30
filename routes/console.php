@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Scheduler untuk memeriksa pesanan kedaluwarsa setiap 5 menit
 Schedule::command('pesanan:cek-kedaluwarsa')->everyFiveMinutes();
+
+// Scheduler untuk menyelesaikan otomatis pesanan yang menunggu konfirmasi lebih dari 24 jam
+Schedule::command('pesanan:auto-selesai')->hourly();

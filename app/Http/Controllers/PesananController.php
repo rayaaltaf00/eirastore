@@ -11,14 +11,17 @@ use App\Models\MetodePembayaranTujuan;
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use App\Models\RiwayatStatusPesanan;
+use App\Models\Ulasan;
 use App\Models\User;
 use App\Services\OrderCalculationService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PesananController extends Controller
@@ -182,20 +185,27 @@ class PesananController extends Controller
             return back()->withInput()->with('error', 'Hanya akun customer yang dapat membuat pesanan joki.');
         }
 
-        // PROTEKSI ANTI-SPAM: Cek apakah masih ada pesanan menunggu_pembayaran yang aktif
-        $pendingOrder = Pesanan::query()
-            ->where('customer_id', $user->id)
-            ->where('status', StatusPesanan::MenungguPembayaran)
-            ->where('batas_waktu_bayar', '>', now())
-            ->first();
+        // PROTEKSI ANTI-SPAM ATOMIC: Cek apakah masih ada pesanan menunggu_pembayaran yang aktif
+        $pendingOrder = null;
+        $pesanan = DB::transaction(function () use ($user, $layanan, $payload, $calcResult, &$pendingOrder) {
+            $pendingOrder = Pesanan::query()
+                ->where('customer_id', $user->id)
+                ->where('status', StatusPesanan::MenungguPembayaran)
+                ->where('batas_waktu_bayar', '>', now())
+                ->lockForUpdate()
+                ->first();
 
-        if ($pendingOrder) {
+            if ($pendingOrder) {
+                return null;
+            }
+
+            return $this->createOrderRecord($user->id, $layanan, $payload, $calcResult);
+        });
+
+        if (! $pesanan) {
             return redirect()->route('pesanan.show', $pendingOrder->kode_pesanan)
                 ->with('error', "Anda masih memiliki pesanan {$pendingOrder->kode_pesanan} yang menunggu pembayaran. Silakan selesaikan pembayaran tersebut atau batalkan terlebih dahulu sebelum membuat pesanan baru.");
         }
-
-        // Buat pesanan secara resmi di database
-        $pesanan = $this->createOrderRecord($user->id, $layanan, $payload, $calcResult);
 
         // Hapus draf sesi jika ada
         session()->forget('draft_pesanan');
@@ -248,20 +258,6 @@ class PesananController extends Controller
             return redirect()->route('beranda')->with('error', 'Hanya akun customer yang dapat membuat pesanan.');
         }
 
-        // Cek proteksi anti-spam
-        $pendingOrder = Pesanan::query()
-            ->where('customer_id', $user->id)
-            ->where('status', StatusPesanan::MenungguPembayaran)
-            ->where('batas_waktu_bayar', '>', now())
-            ->first();
-
-        if ($pendingOrder) {
-            session()->forget('draft_pesanan');
-
-            return redirect()->route('pesanan.show', $pendingOrder->kode_pesanan)
-                ->with('error', "Anda masih memiliki pesanan {$pendingOrder->kode_pesanan} yang menunggu pembayaran.");
-        }
-
         /** @var Layanan $layanan */
         $layanan = Layanan::findOrFail($draft['layanan_id']);
 
@@ -273,7 +269,29 @@ class PesananController extends Controller
             return redirect()->route('game.show', $layanan->game)->with('error', $e->getMessage());
         }
 
-        $pesanan = $this->createOrderRecord($user->id, $layanan, $draft, $calcResult);
+        // Cek proteksi anti-spam atomic
+        $pendingOrder = null;
+        $pesanan = DB::transaction(function () use ($user, $layanan, $draft, $calcResult, &$pendingOrder) {
+            $pendingOrder = Pesanan::query()
+                ->where('customer_id', $user->id)
+                ->where('status', StatusPesanan::MenungguPembayaran)
+                ->where('batas_waktu_bayar', '>', now())
+                ->lockForUpdate()
+                ->first();
+
+            if ($pendingOrder) {
+                return null;
+            }
+
+            return $this->createOrderRecord($user->id, $layanan, $draft, $calcResult);
+        });
+
+        if (! $pesanan) {
+            session()->forget('draft_pesanan');
+
+            return redirect()->route('pesanan.show', $pendingOrder->kode_pesanan)
+                ->with('error', "Anda masih memiliki pesanan {$pendingOrder->kode_pesanan} yang menunggu pembayaran.");
+        }
 
         session()->forget('draft_pesanan');
 
@@ -318,8 +336,11 @@ class PesananController extends Controller
             'layanan.game',
             'pesananItems',
             'pembayaran',
-            'riwayatStatus' => fn ($q) => $q->orderBy('created_at'),
+            'riwayatStatus' => fn ($q) => $q->with('pengubah')->orderBy('created_at'),
             'customer',
+            'worker',
+            'laporanTerbaru',
+            'ulasan',
         ]);
 
         // Rekening pembayaran aktif
@@ -400,29 +421,31 @@ class PesananController extends Controller
         // Simpan file ke storage privat (bukan disk public)
         $path = $request->file('bukti_transfer')->store('bukti_pembayaran', 'local');
 
-        // Simpan rekaman pembayaran
-        Pembayaran::updateOrCreate(
-            ['pesanan_id' => $pesanan->id],
-            [
-                'metode_pembayaran' => $request->metode_pembayaran,
-                'bukti_transfer' => $path,
-                'status' => StatusPembayaran::MenungguVerifikasi,
-            ]
-        );
+        DB::transaction(function () use ($pesanan, $request, $path) {
+            // Simpan rekaman pembayaran
+            Pembayaran::updateOrCreate(
+                ['pesanan_id' => $pesanan->id],
+                [
+                    'metode_pembayaran' => $request->metode_pembayaran,
+                    'bukti_transfer' => $path,
+                    'status' => StatusPembayaran::MenungguVerifikasi,
+                ]
+            );
 
-        // Ubah status pesanan menjadi menunggu_verifikasi
-        $pesanan->update([
-            'status' => StatusPesanan::MenungguVerifikasi,
-        ]);
+            // Ubah status pesanan menjadi menunggu_verifikasi
+            $pesanan->update([
+                'status' => StatusPesanan::MenungguVerifikasi,
+            ]);
 
-        // Catat riwayat status
-        RiwayatStatusPesanan::create([
-            'pesanan_id' => $pesanan->id,
-            'status_lama' => StatusPesanan::MenungguPembayaran->value,
-            'status_baru' => StatusPesanan::MenungguVerifikasi->value,
-            'catatan' => "Bukti transfer telah diunggah via {$request->metode_pembayaran}. Menunggu verifikasi oleh Admin.",
-            'diubah_oleh' => Auth::id(),
-        ]);
+            // Catat riwayat status
+            RiwayatStatusPesanan::create([
+                'pesanan_id' => $pesanan->id,
+                'status_lama' => StatusPesanan::MenungguPembayaran->value,
+                'status_baru' => StatusPesanan::MenungguVerifikasi->value,
+                'catatan' => "Bukti transfer telah diunggah via {$request->metode_pembayaran}. Menunggu verifikasi oleh Admin.",
+                'diubah_oleh' => Auth::id(),
+            ]);
+        });
 
         return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
             ->with('success', 'Bukti pembayaran berhasil diunggah! Admin kami akan segera memverifikasi transaksi Anda.');
@@ -542,6 +565,159 @@ class PesananController extends Controller
             ->with('success', 'Data akun game berhasil diperbarui! Admin akan segera memverifikasi pesanan Anda.');
     }
 
+    /**
+     * Setujui hasil pengerjaan joki oleh customer (C-11).
+     * Status diubah menjadi hasil_disetujui dan password akun game dihapus seketika.
+     */
+    public function setujuiHasil(Pesanan $pesanan): RedirectResponse
+    {
+        $this->authorizeOwner($pesanan);
+
+        if ($pesanan->status !== StatusPesanan::MenungguKonfirmasi) {
+            return back()->with('error', 'Hanya pesanan yang berstatus menunggu konfirmasi yang dapat disetujui hasilnya.');
+        }
+
+        DB::transaction(function () use ($pesanan) {
+            $pesanan->update([
+                'status' => StatusPesanan::HasilDisetujui,
+            ]);
+
+            // Hapus password akun game seketika sesuai aturan PRD C-11 & C11
+            $pesanan->hapusPasswordAkunGame();
+
+            $pesanan->catatRiwayat(
+                StatusPesanan::MenungguKonfirmasi->value,
+                StatusPesanan::HasilDisetujui->value,
+                Auth::id(),
+                'Customer telah memeriksa dan menyetujui hasil pengerjaan joki. Kredensial password akun game telah dihapus demi keamanan.'
+            );
+        });
+
+        return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
+            ->with('success', 'Hasil pengerjaan berhasil disetujui! Kredensial password akun game Anda telah dihapus secara aman. Silakan klik "Konfirmasi Selesai" untuk menutup pesanan.');
+    }
+
+    /**
+     * Ajukan komplain hasil pengerjaan joki oleh customer (C-12).
+     * Status diubah menjadi dikomplain dan password akun game TIDAK dihapus karena Worker mungkin perlu revisi.
+     */
+    public function ajukanKomplain(Request $request, Pesanan $pesanan): RedirectResponse
+    {
+        $this->authorizeOwner($pesanan);
+
+        if ($pesanan->status !== StatusPesanan::MenungguKonfirmasi) {
+            return back()->with('error', 'Komplain hanya dapat diajukan saat pesanan berstatus menunggu konfirmasi.');
+        }
+
+        $validated = $request->validate([
+            'alasan' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'alasan.required' => 'Alasan komplain wajib diisi.',
+            'alasan.min' => 'Alasan komplain minimal 10 karakter.',
+            'alasan.max' => 'Alasan komplain maksimal 1000 karakter.',
+        ]);
+
+        DB::transaction(function () use ($pesanan, $validated) {
+            $pesanan->update([
+                'status' => StatusPesanan::Dikomplain,
+            ]);
+
+            $pesanan->catatRiwayat(
+                StatusPesanan::MenungguKonfirmasi->value,
+                StatusPesanan::Dikomplain->value,
+                Auth::id(),
+                'Komplain Customer: ' . $validated['alasan']
+            );
+        });
+
+        return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
+            ->with('success', 'Komplain Anda berhasil dikirim ke Admin. Admin dan Worker akan segera meninjau dan melanjutkan perbaikan.');
+    }
+
+    /**
+     * Konfirmasi penyelesaian pesanan secara final oleh customer (C-13).
+     * Status diubah menjadi selesai dan selesai_at diisi.
+     */
+    public function konfirmasiSelesai(Pesanan $pesanan): RedirectResponse
+    {
+        $this->authorizeOwner($pesanan);
+
+        if ($pesanan->status !== StatusPesanan::HasilDisetujui) {
+            return back()->with('error', 'Hanya pesanan yang telah disetujui hasilnya yang dapat dikonfirmasi selesai.');
+        }
+
+        DB::transaction(function () use ($pesanan) {
+            $pesanan->update([
+                'status' => StatusPesanan::Selesai,
+                'selesai_at' => now(),
+            ]);
+
+            // Pastikan kembali kredensial sudah dihapus
+            $pesanan->hapusPasswordAkunGame();
+
+            $pesanan->catatRiwayat(
+                StatusPesanan::HasilDisetujui->value,
+                StatusPesanan::Selesai->value,
+                Auth::id(),
+                'Pesanan telah diselesaikan secara final oleh customer. Terima kasih telah menggunakan layanan EiraStore!'
+            );
+        });
+
+        return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
+            ->with('success', 'Pesanan telah selesai! Terima kasih atas kepercayaan Anda pada EiraStore. Silakan berikan rating dan ulasan Anda.');
+    }
+
+    /**
+     * Simpan rating dan ulasan oleh customer (C-14).
+     */
+    public function simpanUlasan(Request $request, Pesanan $pesanan): RedirectResponse
+    {
+        $this->authorizeOwner($pesanan);
+
+        if ($pesanan->status !== StatusPesanan::Selesai) {
+            return back()->with('error', 'Ulasan hanya dapat diberikan untuk pesanan yang telah berstatus selesai.');
+        }
+
+        if ($pesanan->ulasan()->exists()) {
+            return back()->with('error', 'Anda sudah memberikan ulasan untuk pesanan ini.');
+        }
+
+        $validated = $request->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'komentar' => ['nullable', 'string', 'max:500'],
+        ], [
+            'rating.required' => 'Rating bintang wajib dipilih (1-5).',
+            'rating.integer' => 'Format rating tidak valid.',
+            'rating.min' => 'Rating minimal 1 bintang.',
+            'rating.max' => 'Rating maksimal 5 bintang.',
+            'komentar.max' => 'Komentar ulasan maksimal 500 karakter.',
+        ]);
+
+        $pesanan->ulasan()->create([
+            'rating' => (int) $validated['rating'],
+            'komentar' => $validated['komentar'] ?? null,
+        ]);
+
+        return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
+            ->with('success', 'Terima kasih banyak atas rating dan ulasan yang Anda berikan!');
+    }
+
+    /**
+     * Tampilkan / stream screenshot bukti pengerjaan untuk Customer, Admin, atau Worker terkait.
+     */
+    public function lihatBuktiSelesai(Pesanan $pesanan): BinaryFileResponse
+    {
+        $this->authorizeView($pesanan);
+
+        $laporan = $pesanan->laporanTerbaru;
+
+        if (! $laporan || empty($laporan->foto_bukti) || ! Storage::disk('local')->exists($laporan->foto_bukti)) {
+            abort(404, 'Foto bukti pengerjaan tidak ditemukan di server.');
+        }
+
+        return response()->file(Storage::disk('local')->path($laporan->foto_bukti));
+    }
+
     // ── Helper Internal ───────────────────────────────────
 
     /**
@@ -549,61 +725,63 @@ class PesananController extends Controller
      */
     protected function createOrderRecord(int $customerId, Layanan $layanan, array $payload, array $calcResult): Pesanan
     {
-        $kodePesanan = $this->calculationService->generateKodePesanan();
+        return DB::transaction(function () use ($customerId, $layanan, $payload, $calcResult) {
+            $kodePesanan = $this->calculationService->generateKodePesanan();
 
-        $pesanan = Pesanan::create([
-            'kode_pesanan' => $kodePesanan,
-            'customer_id' => $customerId,
-            'worker_id' => null,
-            'layanan_id' => $layanan->id,
-            'no_wa_customer' => $payload['no_wa_customer'] ?? null,
-            'id_akun_game' => $payload['id_akun_game'],
-            'login_via' => $payload['login_via'] ?? ($layanan->butuh_login_game ? null : 'Mabar / Gendong'),
-            'username_akun_game' => $payload['username_akun_game'] ?? null,
-            'password_akun_game' => $payload['password_akun_game'] ?? null, // terenkripsi otomatis oleh model cast jika ada
-            'nickname_game' => $payload['nickname_game'] ?? null,
-            'server_game' => $payload['server_game'] ?? ($payload['zone_id'] ?? null),
-            'data_tambahan' => array_filter([
-                'zone_id' => $payload['zone_id'] ?? null,
-                'catatan_login' => $payload['catatan_login'] ?? null,
-            ]),
-            'catatan_customer' => $payload['catatan_customer'] ?? null,
-            'total_harga' => $calcResult['total_harga'],
-            'status' => StatusPesanan::MenungguPembayaran,
-            'data_disetujui' => false,
-            'batas_waktu_bayar' => now()->addHours(2), // 2 JAM KEDALUWARSA SESUAI KESEPAKATAN
-            'selesai_at' => null,
-            'kredensial_dihapus_at' => null,
-        ]);
-
-        // Simpan nomor WA ke profil customer jika profil belum memiliki no_hp
-        $customer = User::find($customerId);
-        if ($customer && empty($customer->no_hp) && ! empty($payload['no_wa_customer'])) {
-            $customer->update(['no_hp' => $payload['no_wa_customer']]);
-        }
-
-        // Simpan setiap pesanan_item (salinan permanen harga & nama saat dipesan)
-        foreach ($calcResult['items'] as $item) {
-            $pesanan->pesananItems()->create([
-                'layanan_item_id' => $item['layanan_item_id'] ?? null,
-                'peran' => $item['peran'],
-                'nilai' => $item['nilai'] ?? null,
-                'nama_item' => $item['nama_item'],
-                'harga_satuan' => $item['harga_satuan'],
-                'subtotal' => $item['subtotal'],
+            $pesanan = Pesanan::create([
+                'kode_pesanan' => $kodePesanan,
+                'customer_id' => $customerId,
+                'worker_id' => null,
+                'layanan_id' => $layanan->id,
+                'no_wa_customer' => $payload['no_wa_customer'] ?? null,
+                'id_akun_game' => $payload['id_akun_game'],
+                'login_via' => $payload['login_via'] ?? ($layanan->butuh_login_game ? null : 'Mabar / Gendong'),
+                'username_akun_game' => $payload['username_akun_game'] ?? null,
+                'password_akun_game' => $payload['password_akun_game'] ?? null, // terenkripsi otomatis oleh model cast jika ada
+                'nickname_game' => $payload['nickname_game'] ?? null,
+                'server_game' => $payload['server_game'] ?? ($payload['zone_id'] ?? null),
+                'data_tambahan' => array_filter([
+                    'zone_id' => $payload['zone_id'] ?? null,
+                    'catatan_login' => $payload['catatan_login'] ?? null,
+                ]),
+                'catatan_customer' => $payload['catatan_customer'] ?? null,
+                'total_harga' => $calcResult['total_harga'],
+                'status' => StatusPesanan::MenungguPembayaran,
+                'data_disetujui' => false,
+                'batas_waktu_bayar' => now()->addHours(2), // 2 JAM KEDALUWARSA SESUAI KESEPAKATAN
+                'selesai_at' => null,
+                'kredensial_dihapus_at' => null,
             ]);
-        }
 
-        // Catat status pertama ke timeline riwayat
-        RiwayatStatusPesanan::create([
-            'pesanan_id' => $pesanan->id,
-            'status_lama' => null,
-            'status_baru' => StatusPesanan::MenungguPembayaran->value,
-            'catatan' => 'Pesanan berhasil dibuat, menunggu pembayaran dari customer.',
-            'diubah_oleh' => $customerId,
-        ]);
+            // Simpan nomor WA ke profil customer jika profil belum memiliki no_hp
+            $customer = User::find($customerId);
+            if ($customer && empty($customer->no_hp) && ! empty($payload['no_wa_customer'])) {
+                $customer->update(['no_hp' => $payload['no_wa_customer']]);
+            }
 
-        return $pesanan;
+            // Simpan setiap pesanan_item (salinan permanen harga & nama saat dipesan)
+            foreach ($calcResult['items'] as $item) {
+                $pesanan->pesananItems()->create([
+                    'layanan_item_id' => $item['layanan_item_id'] ?? null,
+                    'peran' => $item['peran'],
+                    'nilai' => $item['nilai'] ?? null,
+                    'nama_item' => $item['nama_item'],
+                    'harga_satuan' => $item['harga_satuan'],
+                    'subtotal' => $item['subtotal'],
+                ]);
+            }
+
+            // Catat status pertama ke timeline riwayat
+            RiwayatStatusPesanan::create([
+                'pesanan_id' => $pesanan->id,
+                'status_lama' => null,
+                'status_baru' => StatusPesanan::MenungguPembayaran->value,
+                'catatan' => 'Pesanan berhasil dibuat, menunggu pembayaran dari customer.',
+                'diubah_oleh' => $customerId,
+            ]);
+
+            return $pesanan;
+        });
     }
 
     /**

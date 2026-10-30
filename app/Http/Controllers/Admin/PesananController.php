@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Role;
+use App\Enums\StatusLaporan;
 use App\Enums\StatusPembayaran;
 use App\Enums\StatusPesanan;
 use App\Http\Controllers\Controller;
+use App\Models\LaporanPenyelesaian;
 use App\Models\Pesanan;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PesananController extends Controller
 {
@@ -99,30 +104,32 @@ class PesananController extends Controller
             return back()->with('error', 'Status pesanan saat ini tidak valid untuk persetujuan data akun.');
         }
 
-        $pesanan->data_disetujui = true;
-        $statusLama = $pesanan->status;
+        DB::transaction(function () use ($pesanan) {
+            $pesanan->data_disetujui = true;
+            $statusLama = $pesanan->status;
 
-        // Jika bukti pembayaran sudah disetujui sebelumnya, otomatis siap ditugaskan
-        if ($pesanan->pembayaran && $pesanan->pembayaran->status === StatusPembayaran::Disetujui) {
-            $pesanan->status = StatusPesanan::SiapDitugaskan;
-            $pesanan->save();
+            // Jika bukti pembayaran sudah disetujui sebelumnya, otomatis siap ditugaskan
+            if ($pesanan->pembayaran && $pesanan->pembayaran->status === StatusPembayaran::Disetujui) {
+                $pesanan->status = StatusPesanan::SiapDitugaskan;
+                $pesanan->save();
 
-            $pesanan->catatRiwayat(
-                $statusLama->value,
-                StatusPesanan::SiapDitugaskan->value,
-                Auth::id(),
-                'Data pemesanan disetujui. Pembayaran telah valid, pesanan siap ditugaskan ke worker.'
-            );
-        } else {
-            $pesanan->save();
+                $pesanan->catatRiwayat(
+                    $statusLama->value,
+                    StatusPesanan::SiapDitugaskan->value,
+                    Auth::id(),
+                    'Data pemesanan disetujui. Pembayaran telah valid, pesanan siap ditugaskan ke worker.'
+                );
+            } else {
+                $pesanan->save();
 
-            $pesanan->catatRiwayat(
-                $statusLama->value,
-                $pesanan->status->value,
-                Auth::id(),
-                'Data pemesanan disetujui oleh Admin. Menunggu verifikasi bukti transfer.'
-            );
-        }
+                $pesanan->catatRiwayat(
+                    $statusLama->value,
+                    $pesanan->status->value,
+                    Auth::id(),
+                    'Data pemesanan disetujui oleh Admin. Menunggu verifikasi bukti transfer.'
+                );
+            }
+        });
 
         return back()->with('success', 'Data akun pemesanan berhasil disetujui.');
     }
@@ -144,19 +151,21 @@ class PesananController extends Controller
             'catatan.max'      => 'Catatan revisi maksimal 1000 karakter.',
         ]);
 
-        $statusLama = $pesanan->status;
+        DB::transaction(function () use ($request, $pesanan) {
+            $statusLama = $pesanan->status;
 
-        $pesanan->update([
-            'status'         => StatusPesanan::PerluRevisiData,
-            'data_disetujui' => false,
-        ]);
+            $pesanan->update([
+                'status'         => StatusPesanan::PerluRevisiData,
+                'data_disetujui' => false,
+            ]);
 
-        $pesanan->catatRiwayat(
-            $statusLama->value,
-            StatusPesanan::PerluRevisiData->value,
-            Auth::id(),
-            "Permintaan Revisi Data: {$request->catatan}"
-        );
+            $pesanan->catatRiwayat(
+                $statusLama->value,
+                StatusPesanan::PerluRevisiData->value,
+                Auth::id(),
+                "Permintaan Revisi Data: {$request->catatan}"
+            );
+        });
 
         return back()->with('success', 'Permintaan revisi data akun berhasil dikirimkan ke pelanggan.');
     }
@@ -173,33 +182,35 @@ class PesananController extends Controller
             return back()->with('error', 'Status pesanan atau pembayaran tidak valid untuk disetujui.');
         }
 
-        $pesanan->pembayaran->update([
-            'status'            => StatusPembayaran::Disetujui,
-            'diverifikasi_oleh' => Auth::id(),
-            'diverifikasi_at'   => now(),
-        ]);
+        DB::transaction(function () use ($pesanan) {
+            $pesanan->pembayaran->update([
+                'status'            => StatusPembayaran::Disetujui,
+                'diverifikasi_oleh' => Auth::id(),
+                'diverifikasi_at'   => now(),
+            ]);
 
-        $statusLama = $pesanan->status;
+            $statusLama = $pesanan->status;
 
-        // Jika data akun game juga sudah disetujui, otomatis siap ditugaskan ke worker
-        if ($pesanan->data_disetujui) {
-            $pesanan->status = StatusPesanan::SiapDitugaskan;
-            $pesanan->save();
+            // Jika data akun game juga sudah disetujui, otomatis siap ditugaskan ke worker
+            if ($pesanan->data_disetujui) {
+                $pesanan->status = StatusPesanan::SiapDitugaskan;
+                $pesanan->save();
 
-            $pesanan->catatRiwayat(
-                $statusLama->value,
-                StatusPesanan::SiapDitugaskan->value,
-                Auth::id(),
-                'Bukti pembayaran disetujui. Data akun telah valid, pesanan siap ditugaskan ke worker.'
-            );
-        } else {
-            $pesanan->catatRiwayat(
-                $statusLama->value,
-                $pesanan->status->value,
-                Auth::id(),
-                'Bukti pembayaran disetujui oleh Admin. Menunggu persetujuan data akun game.'
-            );
-        }
+                $pesanan->catatRiwayat(
+                    $statusLama->value,
+                    StatusPesanan::SiapDitugaskan->value,
+                    Auth::id(),
+                    'Bukti pembayaran disetujui. Data akun telah valid, pesanan siap ditugaskan ke worker.'
+                );
+            } else {
+                $pesanan->catatRiwayat(
+                    $statusLama->value,
+                    $pesanan->status->value,
+                    Auth::id(),
+                    'Bukti pembayaran disetujui oleh Admin. Menunggu persetujuan data akun game.'
+                );
+            }
+        });
 
         return back()->with('success', 'Bukti pembayaran berhasil disetujui.');
     }
@@ -224,27 +235,29 @@ class PesananController extends Controller
             'alasan.max'      => 'Alasan penolakan maksimal 1000 karakter.',
         ]);
 
-        $pesanan->pembayaran->update([
-            'status'            => StatusPembayaran::Ditolak,
-            'diverifikasi_oleh' => Auth::id(),
-            'diverifikasi_at'   => now(),
-        ]);
+        DB::transaction(function () use ($request, $pesanan) {
+            $pesanan->pembayaran->update([
+                'status'            => StatusPembayaran::Ditolak,
+                'diverifikasi_oleh' => Auth::id(),
+                'diverifikasi_at'   => now(),
+            ]);
 
-        $statusLama = $pesanan->status;
+            $statusLama = $pesanan->status;
 
-        $pesanan->update([
-            'status' => StatusPesanan::Dibatalkan,
-        ]);
+            $pesanan->update([
+                'status' => StatusPesanan::Dibatalkan,
+            ]);
 
-        // Hapus password akun game seketika (A-24 Mandate)
-        $pesanan->hapusPasswordAkunGame();
+            // Hapus password akun game seketika (A-24 Mandate)
+            $pesanan->hapusPasswordAkunGame();
 
-        $pesanan->catatRiwayat(
-            $statusLama->value,
-            StatusPesanan::Dibatalkan->value,
-            Auth::id(),
-            "Bukti pembayaran ditolak: {$request->alasan}"
-        );
+            $pesanan->catatRiwayat(
+                $statusLama->value,
+                StatusPesanan::Dibatalkan->value,
+                Auth::id(),
+                "Bukti pembayaran ditolak: {$request->alasan}"
+            );
+        });
 
         return back()->with('success', 'Bukti pembayaran ditolak. Pesanan telah dibatalkan dan password akun pelanggan otomatis dihapus.');
     }
@@ -276,18 +289,167 @@ class PesananController extends Controller
 
         $statusLama = $pesanan->status;
 
-        $pesanan->update([
-            'worker_id' => $worker->id,
-            'status'    => StatusPesanan::Diproses,
-        ]);
+        DB::transaction(function () use ($pesanan, $worker, $statusLama) {
+            $pesanan->update([
+                'worker_id' => $worker->id,
+                'status'    => StatusPesanan::Diproses,
+            ]);
 
-        $pesanan->catatRiwayat(
-            $statusLama->value,
-            StatusPesanan::Diproses->value,
-            Auth::id(),
-            "Ditugaskan ke {$worker->nama}"
-        );
+            $pesanan->catatRiwayat(
+                $statusLama->value,
+                StatusPesanan::Diproses->value,
+                Auth::id(),
+                "Ditugaskan ke {$worker->nama}"
+            );
+        });
 
         return back()->with('success', "Pesanan berhasil ditugaskan kepada worker {$worker->nama}.");
+    }
+
+    /**
+     * Verifikasi laporan penyelesaian dari Worker (A-27).
+     * Mengubah status laporan menjadi terverifikasi dan status pesanan menjadi worker_selesai.
+     */
+    public function verifikasiLaporan(Pesanan $pesanan): RedirectResponse
+    {
+        if ($pesanan->status !== StatusPesanan::LaporanMasuk) {
+            return back()->with('error', 'Status pesanan tidak valid untuk verifikasi laporan.');
+        }
+
+        $laporan = $pesanan->laporanPenyelesaian()
+            ->where('status', StatusLaporan::MenungguVerifikasi)
+            ->latest()
+            ->first();
+
+        if (! $laporan) {
+            return back()->with('error', 'Tidak ditemukan laporan penyelesaian yang menunggu verifikasi.');
+        }
+
+        DB::transaction(function () use ($pesanan, $laporan) {
+            $laporan->update([
+                'status'            => StatusLaporan::Terverifikasi,
+                'diverifikasi_oleh' => Auth::id(),
+                'diverifikasi_at'   => now(),
+            ]);
+
+            $statusLama = $pesanan->status;
+
+            $pesanan->update([
+                'status' => StatusPesanan::WorkerSelesai,
+            ]);
+
+            $pesanan->catatRiwayat(
+                $statusLama->value,
+                StatusPesanan::WorkerSelesai->value,
+                Auth::id(),
+                'Laporan penyelesaian pengerjaan diverifikasi oleh Admin. Status pesanan: Worker Selesai.'
+            );
+        });
+
+        return back()->with('success', 'Laporan penyelesaian berhasil diverifikasi. Pesanan kini siap diberitahukan ke pelanggan.');
+    }
+
+    /**
+     * Minta revisi hasil pengerjaan ke Worker (A-29).
+     * Berlaku saat pesanan berstatus laporan_masuk (laporan ditolak) atau dikomplain (jalur komplain customer).
+     */
+    public function mintaRevisiHasil(Request $request, Pesanan $pesanan): RedirectResponse
+    {
+        if (! in_array($pesanan->status, [StatusPesanan::LaporanMasuk, StatusPesanan::Dikomplain])) {
+            return back()->with('error', 'Status pesanan saat ini tidak memenuhi syarat untuk meminta revisi hasil.');
+        }
+
+        $request->validate([
+            'catatan' => ['required', 'string', 'min:5', 'max:1000'],
+        ], [
+            'catatan.required' => 'Catatan revisi untuk worker wajib diisi.',
+            'catatan.min'      => 'Catatan revisi minimal 5 karakter.',
+            'catatan.max'      => 'Catatan revisi maksimal 1000 karakter.',
+        ]);
+
+        DB::transaction(function () use ($request, $pesanan) {
+            // Pada jalur laporan_masuk, ubah status laporan terbaru menjadi ditolak
+            if ($pesanan->status === StatusPesanan::LaporanMasuk) {
+                $laporan = $pesanan->laporanPenyelesaian()
+                    ->where('status', StatusLaporan::MenungguVerifikasi)
+                    ->latest()
+                    ->first();
+
+                if ($laporan) {
+                    $laporan->update([
+                        'status'            => StatusLaporan::Ditolak,
+                        'diverifikasi_oleh' => Auth::id(),
+                        'diverifikasi_at'   => now(),
+                    ]);
+                }
+            }
+
+            $statusLama = $pesanan->status;
+
+            $pesanan->update([
+                'status' => StatusPesanan::PerluRevisiHasil,
+            ]);
+
+            $pesanan->catatRiwayat(
+                $statusLama->value,
+                StatusPesanan::PerluRevisiHasil->value,
+                Auth::id(),
+                "Permintaan Revisi Hasil untuk Worker: {$request->catatan}"
+            );
+        });
+
+        return back()->with('success', 'Permintaan revisi hasil berhasil dikirim ke Worker.');
+    }
+
+    /**
+     * Kirim notifikasi penyelesaian ke pelanggan (A-28).
+     * Mengubah status pesanan menjadi menunggu_konfirmasi.
+     */
+    public function kirimNotifikasiSelesai(Request $request, Pesanan $pesanan): RedirectResponse
+    {
+        if ($pesanan->status !== StatusPesanan::WorkerSelesai) {
+            return back()->with('error', 'Pesanan harus berstatus Worker Selesai sebelum mengirim notifikasi.');
+        }
+
+        $request->validate([
+            'pesan_singkat' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        DB::transaction(function () use ($request, $pesanan) {
+            $statusLama = $pesanan->status;
+
+            $pesanan->update([
+                'status' => StatusPesanan::MenungguKonfirmasi,
+            ]);
+
+            $catatan = $request->filled('pesan_singkat')
+                ? "Notifikasi penyelesaian diteruskan ke pelanggan: {$request->pesan_singkat}"
+                : 'Pemberitahuan penyelesaian telah dikirimkan kepada pelanggan. Menunggu konfirmasi penerimaan hasil.';
+
+            $pesanan->catatRiwayat(
+                $statusLama->value,
+                StatusPesanan::MenungguKonfirmasi->value,
+                Auth::id(),
+                $catatan
+            );
+        });
+
+        return back()->with('success', 'Pemberitahuan penyelesaian berhasil dikirimkan ke pelanggan.');
+    }
+
+    /**
+     * Stream file foto bukti laporan penyelesaian dari storage privat untuk Admin.
+     */
+    public function lihatBuktiSelesai(Pesanan $pesanan, LaporanPenyelesaian $laporan): BinaryFileResponse
+    {
+        if ($laporan->pesanan_id !== $pesanan->id) {
+            abort(404, 'Bukti laporan tidak cocok dengan pesanan.');
+        }
+
+        if (! Storage::disk('local')->exists($laporan->foto_bukti)) {
+            abort(404, 'File bukti pengerjaan tidak ditemukan di penyimpanan server.');
+        }
+
+        return response()->file(Storage::disk('local')->path($laporan->foto_bukti));
     }
 }
