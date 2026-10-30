@@ -28,8 +28,10 @@ class AutoCompletePesananCommand extends Command
             ->get()
             ->filter(function (Pesanan $pesanan) use ($batasWaktu) {
                 // Ambil riwayat TERAKHIR transisi ke MenungguKonfirmasi
-                $riwayatTerakhir = $pesanan->riwayatStatus
-                    ->firstWhere('status_baru', StatusPesanan::MenungguKonfirmasi->value);
+                $riwayatTerakhir = $pesanan->riwayatStatus->first(function ($r) {
+                    $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+                    return $val === StatusPesanan::MenungguKonfirmasi->value;
+                });
 
                 if ($riwayatTerakhir) {
                     return $riwayatTerakhir->created_at <= $batasWaktu;

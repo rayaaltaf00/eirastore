@@ -45,12 +45,23 @@ class LaporanWorkerController extends Controller
 
         $laporanList = $query->orderByDesc('id')->paginate(15)->withQueryString();
 
-        // Hitung badge counter status
+        // Hitung badge counter status dalam 1 query agregat
+        $rawCounts = LaporanPenyelesaian::selectRaw('
+            COUNT(CASE WHEN status = ? THEN 1 END) as menunggu_verifikasi,
+            COUNT(CASE WHEN status = ? THEN 1 END) as terverifikasi,
+            COUNT(CASE WHEN status = ? THEN 1 END) as ditolak,
+            COUNT(*) as semua
+        ', [
+            StatusLaporan::MenungguVerifikasi->value,
+            StatusLaporan::Terverifikasi->value,
+            StatusLaporan::Ditolak->value,
+        ])->first();
+
         $counts = [
-            'menunggu_verifikasi' => LaporanPenyelesaian::where('status', StatusLaporan::MenungguVerifikasi)->count(),
-            'terverifikasi'       => LaporanPenyelesaian::where('status', StatusLaporan::Terverifikasi)->count(),
-            'ditolak'             => LaporanPenyelesaian::where('status', StatusLaporan::Ditolak)->count(),
-            'semua'               => LaporanPenyelesaian::count(),
+            'menunggu_verifikasi' => (int) ($rawCounts->menunggu_verifikasi ?? 0),
+            'terverifikasi'       => (int) ($rawCounts->terverifikasi ?? 0),
+            'ditolak'             => (int) ($rawCounts->ditolak ?? 0),
+            'semua'               => (int) ($rawCounts->semua ?? 0),
         ];
 
         return view('admin.laporan-worker.index', compact('laporanList', 'counts', 'statusFilter'));

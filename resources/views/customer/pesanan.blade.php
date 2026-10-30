@@ -70,10 +70,10 @@
 
                     <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
-                            <img src="{{ $pesanan->layanan->poster_url }}" alt="{{ $pesanan->layanan->nama_layanan }}" class="w-14 h-14 rounded-2xl object-cover border border-brand-border shrink-0">
+                            <img src="{{ $pesanan->layanan?->poster_url }}" alt="{{ $pesanan->layanan?->nama_layanan ?? 'Layanan' }}" class="w-14 h-14 rounded-2xl object-cover border border-brand-border shrink-0">
                             <div>
-                                <span class="text-[10px] font-bold text-brand-cyan uppercase tracking-wider">{{ $pesanan->layanan->game->nama_game }}</span>
-                                <h3 class="text-sm sm:text-base font-bold text-white">{{ $pesanan->layanan->nama_layanan }}</h3>
+                                <span class="text-[10px] font-bold text-brand-cyan uppercase tracking-wider">{{ $pesanan->layanan?->game?->nama_game ?? 'Game' }}</span>
+                                <h3 class="text-sm sm:text-base font-bold text-white">{{ $pesanan->layanan?->nama_layanan ?? 'Layanan Joki' }}</h3>
                                 <p class="text-xs text-slate-400">Akun: {{ $pesanan->username_akun_game }} ({{ $pesanan->login_via }})</p>
                             </div>
                         </div>
@@ -214,10 +214,10 @@
 
                     <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
-                            <img src="{{ $pesanan->layanan->poster_url }}" alt="{{ $pesanan->layanan->nama_layanan }}" class="w-14 h-14 rounded-2xl object-cover border border-brand-border shrink-0 grayscale">
+                            <img src="{{ $pesanan->layanan?->poster_url }}" alt="{{ $pesanan->layanan?->nama_layanan ?? 'Layanan' }}" class="w-14 h-14 rounded-2xl object-cover border border-brand-border shrink-0 grayscale">
                             <div>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ $pesanan->layanan->game->nama_game }}</span>
-                                <h3 class="text-sm sm:text-base font-bold text-slate-300">{{ $pesanan->layanan->nama_layanan }}</h3>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{{ $pesanan->layanan?->game?->nama_game ?? 'Game' }}</span>
+                                <h3 class="text-sm sm:text-base font-bold text-slate-300">{{ $pesanan->layanan?->nama_layanan ?? 'Layanan Joki' }}</h3>
                                 <p class="text-xs text-slate-500">ID: {{ $pesanan->id_akun_game }} • Total: Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</p>
                             </div>
                         </div>

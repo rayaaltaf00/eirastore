@@ -26,7 +26,8 @@ class EnsureUserHasRole
         }
 
         // Cek apakah role user ada di daftar yang diizinkan
-        if (! in_array($request->user()->role->value, $roles)) {
+        $roleValue = $request->user()->role instanceof \BackedEnum ? $request->user()->role->value : (string) $request->user()->role;
+        if (! in_array($roleValue, $roles, true)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

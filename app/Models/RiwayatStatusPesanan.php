@@ -27,6 +27,38 @@ class RiwayatStatusPesanan extends Model
         ];
     }
 
+    /**
+     * Mutator agar dapat menerima enum StatusPesanan maupun string
+     */
+    public function setStatusLamaAttribute($value): void
+    {
+        $this->attributes['status_lama'] = $value instanceof \BackedEnum ? $value->value : $value;
+    }
+
+    /**
+     * Mutator agar dapat menerima enum StatusPesanan maupun string
+     */
+    public function setStatusBaruAttribute($value): void
+    {
+        $this->attributes['status_baru'] = $value instanceof \BackedEnum ? $value->value : $value;
+    }
+
+    /**
+     * Accessor untuk mendapatkan Enum StatusPesanan dari status_lama
+     */
+    public function getStatusLamaEnumAttribute(): ?\App\Enums\StatusPesanan
+    {
+        return $this->status_lama ? \App\Enums\StatusPesanan::tryFrom($this->status_lama) : null;
+    }
+
+    /**
+     * Accessor untuk mendapatkan Enum StatusPesanan dari status_baru
+     */
+    public function getStatusBaruEnumAttribute(): ?\App\Enums\StatusPesanan
+    {
+        return $this->status_baru ? \App\Enums\StatusPesanan::tryFrom($this->status_baru) : null;
+    }
+
     // Otomatis isi created_at saat membuat record baru
     protected static function booted(): void
     {

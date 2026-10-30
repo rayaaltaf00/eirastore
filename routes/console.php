@@ -9,7 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Scheduler untuk memeriksa pesanan kedaluwarsa setiap 5 menit
-Schedule::command('pesanan:cek-kedaluwarsa')->everyFiveMinutes();
+Schedule::command('pesanan:cek-kedaluwarsa')->everyFiveMinutes()->withoutOverlapping();
 
 // Scheduler untuk menyelesaikan otomatis pesanan yang menunggu konfirmasi lebih dari 24 jam
-Schedule::command('pesanan:auto-selesai')->hourly();
+Schedule::command('pesanan:auto-selesai')->hourly()->withoutOverlapping();

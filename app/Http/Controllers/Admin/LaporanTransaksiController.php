@@ -44,11 +44,18 @@ class LaporanTransaksiController extends Controller
             })
             ->orderByRaw('COALESCE(selesai_at, updated_at) DESC');
 
-        $pesananList = $query->get();
-
-        $totalPesanan = $pesananList->count();
-        $totalPendapatan = (int) $pesananList->sum('total_harga');
+        // Hitung agregat transaksi langsung di level database agar hemat memori
+        $agregat = (clone $query)->selectRaw('COUNT(*) as total_pesanan, COALESCE(SUM(total_harga), 0) as total_pendapatan')->first();
+        $totalPesanan = (int) ($agregat->total_pesanan ?? 0);
+        $totalPendapatan = (int) ($agregat->total_pendapatan ?? 0);
         $rataRataTransaksi = $totalPesanan > 0 ? (int) round($totalPendapatan / $totalPesanan) : 0;
+
+        $perPage = $request->input('per_page', 25);
+        if ($perPage === 'all' || $request->boolean('all')) {
+            $pesananList = $query->get();
+        } else {
+            $pesananList = $query->paginate(max(1, (int) $perPage))->withQueryString();
+        }
 
         return view('admin.laporan-transaksi.index', [
             'pesananList' => $pesananList,

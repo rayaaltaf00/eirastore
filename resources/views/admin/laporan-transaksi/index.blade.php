@@ -187,7 +187,7 @@
                         <tbody class="divide-y divide-brand-border/40 text-slate-300">
                             @foreach($pesananList as $index => $item)
                                 <tr class="hover:bg-white/5 transition-colors">
-                                    <td class="py-3.5 px-4 font-mono text-slate-500 text-center w-12">{{ $index + 1 }}</td>
+                                    <td class="py-3.5 px-4 font-mono text-slate-500 text-center w-12">{{ $pesananList instanceof \Illuminate\Pagination\LengthAwarePaginator ? $pesananList->firstItem() + $index : $index + 1 }}</td>
                                     
                                     <td class="py-3.5 px-4 font-mono font-bold text-brand-cyan">
                                         <a href="{{ route('admin.pesanan.show', $item->kode_pesanan) }}" class="hover:underline">
@@ -233,6 +233,12 @@
                         </tfoot>
                     </table>
                 </div>
+
+                @if($pesananList instanceof \Illuminate\Pagination\LengthAwarePaginator && $pesananList->hasPages())
+                    <div class="p-4 border-t border-brand-border no-print">
+                        {{ $pesananList->links() }}
+                    </div>
+                @endif
             @endif
         </div>
 

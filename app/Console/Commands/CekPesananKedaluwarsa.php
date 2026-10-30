@@ -4,10 +4,10 @@ namespace App\Console\Commands;
 
 use App\Enums\StatusPesanan;
 use App\Models\Pesanan;
-use App\Models\RiwayatStatusPesanan;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 #[Signature('pesanan:cek-kedaluwarsa')]
 #[Description('Otomatis mengubah pesanan berstatus menunggu_pembayaran yang melewati batas waktu bayar menjadi kedaluwarsa dan menghapus kredensial password game.')]
@@ -28,24 +28,32 @@ class CekPesananKedaluwarsa extends Command
             ->where('batas_waktu_bayar', '<', now())
             ->get();
 
-        $count = $pesananKedaluwarsa->count();
+        $count = 0;
 
         foreach ($pesananKedaluwarsa as $pesanan) {
-            $pesanan->update([
-                'status' => StatusPesanan::Kedaluwarsa,
-            ]);
+            DB::transaction(function () use ($pesanan, &$count) {
+                $lockedPesanan = Pesanan::where('id', $pesanan->id)->lockForUpdate()->first();
+                if (! $lockedPesanan || $lockedPesanan->status !== StatusPesanan::MenungguPembayaran) {
+                    return;
+                }
 
-            // Hapus password akun game total demi keamanan privasi pengguna
-            $pesanan->hapusPasswordAkunGame();
+                $lockedPesanan->update([
+                    'status' => StatusPesanan::Kedaluwarsa,
+                ]);
 
-            // Catat ke timeline riwayat status
-            RiwayatStatusPesanan::create([
-                'pesanan_id' => $pesanan->id,
-                'status_lama' => StatusPesanan::MenungguPembayaran->value,
-                'status_baru' => StatusPesanan::Kedaluwarsa->value,
-                'catatan' => 'Batas waktu pembayaran 2 jam telah habis. Pesanan otomatis kedaluwarsa oleh sistem dan kredensial game telah dihapus.',
-                'diubah_oleh' => null, // Sistem
-            ]);
+                // Hapus password akun game total demi keamanan privasi pengguna
+                $lockedPesanan->hapusPasswordAkunGame();
+
+                // Catat ke timeline riwayat status
+                $lockedPesanan->catatRiwayat(
+                    StatusPesanan::MenungguPembayaran,
+                    StatusPesanan::Kedaluwarsa,
+                    null,
+                    'Batas waktu pembayaran 2 jam telah habis. Pesanan otomatis kedaluwarsa oleh sistem dan kredensial game telah dihapus.'
+                );
+
+                $count++;
+            });
         }
 
         $this->info("Berhasil memproses {$count} pesanan kedaluwarsa.");

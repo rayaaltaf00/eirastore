@@ -1,7 +1,7 @@
 @extends('layouts.storefront')
 
 @section('content')
-<div class="py-8 lg:py-12" x-data="checkoutPage({{ $sisaDetik }})">
+<div class="py-8 lg:py-12" x-data="checkoutPage({{ $sisaDetik ?? 0 }})">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
         <!-- Top Header & Breadcrumb -->

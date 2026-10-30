@@ -42,9 +42,13 @@ class PesananController extends Controller
             });
         }
 
-        // Hitung badge counter
-        $countAktif = Pesanan::where('worker_id', $worker->id)
-            ->whereIn('status', [
+        // Hitung badge counter dalam 1 query agregat efisien
+        $statusCounts = Pesanan::where('worker_id', $worker->id)
+            ->selectRaw('
+                COUNT(CASE WHEN status IN (?, ?, ?, ?, ?, ?, ?) THEN 1 END) as aktif,
+                COUNT(CASE WHEN status = ? THEN 1 END) as perlu_revisi,
+                COUNT(CASE WHEN status = ? THEN 1 END) as selesai
+            ', [
                 StatusPesanan::Diproses->value,
                 StatusPesanan::SedangDikerjakan->value,
                 StatusPesanan::LaporanMasuk->value,
@@ -52,15 +56,13 @@ class PesananController extends Controller
                 StatusPesanan::MenungguKonfirmasi->value,
                 StatusPesanan::Dikomplain->value,
                 StatusPesanan::PerluRevisiHasil->value,
-            ])->count();
+                StatusPesanan::PerluRevisiHasil->value,
+                StatusPesanan::Selesai->value,
+            ])->first();
 
-        $countPerluRevisi = Pesanan::where('worker_id', $worker->id)
-            ->where('status', StatusPesanan::PerluRevisiHasil->value)
-            ->count();
-
-        $countSelesai = Pesanan::where('worker_id', $worker->id)
-            ->where('status', StatusPesanan::Selesai->value)
-            ->count();
+        $countAktif = (int) ($statusCounts->aktif ?? 0);
+        $countPerluRevisi = (int) ($statusCounts->perlu_revisi ?? 0);
+        $countSelesai = (int) ($statusCounts->selesai ?? 0);
 
         // Terapkan filter tab
         if ($tab === 'revisi') {
@@ -108,20 +110,31 @@ class PesananController extends Controller
             'pesananItems.layananItem',
             'items.layananItem',
             'laporanPenyelesaian.verifikator',
-            'riwayatStatus.pengubah',
+            'riwayatStatus' => fn ($q) => $q->orderByDesc('id'),
         ]);
 
-        // Cari catatan revisi admin terbaru jika status memerlukan revisi
-        $catatanRevisiTerbaru = null;
-        if (in_array($pesanan->status, [StatusPesanan::PerluRevisiHasil, StatusPesanan::Dikomplain])) {
-            $riwayatRevisi = $pesanan->riwayatStatus()
-                ->where('status_baru', StatusPesanan::PerluRevisiHasil->value)
-                ->latest('id')
-                ->first();
-            $catatanRevisiTerbaru = $riwayatRevisi?->catatan;
-        }
+        // Cari riwayat penugasan worker (Bug #30)
+        $riwayatPenugasan = $pesanan->riwayatStatus->first(function ($r) {
+            $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+            return $val === StatusPesanan::Diproses->value;
+        });
+        $waktuDitugaskan = $riwayatPenugasan?->created_at ?? $pesanan->updated_at ?? $pesanan->created_at;
 
-        return view('worker.pesanan.show', compact('pesanan', 'catatanRevisiTerbaru'));
+        // Cari catatan revisi admin terbaru jika status memerlukan revisi / dikomplain (Bug #11 & #22)
+        $riwayatRevisi = $pesanan->riwayatStatus->first(function ($r) {
+            $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+            return $val === StatusPesanan::PerluRevisiHasil->value;
+        });
+        $catatanRevisiTerbaru = $riwayatRevisi?->catatan;
+
+        // Cari catatan komplain customer terbaru (Bug #11 & #22)
+        $riwayatKomplain = $pesanan->riwayatStatus->first(function ($r) {
+            $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+            return $val === StatusPesanan::Dikomplain->value;
+        });
+        $catatanKomplainTerbaru = $riwayatKomplain?->catatan;
+
+        return view('worker.pesanan.show', compact('pesanan', 'catatanRevisiTerbaru', 'catatanKomplainTerbaru', 'waktuDitugaskan'));
     }
 
     /**
@@ -159,7 +172,7 @@ class PesananController extends Controller
     {
         $this->authorizeWorker($pesanan);
 
-        if (! in_array($pesanan->status, [StatusPesanan::SedangDikerjakan, StatusPesanan::PerluRevisiHasil])) {
+        if ($pesanan->status !== StatusPesanan::SedangDikerjakan && $pesanan->status !== StatusPesanan::PerluRevisiHasil) {
             return back()->with('error', 'Pesanan tidak dalam status yang dapat dilaporkan hasilnya.');
         }
 

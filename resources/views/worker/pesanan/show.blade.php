@@ -25,7 +25,7 @@
                         </span>
                     </div>
                     <p class="text-xs text-slate-400 mt-0.5">
-                        Ditugaskan pada {{ $pesanan->created_at->translatedFormat('d F Y H:i') }} WIB
+                        Ditugaskan pada {{ ($waktuDitugaskan ?? $pesanan->created_at)->translatedFormat('d F Y H:i') }} WIB
                     </p>
                 </div>
             </div>
@@ -41,17 +41,39 @@
             </div>
         </div>
 
-        <!-- Banner Peringatan Revisi dari Admin / Customer (Jika Perlu Revisi) -->
-        @if($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiHasil)
-            <div class="p-5 rounded-2xl bg-orange-500/10 border-2 border-orange-500/40 text-orange-200 space-y-2">
+        <!-- Banner Peringatan Revisi dari Admin / Customer (Jika Perlu Revisi / Dikomplain - Bug #11 & #22) -->
+        @if(in_array($pesanan->status, [\App\Enums\StatusPesanan::PerluRevisiHasil, \App\Enums\StatusPesanan::Dikomplain]))
+            <div class="p-5 rounded-2xl bg-orange-500/10 border-2 border-orange-500/40 text-orange-200 space-y-3">
                 <div class="flex items-center gap-2 text-sm font-bold text-orange-400">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <span>PERMINTAAN REVISI HASIL DARI ADMIN / PELANGGAN</span>
+                    <span>
+                        @if($pesanan->status === \App\Enums\StatusPesanan::Dikomplain)
+                            KOMPLAIN HASIL PEKERJAAN DARI PELANGGAN
+                        @else
+                            PERMINTAAN REVISI HASIL DARI ADMIN
+                        @endif
+                    </span>
                 </div>
-                <div class="p-4 rounded-xl bg-black/30 border border-orange-500/20 text-xs sm:text-sm text-slate-200">
-                    <span class="font-semibold text-orange-300 block mb-1">Catatan Koreksi:</span>
-                    <p class="leading-relaxed whitespace-pre-line">{{ $catatanRevisiTerbaru ?? 'Harap periksa kembali target rank atau quest yang belum terpenuhi di akun game.' }}</p>
-                </div>
+
+                @if(!empty($catatanKomplainTerbaru))
+                    <div class="p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs sm:text-sm text-rose-200">
+                        <span class="font-semibold text-rose-300 block mb-1">💬 Komplain dari Pelanggan:</span>
+                        <p class="leading-relaxed whitespace-pre-line">{{ $catatanKomplainTerbaru }}</p>
+                    </div>
+                @endif
+
+                @if(!empty($catatanRevisiTerbaru))
+                    <div class="p-4 rounded-xl bg-black/30 border border-orange-500/20 text-xs sm:text-sm text-slate-200">
+                        <span class="font-semibold text-orange-300 block mb-1">🛠️ Instruksi / Catatan Revisi Admin:</span>
+                        <p class="leading-relaxed whitespace-pre-line">{{ $catatanRevisiTerbaru }}</p>
+                    </div>
+                @elseif(empty($catatanKomplainTerbaru))
+                    <div class="p-4 rounded-xl bg-black/30 border border-orange-500/20 text-xs sm:text-sm text-slate-200">
+                        <span class="font-semibold text-orange-300 block mb-1">Catatan Koreksi:</span>
+                        <p class="leading-relaxed whitespace-pre-line">Harap periksa kembali target rank atau quest yang belum terpenuhi di akun game.</p>
+                    </div>
+                @endif
+
                 <p class="text-xs text-orange-300/80">
                     Silakan buka akun game kembali, perbaiki target yang diminta, lalu unggah foto bukti baru melalui formulir pelaporan di sebelah kanan.
                 </p>

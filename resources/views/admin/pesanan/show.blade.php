@@ -594,7 +594,7 @@
                 @else
                     <div class="py-6 text-center text-slate-400 bg-brand-surface/30 rounded-xl border border-brand-border/40">
                         <p class="text-xs">Pelanggan belum mengunggah struk bukti transfer untuk pesanan ini.</p>
-                        <p class="text-[11px] text-slate-500 mt-1">Batas waktu bayar: {{ $pesanan->batas_waktu_bayar->format('d/m/Y H:i') }} WIB</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Batas waktu bayar: {{ $pesanan->batas_waktu_bayar?->format('d/m/Y H:i') ?? '-' }} WIB</p>
                     </div>
                 @endif
             </div>

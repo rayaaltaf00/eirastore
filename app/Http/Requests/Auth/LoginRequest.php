@@ -53,7 +53,7 @@ class LoginRequest extends FormRequest
 
         // Cek status akun setelah login berhasil
         $user = Auth::user();
-        if ($user->status_akun !== 'aktif') {
+        if (! $user || ! $user->isAktif()) {
             Auth::logout(); // logout paksa karena akun nonaktif
             RateLimiter::hit($this->throttleKey());
 

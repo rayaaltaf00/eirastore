@@ -421,31 +421,44 @@ class PesananController extends Controller
         // Simpan file ke storage privat (bukan disk public)
         $path = $request->file('bukti_transfer')->store('bukti_pembayaran', 'local');
 
-        DB::transaction(function () use ($pesanan, $request, $path) {
-            // Simpan rekaman pembayaran
-            Pembayaran::updateOrCreate(
-                ['pesanan_id' => $pesanan->id],
-                [
-                    'metode_pembayaran' => $request->metode_pembayaran,
-                    'bukti_transfer' => $path,
-                    'status' => StatusPembayaran::MenungguVerifikasi,
-                ]
-            );
+        try {
+            DB::transaction(function () use ($pesanan, $request, $path) {
+                // Hapus berkas bukti transfer lama jika ada (mencegah orphaned files - Bug #27)
+                $oldFile = $pesanan->pembayaran?->bukti_transfer;
+                if ($oldFile && Storage::disk('local')->exists($oldFile)) {
+                    Storage::disk('local')->delete($oldFile);
+                }
 
-            // Ubah status pesanan menjadi menunggu_verifikasi
-            $pesanan->update([
-                'status' => StatusPesanan::MenungguVerifikasi,
-            ]);
+                // Simpan rekaman pembayaran
+                Pembayaran::updateOrCreate(
+                    ['pesanan_id' => $pesanan->id],
+                    [
+                        'metode_pembayaran' => $request->metode_pembayaran,
+                        'bukti_transfer' => $path,
+                        'status' => StatusPembayaran::MenungguVerifikasi,
+                    ]
+                );
 
-            // Catat riwayat status
-            RiwayatStatusPesanan::create([
-                'pesanan_id' => $pesanan->id,
-                'status_lama' => StatusPesanan::MenungguPembayaran->value,
-                'status_baru' => StatusPesanan::MenungguVerifikasi->value,
-                'catatan' => "Bukti transfer telah diunggah via {$request->metode_pembayaran}. Menunggu verifikasi oleh Admin.",
-                'diubah_oleh' => Auth::id(),
-            ]);
-        });
+                // Ubah status pesanan menjadi menunggu_verifikasi
+                $pesanan->update([
+                    'status' => StatusPesanan::MenungguVerifikasi,
+                ]);
+
+                // Catat riwayat status
+                RiwayatStatusPesanan::create([
+                    'pesanan_id' => $pesanan->id,
+                    'status_lama' => StatusPesanan::MenungguPembayaran->value,
+                    'status_baru' => StatusPesanan::MenungguVerifikasi->value,
+                    'catatan' => "Bukti transfer telah diunggah via {$request->metode_pembayaran}. Menunggu verifikasi oleh Admin.",
+                    'diubah_oleh' => Auth::id(),
+                ]);
+            });
+        } catch (\Throwable $e) {
+            if (Storage::disk('local')->exists($path)) {
+                Storage::disk('local')->delete($path);
+            }
+            throw $e;
+        }
 
         return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
             ->with('success', 'Bukti pembayaran berhasil diunggah! Admin kami akan segera memverifikasi transaksi Anda.');
@@ -514,6 +527,17 @@ class PesananController extends Controller
                 ->with('error', 'Pesanan ini tidak sedang membutuhkan revisi data akun.');
         }
 
+        // Sanitasi nomor WhatsApp jika diisi (Bug #23)
+        if ($request->has('no_wa_customer') && $request->filled('no_wa_customer')) {
+            $rawWa = preg_replace('/[^0-9+]/', '', (string) $request->input('no_wa_customer'));
+            if (str_starts_with($rawWa, '+62')) {
+                $rawWa = '0'.substr($rawWa, 3);
+            } elseif (str_starts_with($rawWa, '62')) {
+                $rawWa = '0'.substr($rawWa, 2);
+            }
+            $request->merge(['no_wa_customer' => $rawWa]);
+        }
+
         $validated = $request->validate([
             'id_akun_game'        => ['required', 'string', 'max:100'],
             'login_via'           => ['nullable', 'string', 'max:30'],
@@ -522,11 +546,12 @@ class PesananController extends Controller
             'nickname_game'       => ['nullable', 'string', 'max:100'],
             'server_game'         => ['nullable', 'string', 'max:50'],
             'zone_id'             => ['nullable', 'string', 'max:50'],
-            'no_wa_customer'      => ['nullable', 'string', 'max:30'],
+            'no_wa_customer'      => ['nullable', 'string', 'regex:/^08[1-9][0-9]{6,11}$/'],
             'catatan_customer'    => ['nullable', 'string', 'max:1000'],
         ], [
             'id_akun_game.required' => 'ID Akun game wajib diisi.',
             'password_akun_game.min' => 'Password minimal 4 karakter.',
+            'no_wa_customer.regex' => 'Format nomor WhatsApp tidak valid. Gunakan format Indonesia yang benar (contoh: 08123456789 atau +628123456789).',
         ]);
 
         $dataTambahan = $pesanan->data_tambahan ?? [];
@@ -552,14 +577,16 @@ class PesananController extends Controller
             $updatePayload['password_akun_game'] = $validated['password_akun_game'];
         }
 
-        $pesanan->update($updatePayload);
+        DB::transaction(function () use ($pesanan, $updatePayload) {
+            $pesanan->update($updatePayload);
 
-        $pesanan->catatRiwayat(
-            StatusPesanan::PerluRevisiData->value,
-            StatusPesanan::MenungguVerifikasi->value,
-            Auth::id(),
-            'Customer telah memperbarui data akun game. Menunggu verifikasi ulang oleh Admin.'
-        );
+            $pesanan->catatRiwayat(
+                StatusPesanan::PerluRevisiData->value,
+                StatusPesanan::MenungguVerifikasi->value,
+                Auth::id(),
+                'Customer telah memperbarui data akun game. Menunggu verifikasi ulang oleh Admin.'
+            );
+        });
 
         return redirect()->route('pesanan.show', $pesanan->kode_pesanan)
             ->with('success', 'Data akun game berhasil diperbarui! Admin akan segera memverifikasi pesanan Anda.');
@@ -789,7 +816,7 @@ class PesananController extends Controller
      */
     protected function authorizeOwner(Pesanan $pesanan): void
     {
-        if (Auth::id() !== $pesanan->customer_id) {
+        if ((int) Auth::id() !== (int) $pesanan->customer_id) {
             abort(403, 'Anda tidak memiliki hak akses ke pesanan ini.');
         }
     }
@@ -805,11 +832,11 @@ class PesananController extends Controller
             return;
         }
 
-        if ($user->role === Role::Worker && $pesanan->worker_id === $user->id) {
+        if ($user->role === Role::Worker && (int) $pesanan->worker_id === (int) $user->id) {
             return;
         }
 
-        if ($user->id === $pesanan->customer_id) {
+        if ((int) $user->id === (int) $pesanan->customer_id) {
             return;
         }
 

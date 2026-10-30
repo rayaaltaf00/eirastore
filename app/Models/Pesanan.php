@@ -140,13 +140,13 @@ class Pesanan extends Model
 
     /**
      * Catat perubahan status ke tabel riwayat_status_pesanan.
-     * Dipanggil setiap kali status pesanan berubah.
+     * Dipanggil setiap kali status pesanan berubah. Menerima string maupun enum StatusPesanan.
      */
-    public function catatRiwayat(string $statusLama, string $statusBaru, ?int $diubahOleh = null, ?string $catatan = null): void
+    public function catatRiwayat(string|StatusPesanan $statusLama, string|StatusPesanan $statusBaru, ?int $diubahOleh = null, ?string $catatan = null): void
     {
         $this->riwayatStatus()->create([
-            'status_lama' => $statusLama,
-            'status_baru' => $statusBaru,
+            'status_lama' => $statusLama instanceof StatusPesanan ? $statusLama->value : $statusLama,
+            'status_baru' => $statusBaru instanceof StatusPesanan ? $statusBaru->value : $statusBaru,
             'catatan' => $catatan,
             'diubah_oleh' => $diubahOleh,
         ]);

@@ -355,7 +355,7 @@ class PesananController extends Controller
      */
     public function mintaRevisiHasil(Request $request, Pesanan $pesanan): RedirectResponse
     {
-        if (! in_array($pesanan->status, [StatusPesanan::LaporanMasuk, StatusPesanan::Dikomplain])) {
+        if ($pesanan->status !== StatusPesanan::LaporanMasuk && $pesanan->status !== StatusPesanan::Dikomplain) {
             return back()->with('error', 'Status pesanan saat ini tidak memenuhi syarat untuk meminta revisi hasil.');
         }
 
