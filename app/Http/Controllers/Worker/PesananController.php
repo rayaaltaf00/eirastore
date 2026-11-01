@@ -10,10 +10,21 @@ use App\Models\Pesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Controller Pesanan (Sisi Panel Worker / Penjoki)
+ *
+ * Mengelola ruang kerja penjoki mitra:
+ * 1. Daftar tugas pengerjaan terbagi dalam tab (Aktif, Perlu Revisi, Riwayat Selesai)
+ * 2. Transisi status mulai pengerjaan ('diproses' -> 'sedang_dikerjakan')
+ * 3. Unggah bukti screenshot hasil pengerjaan dengan proteksi transaksi & rollback file
+ * 4. Penanganan revisi hasil pengerjaan berdasarkan catatan evaluasi Admin / komplain Customer
+ * 5. Akses aman streaming screenshot dari disk penyimpanan lokal terisolasi
+ */
 class PesananController extends Controller
 {
     /**
@@ -117,6 +128,7 @@ class PesananController extends Controller
         // Cari riwayat penugasan worker (Bug #30)
         $riwayatPenugasan = $pesanan->riwayatStatus->first(function ($r) {
             $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+
             return $val === StatusPesanan::Diproses->value;
         });
         $waktuDitugaskan = $riwayatPenugasan?->created_at ?? $pesanan->updated_at ?? $pesanan->created_at;
@@ -124,6 +136,7 @@ class PesananController extends Controller
         // Cari catatan revisi admin terbaru jika status memerlukan revisi / dikomplain (Bug #11 & #22)
         $riwayatRevisi = $pesanan->riwayatStatus->first(function ($r) {
             $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+
             return $val === StatusPesanan::PerluRevisiHasil->value;
         });
         $catatanRevisiTerbaru = $riwayatRevisi?->catatan;
@@ -131,6 +144,7 @@ class PesananController extends Controller
         // Cari catatan komplain customer terbaru (Bug #11 & #22)
         $riwayatKomplain = $pesanan->riwayatStatus->first(function ($r) {
             $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+
             return $val === StatusPesanan::Dikomplain->value;
         });
         $catatanKomplainTerbaru = $riwayatKomplain?->catatan;
@@ -150,17 +164,24 @@ class PesananController extends Controller
             return back()->with('error', 'Status pesanan tidak valid untuk memulai pengerjaan (harus berstatus "Diproses").');
         }
 
-        $statusLama = $pesanan->status->value;
-        $pesanan->update([
-            'status' => StatusPesanan::SedangDikerjakan,
-        ]);
+        DB::transaction(function () use ($pesanan) {
+            $lockedPesanan = Pesanan::where('id', $pesanan->id)->lockForUpdate()->firstOrFail();
+            if ($lockedPesanan->status !== StatusPesanan::Diproses) {
+                return;
+            }
 
-        $pesanan->catatRiwayat(
-            $statusLama,
-            StatusPesanan::SedangDikerjakan->value,
-            Auth::id(),
-            'Worker mulai login dan mengerjakan joki in-game.'
-        );
+            $statusLama = $lockedPesanan->status->value;
+            $lockedPesanan->update([
+                'status' => StatusPesanan::SedangDikerjakan,
+            ]);
+
+            $lockedPesanan->catatRiwayat(
+                $statusLama,
+                StatusPesanan::SedangDikerjakan->value,
+                Auth::id(),
+                'Worker mulai login dan mengerjakan joki in-game.'
+            );
+        });
 
         return back()->with('success', 'Status pengerjaan berhasil diaktifkan! Silakan kerjakan pesanan sesuai target dengan profesional.');
     }
@@ -190,34 +211,51 @@ class PesananController extends Controller
 
         $path = $request->file('foto_bukti')->store('bukti_selesai', 'local');
 
-        $laporan = LaporanPenyelesaian::create([
-            'pesanan_id' => $pesanan->id,
-            'worker_id' => Auth::id(),
-            'foto_bukti' => $path,
-            'catatan' => $request->input('catatan'),
-            'status' => StatusLaporan::MenungguVerifikasi,
-        ]);
+        try {
+            DB::transaction(function () use ($request, $pesanan, $path) {
+                $lockedPesanan = Pesanan::where('id', $pesanan->id)->lockForUpdate()->firstOrFail();
 
-        $statusLama = $pesanan->status->value;
-        $pesanan->update([
-            'status' => StatusPesanan::LaporanMasuk,
-        ]);
+                if ($lockedPesanan->status !== StatusPesanan::SedangDikerjakan && $lockedPesanan->status !== StatusPesanan::PerluRevisiHasil) {
+                    throw new \DomainException('Pesanan tidak dalam status yang dapat dilaporkan hasilnya.');
+                }
 
-        $isRevisi = ($statusLama === StatusPesanan::PerluRevisiHasil->value);
-        $keteranganRiwayat = $isRevisi
-            ? 'Worker mengirimkan bukti revisi hasil pengerjaan.'
-            : 'Worker mengunggah foto bukti penyelesaian joki.';
+                LaporanPenyelesaian::create([
+                    'pesanan_id' => $lockedPesanan->id,
+                    'worker_id' => Auth::id(),
+                    'foto_bukti' => $path,
+                    'catatan' => $request->input('catatan'),
+                    'status' => StatusLaporan::MenungguVerifikasi,
+                ]);
 
-        if ($request->filled('catatan')) {
-            $keteranganRiwayat .= ' Catatan: "' . $request->input('catatan') . '"';
+                $statusLama = $lockedPesanan->status->value;
+                $lockedPesanan->update([
+                    'status' => StatusPesanan::LaporanMasuk,
+                ]);
+
+                $isRevisi = ($statusLama === StatusPesanan::PerluRevisiHasil->value);
+                $keteranganRiwayat = $isRevisi
+                    ? 'Worker mengirimkan bukti revisi hasil pengerjaan.'
+                    : 'Worker mengunggah foto bukti penyelesaian joki.';
+
+                if ($request->filled('catatan')) {
+                    $keteranganRiwayat .= ' Catatan: "'.$request->input('catatan').'"';
+                }
+
+                $lockedPesanan->catatRiwayat(
+                    $statusLama,
+                    StatusPesanan::LaporanMasuk->value,
+                    Auth::id(),
+                    $keteranganRiwayat
+                );
+            });
+        } catch (\DomainException $e) {
+            Storage::disk('local')->delete($path);
+
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            Storage::disk('local')->delete($path);
+            throw $e;
         }
-
-        $pesanan->catatRiwayat(
-            $statusLama,
-            StatusPesanan::LaporanMasuk->value,
-            Auth::id(),
-            $keteranganRiwayat
-        );
 
         return back()->with('success', 'Laporan penyelesaian berhasil dikirimkan! Menunggu verifikasi dari Admin sebelum diteruskan ke pelanggan.');
     }

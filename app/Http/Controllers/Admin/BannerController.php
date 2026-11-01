@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
+/**
+ * Controller Manajemen Banner Beranda (Sisi Panel Admin)
+ *
+ * Mengelola gambar slider promosi pada halaman utama beranda toko:
+ * 1. Manajemen materi visual promosi (judul promo, subjudul, dan berkas gambar)
+ * 2. Pengurutan posisi tampil slider di beranda (urutan)
+ * 3. Toggle penayangan aktif/nonaktif dan pembersihan berkas gambar lama
+ */
 class BannerController extends Controller
 {
     /**
@@ -38,26 +46,26 @@ class BannerController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'judul'    => ['required', 'string', 'max:100'],
+            'judul' => ['required', 'string', 'max:100'],
             'subjudul' => ['nullable', 'string', 'max:255'],
-            'gambar'   => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
-            'urutan'   => ['required', 'integer', 'min:0', 'max:255'],
+            'gambar' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
+            'urutan' => ['required', 'integer', 'min:0', 'max:255'],
             'is_aktif' => ['nullable', 'boolean'],
         ], [
             'judul.required' => 'Judul banner wajib diisi.',
             'gambar.required' => 'Gambar banner wajib diunggah.',
-            'gambar.image'    => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
-            'gambar.max'      => 'Ukuran gambar maksimal adalah 3 MB.',
+            'gambar.image' => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
+            'gambar.max' => 'Ukuran gambar maksimal adalah 3 MB.',
             'urutan.required' => 'Urutan tampil wajib diisi.',
         ]);
 
         $gambarPath = $request->file('gambar')->store('banners', 'public');
 
         Banner::create([
-            'judul'    => $validated['judul'],
+            'judul' => $validated['judul'],
             'subjudul' => $validated['subjudul'] ?? null,
-            'gambar'   => $gambarPath,
-            'urutan'   => $validated['urutan'],
+            'gambar' => $gambarPath,
+            'urutan' => $validated['urutan'],
             'is_aktif' => $request->boolean('is_aktif', true),
         ]);
 
@@ -79,15 +87,15 @@ class BannerController extends Controller
     public function update(Request $request, Banner $banner): RedirectResponse
     {
         $validated = $request->validate([
-            'judul'    => ['required', 'string', 'max:100'],
+            'judul' => ['required', 'string', 'max:100'],
             'subjudul' => ['nullable', 'string', 'max:255'],
-            'gambar'   => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
-            'urutan'   => ['required', 'integer', 'min:0', 'max:255'],
+            'gambar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:3072'],
+            'urutan' => ['required', 'integer', 'min:0', 'max:255'],
             'is_aktif' => ['nullable', 'boolean'],
         ], [
             'judul.required' => 'Judul banner wajib diisi.',
-            'gambar.image'   => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
-            'gambar.max'     => 'Ukuran gambar maksimal adalah 3 MB.',
+            'gambar.image' => 'Berkas harus berupa gambar valid (JPG, PNG, atau WebP).',
+            'gambar.max' => 'Ukuran gambar maksimal adalah 3 MB.',
             'urutan.required' => 'Urutan tampil wajib diisi.',
         ]);
 
@@ -102,10 +110,10 @@ class BannerController extends Controller
         }
 
         $banner->update([
-            'judul'    => $validated['judul'],
+            'judul' => $validated['judul'],
             'subjudul' => $validated['subjudul'] ?? null,
-            'gambar'   => $gambarPath,
-            'urutan'   => $validated['urutan'],
+            'gambar' => $gambarPath,
+            'urutan' => $validated['urutan'],
             'is_aktif' => $request->boolean('is_aktif', true),
         ]);
 

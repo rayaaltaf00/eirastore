@@ -7,6 +7,11 @@
 
     <title>{{ $title ?? 'Panel Admin - EiraStore' }}</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-sm.png') }}">
+
     <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,10 +43,8 @@
         
         <!-- Sidebar Header / Logo -->
         <div class="h-20 flex items-center justify-between px-6 border-b border-brand-border">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue">
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6z"/></svg>
-                </div>
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 group">
+                <img src="{{ asset('images/logo.png') }}" alt="EiraStore Logo" class="w-9 h-9 object-contain drop-shadow group-hover:scale-105 transition-transform duration-200">
                 <div class="flex flex-col leading-none">
                     <span class="font-display font-black text-base tracking-wider text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
                     <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-amber-400 mt-1">Control Panel</span>
@@ -184,19 +187,34 @@
             </div>
         </header>
 
+        <!-- Global Toast Notification (Tahap 2) -->
+        <x-toast-notification />
+
         <!-- Flash Message Alerts -->
         @if(session('success') || session('error'))
-            <div class="px-4 sm:px-8 pt-4">
+            <div class="px-4 sm:px-8 pt-4 space-y-3">
                 @if(session('success'))
-                    <div class="p-4 rounded-xl bg-emerald-950/70 border border-emerald-500/30 text-emerald-300 text-sm flex items-center space-x-2">
-                        <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                        <span>{{ session('success') }}</span>
+                    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+                         class="p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-sm flex items-center justify-between shadow-lg">
+                        <div class="flex items-center space-x-2.5">
+                            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                        <button type="button" @click="show = false" class="text-emerald-400/80 hover:text-emerald-200 p-1 rounded-lg transition-colors" title="Tutup">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="p-4 rounded-xl bg-red-950/70 border border-red-500/30 text-red-300 text-sm flex items-center space-x-2">
-                        <svg class="w-5 h-5 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                        <span>{{ session('error') }}</span>
+                    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+                         class="p-4 rounded-xl bg-rose-950/80 border border-rose-500/30 text-rose-300 text-sm flex items-center justify-between shadow-lg">
+                        <div class="flex items-center space-x-2.5">
+                            <svg class="w-5 h-5 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                            <span>{{ session('error') }}</span>
+                        </div>
+                        <button type="button" @click="show = false" class="text-rose-400/80 hover:text-rose-200 p-1 rounded-lg transition-colors" title="Tutup">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
                 @endif
             </div>

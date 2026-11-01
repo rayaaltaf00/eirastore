@@ -5,7 +5,23 @@ namespace App\Models;
 use App\Enums\StatusLaporan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * Model LaporanPenyelesaian — Bukti Pengerjaan Joki oleh Worker
+ *
+ * Menyimpan tautan screenshot bukti hasil pengerjaan (disimpan di disk privat lokal),
+ * catatan ringkasan dari worker, status verifikasi admin, serta pencatatan audit verifikasi.
+ *
+ * @property int $id
+ * @property int $pesanan_id
+ * @property int $worker_id
+ * @property string $foto_bukti
+ * @property string|null $catatan
+ * @property StatusLaporan $status
+ * @property int|null $diverifikasi_oleh
+ * @property Carbon|null $diverifikasi_at
+ */
 class LaporanPenyelesaian extends Model
 {
     protected $table = 'laporan_penyelesaian';

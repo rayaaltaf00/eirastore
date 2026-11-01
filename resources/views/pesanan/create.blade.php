@@ -1,3 +1,9 @@
+{{--
+    Halaman Formulir Pemesanan Joki (Storefront Order Form)
+    - Menampilkan opsi konfigurasi pesanan dinamis (Tangga/Rank, Progres/Eksplorasi, atau Pilihan/Quest)
+    - Menyediakan kalkulator estimasi harga instan berbasis Alpine.js (orderCalculator)
+    - Mendukung Guest Checkout dengan pengisian form sebelum login dan pemulihan draf
+--}}
 @extends('layouts.storefront')
 
 @section('content')
@@ -75,7 +81,7 @@
         @endif
 
         <!-- Form Pemesanan -->
-        <form action="{{ route('pesanan.store', $layanan) }}" method="POST" id="order-form">
+        <form action="{{ route('pesanan.store', $layanan) }}" method="POST" id="order-form" data-loading data-loading-text="Memproses Pesanan...">
             @csrf
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

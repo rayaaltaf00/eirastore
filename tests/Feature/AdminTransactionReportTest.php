@@ -19,8 +19,11 @@ class AdminTransactionReportTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $customer;
+
     private User $worker;
+
     private Layanan $layanan;
 
     protected function setUp(): void
@@ -64,7 +67,7 @@ class AdminTransactionReportTest extends TestCase
     private function buatPesananSelesai(int $totalHarga, Carbon $completedAt): Pesanan
     {
         $pesanan = Pesanan::create([
-            'kode_pesanan' => 'ORD-' . strtoupper(uniqid()),
+            'kode_pesanan' => 'ORD-'.strtoupper(uniqid()),
             'customer_id' => $this->customer->id,
             'layanan_id' => $this->layanan->id,
             'worker_id' => $this->worker->id,

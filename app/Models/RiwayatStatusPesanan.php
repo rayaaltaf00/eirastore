@@ -2,9 +2,26 @@
 
 namespace App\Models;
 
+use App\Enums\StatusPesanan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * Model RiwayatStatusPesanan — Jejak Audit (Audit Trail / Linimasa Pesanan)
+ *
+ * Mencatat setiap perubahan status pesanan secara kronologis:
+ * status awal, status baru, catatan alasan perubahan, pelaku perubahan (Admin, Worker, atau NULL untuk Scheduler sistem),
+ * serta stempel waktu (created_at).
+ *
+ * @property int $id
+ * @property int $pesanan_id
+ * @property string $status_lama
+ * @property string $status_baru
+ * @property string|null $catatan
+ * @property int|null $diubah_oleh
+ * @property Carbon $created_at
+ */
 class RiwayatStatusPesanan extends Model
 {
     protected $table = 'riwayat_status_pesanan';
@@ -46,17 +63,17 @@ class RiwayatStatusPesanan extends Model
     /**
      * Accessor untuk mendapatkan Enum StatusPesanan dari status_lama
      */
-    public function getStatusLamaEnumAttribute(): ?\App\Enums\StatusPesanan
+    public function getStatusLamaEnumAttribute(): ?StatusPesanan
     {
-        return $this->status_lama ? \App\Enums\StatusPesanan::tryFrom($this->status_lama) : null;
+        return $this->status_lama ? StatusPesanan::tryFrom($this->status_lama) : null;
     }
 
     /**
      * Accessor untuk mendapatkan Enum StatusPesanan dari status_baru
      */
-    public function getStatusBaruEnumAttribute(): ?\App\Enums\StatusPesanan
+    public function getStatusBaruEnumAttribute(): ?StatusPesanan
     {
-        return $this->status_baru ? \App\Enums\StatusPesanan::tryFrom($this->status_baru) : null;
+        return $this->status_baru ? StatusPesanan::tryFrom($this->status_baru) : null;
     }
 
     // Otomatis isi created_at saat membuat record baru

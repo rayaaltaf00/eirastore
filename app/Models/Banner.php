@@ -6,6 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Model Banner — Slider Promosi Beranda EiraStore
+ *
+ * Mengelola gambar slider promosi, teks judul/subjudul, urutan penayangan,
+ * serta status aktif penayangan di halaman depan toko.
+ *
+ * @property int $id
+ * @property string $judul
+ * @property string|null $subjudul
+ * @property string $gambar
+ * @property int $urutan
+ * @property bool $is_aktif
+ */
 class Banner extends Model
 {
     use HasFactory;
@@ -22,7 +35,7 @@ class Banner extends Model
     {
         return [
             'is_aktif' => 'boolean',
-            'urutan'   => 'integer',
+            'urutan' => 'integer',
         ];
     }
 

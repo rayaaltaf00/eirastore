@@ -11,6 +11,15 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Controller Rincian Item Layanan Joki (Sisi Panel Admin)
+ *
+ * Mengelola komponen tingkatan tier, wilayah sub-progres, dan opsi tambahan:
+ * 1. Pendaftaran item bertingkat (misal: Tier Warrior s/d Mythical Glory)
+ * 2. Struktur hirarki induk-anak (Wilayah utama & sub-wilayah eksplorasi)
+ * 3. Penetapan harga satuan dan pengelompokan kategori add-on
+ * 4. Pengurutan sekuensial (urutan) untuk keakuratan kalkulasi tangga
+ */
 class LayananItemController extends Controller
 {
     /**

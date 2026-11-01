@@ -1,3 +1,9 @@
+{{--
+    Halaman Detail Pengerjaan Joki Worker (Worker Task Workspace)
+    - Menampilkan informasi akun login game (hanya dapat diakses oleh worker tertugas)
+    - Tombol mulai pengerjaan in-game dan formulir unggah screenshot bukti penyelesaian
+    - Panel evaluasi riwayat revisi hasil dari evaluasi Admin / komplain Customer
+--}}
 <x-worker-layout :header="'Detail Pesanan: ' . $pesanan->kode_pesanan">
     <div class="space-y-6" x-data="{
         previewModalOpen: false,
@@ -20,6 +26,12 @@
                         <h1 class="text-xl sm:text-2xl font-black text-white font-mono tracking-wide">
                             {{ $pesanan->kode_pesanan }}
                         </h1>
+                        <button type="button" 
+                                @click="copyToClipboard('{{ $pesanan->kode_pesanan }}', 'Kode Pesanan {{ $pesanan->kode_pesanan }}')"
+                                class="p-1 rounded-lg text-slate-400 hover:text-brand-cyan hover:bg-brand-surface transition-colors"
+                                title="Salin Kode Pesanan">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        </button>
                         <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $pesanan->status->badgeColor() }}">
                             {{ $pesanan->status->label() }}
                         </span>
@@ -115,16 +127,14 @@
                              }
                          },
                          copyText(text, type) {
-                             if (!navigator.clipboard) return;
-                             navigator.clipboard.writeText(text).then(() => {
-                                 if (type === 'user') {
-                                     this.copiedUser = true;
-                                     setTimeout(() => this.copiedUser = false, 2000);
-                                 } else if (type === 'pass') {
-                                     this.copiedPass = true;
-                                     setTimeout(() => this.copiedPass = false, 2000);
-                                 }
-                             });
+                             window.copyToClipboard(text, type === 'user' ? 'Username / ID' : 'Password Akun');
+                             if (type === 'user') {
+                                 this.copiedUser = true;
+                                 setTimeout(() => this.copiedUser = false, 2000);
+                             } else if (type === 'pass') {
+                                 this.copiedPass = true;
+                                 setTimeout(() => this.copiedPass = false, 2000);
+                             }
                          }
                      }">
                     
@@ -372,7 +382,7 @@
                                 Pesanan telah ditugaskan kepada Anda. Silakan periksa kredensial login akun pelanggan di sebelah kiri, lalu tekan tombol di bawah ini untuk memulai sesi pengerjaan joki.
                             </div>
 
-                            <form method="POST" action="{{ route('worker.pesanan.mulai', $pesanan->kode_pesanan) }}">
+                            <form method="POST" action="{{ route('worker.pesanan.mulai', $pesanan->kode_pesanan) }}" data-loading data-loading-text="Memulai Pengerjaan...">
                                 @csrf
                                 <button type="submit"
                                         class="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5">
@@ -410,6 +420,8 @@
                             <form method="POST"
                                   action="{{ route('worker.pesanan.lapor', $pesanan->kode_pesanan) }}"
                                   enctype="multipart/form-data"
+                                  data-loading
+                                  data-loading-text="Mengunggah Foto Bukti..."
                                   class="space-y-4">
                                 @csrf
 

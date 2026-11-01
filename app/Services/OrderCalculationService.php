@@ -8,6 +8,16 @@ use App\Models\LayananItem;
 use App\Models\Pesanan;
 use InvalidArgumentException;
 
+/**
+ * Layanan Kalkulasi Pesanan & Penetapan Biaya (Order Calculation Service)
+ *
+ * Jantung logika kalkulasi harga di sisi server (Server-Side Calculation):
+ * 1. Tidak pernah mempercayai input harga dari browser/frontend
+ * 2. Menghitung formula Tangga (selisih bintang/tingkatan antar tier)
+ * 3. Menghitung formula Progres (eksplorasi persentase dinamis)
+ * 4. Menghitung formula Pilihan (item quest/unlock lepasan + add-on)
+ * 5. Generator kode pesanan unik anti-duplikasi berbasis timestamp
+ */
 class OrderCalculationService
 {
     /**

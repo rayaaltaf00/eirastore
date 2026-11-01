@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Form Request Autentikasi Masuk (Login)
+ *
+ * Mengatur verifikasi kredensial email & password dengan:
+ * 1. Proteksi pembatasan laju percobaan masuk (Rate Limiting / Throttling)
+ * 2. Pemeriksaan status akun aktif (menolak login jika akun dinonaktifkan Admin)
+ */
 class LoginRequest extends FormRequest
 {
     /**

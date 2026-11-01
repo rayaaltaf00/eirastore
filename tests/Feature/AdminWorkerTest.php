@@ -17,7 +17,9 @@ class AdminWorkerTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $worker;
+
     private User $customer;
 
     protected function setUp(): void

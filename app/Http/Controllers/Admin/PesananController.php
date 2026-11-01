@@ -18,6 +18,18 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+/**
+ * Controller Pesanan (Sisi Panel Admin)
+ *
+ * Mengendalikan alur operasional toko dan verifikasi transaksi:
+ * 1. Filter antrean kerja (pesanan yang butuh tindakan verifikasi pembayaran, penugasan, atau laporan)
+ * 2. Verifikasi ganda: Persetujuan Data Akun Game & Persetujuan Mutasi Pembayaran
+ * 3. Permintaan revisi data akun ke pelanggan jika data login/ID tidak cocok
+ * 4. Penolakan bukti pembayaran palsu (otomatis membatalkan pesanan & memusnahkan password)
+ * 5. Penugasan pesanan ke Worker aktif yang siap bekerja
+ * 6. Audit hasil pengerjaan (verifikasi screenshot pengerjaan vs revisi pengerjaan)
+ * 7. Perlindungan Privasi: Password akun game pelanggan disembunyikan dari antarmuka Admin
+ */
 class PesananController extends Controller
 {
     /**
@@ -59,7 +71,7 @@ class PesananController extends Controller
                     ->orWhere('no_wa_customer', 'like', "%{$keyword}%")
                     ->orWhereHas('customer', function ($cq) use ($keyword) {
                         $cq->where('nama', 'like', "%{$keyword}%")
-                           ->orWhere('email', 'like', "%{$keyword}%");
+                            ->orWhere('email', 'like', "%{$keyword}%");
                     });
             });
         }
@@ -147,15 +159,15 @@ class PesananController extends Controller
             'catatan' => ['required', 'string', 'min:5', 'max:1000'],
         ], [
             'catatan.required' => 'Catatan revisi wajib diisi untuk menginstruksikan pelanggan.',
-            'catatan.min'      => 'Catatan revisi minimal 5 karakter.',
-            'catatan.max'      => 'Catatan revisi maksimal 1000 karakter.',
+            'catatan.min' => 'Catatan revisi minimal 5 karakter.',
+            'catatan.max' => 'Catatan revisi maksimal 1000 karakter.',
         ]);
 
         DB::transaction(function () use ($request, $pesanan) {
             $statusLama = $pesanan->status;
 
             $pesanan->update([
-                'status'         => StatusPesanan::PerluRevisiData,
+                'status' => StatusPesanan::PerluRevisiData,
                 'data_disetujui' => false,
             ]);
 
@@ -184,9 +196,9 @@ class PesananController extends Controller
 
         DB::transaction(function () use ($pesanan) {
             $pesanan->pembayaran->update([
-                'status'            => StatusPembayaran::Disetujui,
+                'status' => StatusPembayaran::Disetujui,
                 'diverifikasi_oleh' => Auth::id(),
-                'diverifikasi_at'   => now(),
+                'diverifikasi_at' => now(),
             ]);
 
             $statusLama = $pesanan->status;
@@ -231,15 +243,15 @@ class PesananController extends Controller
             'alasan' => ['required', 'string', 'min:5', 'max:1000'],
         ], [
             'alasan.required' => 'Alasan penolakan pembayaran wajib diisi.',
-            'alasan.min'      => 'Alasan penolakan minimal 5 karakter.',
-            'alasan.max'      => 'Alasan penolakan maksimal 1000 karakter.',
+            'alasan.min' => 'Alasan penolakan minimal 5 karakter.',
+            'alasan.max' => 'Alasan penolakan maksimal 1000 karakter.',
         ]);
 
         DB::transaction(function () use ($request, $pesanan) {
             $pesanan->pembayaran->update([
-                'status'            => StatusPembayaran::Ditolak,
+                'status' => StatusPembayaran::Ditolak,
                 'diverifikasi_oleh' => Auth::id(),
-                'diverifikasi_at'   => now(),
+                'diverifikasi_at' => now(),
             ]);
 
             $statusLama = $pesanan->status;
@@ -275,7 +287,7 @@ class PesananController extends Controller
             'worker_id' => ['required', 'exists:users,id'],
         ], [
             'worker_id.required' => 'Silakan tentukan worker yang akan ditugaskan.',
-            'worker_id.exists'   => 'Worker yang dipilih tidak terdaftar di sistem.',
+            'worker_id.exists' => 'Worker yang dipilih tidak terdaftar di sistem.',
         ]);
 
         $worker = User::where('id', $request->worker_id)
@@ -292,7 +304,7 @@ class PesananController extends Controller
         DB::transaction(function () use ($pesanan, $worker, $statusLama) {
             $pesanan->update([
                 'worker_id' => $worker->id,
-                'status'    => StatusPesanan::Diproses,
+                'status' => StatusPesanan::Diproses,
             ]);
 
             $pesanan->catatRiwayat(
@@ -327,9 +339,9 @@ class PesananController extends Controller
 
         DB::transaction(function () use ($pesanan, $laporan) {
             $laporan->update([
-                'status'            => StatusLaporan::Terverifikasi,
+                'status' => StatusLaporan::Terverifikasi,
                 'diverifikasi_oleh' => Auth::id(),
-                'diverifikasi_at'   => now(),
+                'diverifikasi_at' => now(),
             ]);
 
             $statusLama = $pesanan->status;
@@ -363,8 +375,8 @@ class PesananController extends Controller
             'catatan' => ['required', 'string', 'min:5', 'max:1000'],
         ], [
             'catatan.required' => 'Catatan revisi untuk worker wajib diisi.',
-            'catatan.min'      => 'Catatan revisi minimal 5 karakter.',
-            'catatan.max'      => 'Catatan revisi maksimal 1000 karakter.',
+            'catatan.min' => 'Catatan revisi minimal 5 karakter.',
+            'catatan.max' => 'Catatan revisi maksimal 1000 karakter.',
         ]);
 
         DB::transaction(function () use ($request, $pesanan) {
@@ -377,9 +389,9 @@ class PesananController extends Controller
 
                 if ($laporan) {
                     $laporan->update([
-                        'status'            => StatusLaporan::Ditolak,
+                        'status' => StatusLaporan::Ditolak,
                         'diverifikasi_oleh' => Auth::id(),
-                        'diverifikasi_at'   => now(),
+                        'diverifikasi_at' => now(),
                     ]);
                 }
             }

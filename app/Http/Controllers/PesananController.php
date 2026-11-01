@@ -25,6 +25,19 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Controller Pesanan (Sisi Pelanggan & Umum)
+ *
+ * Mengelola seluruh siklus hidup pesanan dari sudut pandang pelanggan:
+ * 1. Formulir Pemesanan Joki dinamis (Tangga, Progres, Pilihan)
+ * 2. Mekanisme Guest Checkout (penyimpanan draft di sesi terenkripsi sebelum login)
+ * 3. Proteksi anti-spam transaksi (mencegah penumpukan pesanan menggantung)
+ * 4. Pembayaran manual (unggah bukti transfer/struk QRIS ke penyimpanan privat)
+ * 5. Revisi data akun game jika ditolak Admin/Worker
+ * 6. Persetujuan hasil pengerjaan, komplain, dan konfirmasi selesai
+ * 7. Penghapusan kredensial password game seketika secara otomatis
+ * 8. Pemberian rating & ulasan kepuasan pelanggan
+ */
 class PesananController extends Controller
 {
     public function __construct(
@@ -558,15 +571,15 @@ class PesananController extends Controller
         }
 
         $validated = $request->validate([
-            'id_akun_game'        => ['required', 'string', 'max:100'],
-            'login_via'           => ['nullable', 'string', 'max:30'],
-            'username_akun_game'  => ['nullable', 'string', 'max:100'],
-            'password_akun_game'  => ['nullable', 'string', 'min:4', 'max:255'],
-            'nickname_game'       => ['nullable', 'string', 'max:100'],
-            'server_game'         => ['nullable', 'string', 'max:50'],
-            'zone_id'             => ['nullable', 'string', 'max:50'],
-            'no_wa_customer'      => ['nullable', 'string', 'regex:/^08[1-9][0-9]{6,11}$/'],
-            'catatan_customer'    => ['nullable', 'string', 'max:1000'],
+            'id_akun_game' => ['required', 'string', 'max:100'],
+            'login_via' => ['nullable', 'string', 'max:30'],
+            'username_akun_game' => ['nullable', 'string', 'max:100'],
+            'password_akun_game' => ['nullable', 'string', 'min:4', 'max:255'],
+            'nickname_game' => ['nullable', 'string', 'max:100'],
+            'server_game' => ['nullable', 'string', 'max:50'],
+            'zone_id' => ['nullable', 'string', 'max:50'],
+            'no_wa_customer' => ['nullable', 'string', 'regex:/^08[1-9][0-9]{6,11}$/'],
+            'catatan_customer' => ['nullable', 'string', 'max:1000'],
         ], [
             'id_akun_game.required' => 'ID Akun game wajib diisi.',
             'password_akun_game.min' => 'Password minimal 4 karakter.',
@@ -579,16 +592,16 @@ class PesananController extends Controller
         }
 
         $updatePayload = [
-            'id_akun_game'       => $validated['id_akun_game'],
-            'login_via'          => $validated['login_via'] ?? $pesanan->login_via,
+            'id_akun_game' => $validated['id_akun_game'],
+            'login_via' => $validated['login_via'] ?? $pesanan->login_via,
             'username_akun_game' => $validated['username_akun_game'] ?? $pesanan->username_akun_game,
-            'nickname_game'      => $validated['nickname_game'] ?? $pesanan->nickname_game,
-            'server_game'        => $validated['server_game'] ?? $pesanan->server_game,
-            'no_wa_customer'     => $validated['no_wa_customer'] ?? $pesanan->no_wa_customer,
-            'catatan_customer'   => $validated['catatan_customer'] ?? $pesanan->catatan_customer,
-            'data_tambahan'      => $dataTambahan,
-            'status'             => StatusPesanan::MenungguVerifikasi,
-            'data_disetujui'     => false,
+            'nickname_game' => $validated['nickname_game'] ?? $pesanan->nickname_game,
+            'server_game' => $validated['server_game'] ?? $pesanan->server_game,
+            'no_wa_customer' => $validated['no_wa_customer'] ?? $pesanan->no_wa_customer,
+            'catatan_customer' => $validated['catatan_customer'] ?? $pesanan->catatan_customer,
+            'data_tambahan' => $dataTambahan,
+            'status' => StatusPesanan::MenungguVerifikasi,
+            'data_disetujui' => false,
         ];
 
         // Jika customer mengisi password baru, update terenkripsi
@@ -672,7 +685,7 @@ class PesananController extends Controller
                 StatusPesanan::MenungguKonfirmasi->value,
                 StatusPesanan::Dikomplain->value,
                 Auth::id(),
-                'Komplain Customer: ' . $validated['alasan']
+                'Komplain Customer: '.$validated['alasan']
             );
         });
 

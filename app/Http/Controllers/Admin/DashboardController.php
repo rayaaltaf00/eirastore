@@ -9,6 +9,15 @@ use App\Models\Pesanan;
 use App\Models\User;
 use Illuminate\View\View;
 
+/**
+ * Controller Dasbor Administrator
+ *
+ * Menyajikan statistik operasional toko secara real-time:
+ * 1. Agregasi status pesanan dalam 1 query efisien
+ * 2. Hitungan pesanan mendesak yang butuh tindakan Admin segera
+ * 3. Kalkulasi total omzet pendapatan dari pesanan yang sukses/selesai
+ * 4. Metrik ketersediaan worker aktif dan antrean transaksi terkini
+ */
 class DashboardController extends Controller
 {
     /**
@@ -47,16 +56,16 @@ class DashboardController extends Controller
 
         $statusCounts = [
             'menunggu_verifikasi' => (int) ($rawCounts->menunggu_verifikasi ?? 0),
-            'perlu_revisi_data'   => (int) ($rawCounts->perlu_revisi_data ?? 0),
-            'siap_ditugaskan'     => (int) ($rawCounts->siap_ditugaskan ?? 0),
-            'diproses'            => (int) ($rawCounts->diproses ?? 0),
-            'sedang_dikerjakan'   => (int) ($rawCounts->sedang_dikerjakan ?? 0),
-            'laporan_masuk'       => (int) ($rawCounts->laporan_masuk ?? 0),
-            'worker_selesai'      => (int) ($rawCounts->worker_selesai ?? 0),
+            'perlu_revisi_data' => (int) ($rawCounts->perlu_revisi_data ?? 0),
+            'siap_ditugaskan' => (int) ($rawCounts->siap_ditugaskan ?? 0),
+            'diproses' => (int) ($rawCounts->diproses ?? 0),
+            'sedang_dikerjakan' => (int) ($rawCounts->sedang_dikerjakan ?? 0),
+            'laporan_masuk' => (int) ($rawCounts->laporan_masuk ?? 0),
+            'worker_selesai' => (int) ($rawCounts->worker_selesai ?? 0),
             'menunggu_konfirmasi' => (int) ($rawCounts->menunggu_konfirmasi ?? 0),
-            'dikomplain'          => (int) ($rawCounts->dikomplain ?? 0),
-            'perlu_revisi_hasil'  => (int) ($rawCounts->perlu_revisi_hasil ?? 0),
-            'selesai'             => (int) ($rawCounts->selesai ?? 0),
+            'dikomplain' => (int) ($rawCounts->dikomplain ?? 0),
+            'perlu_revisi_hasil' => (int) ($rawCounts->perlu_revisi_hasil ?? 0),
+            'selesai' => (int) ($rawCounts->selesai ?? 0),
         ];
 
         // Ringkasan metrik global

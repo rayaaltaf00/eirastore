@@ -4,12 +4,21 @@ namespace App\Console\Commands;
 
 use App\Enums\StatusPesanan;
 use App\Models\Pesanan;
-use App\Models\RiwayatStatusPesanan;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Command Otomatisasi: Penyelesaian Pesanan Tanpa Respon (24 Jam)
+ *
+ * Alur Kerja:
+ * 1. Menjaring pesanan berstatus 'menunggu_konfirmasi' di mana hasil joki sudah dikirimkan ke pelanggan lebih dari 24 jam lalu.
+ * 2. Memeriksa waktu transisi terakhir ke 'menunggu_konfirmasi' agar akurat jika sebelumnya sempat terjadi revisi/komplain.
+ * 3. Menghindari race condition dengan transaksi atomik dan lockForUpdate (jika pelanggan sedang menekan tombol komplain/setuju).
+ * 4. Mengubah status pesanan menjadi 'selesai', mengisi waktu selesai_at, dan menghapus permanen password akun game pelanggan.
+ * 5. Menambahkan log audit ke riwayat perubahan status.
+ */
 #[Signature('pesanan:auto-selesai')]
 #[Description('Otomatis menyelesaikan pesanan berstatus menunggu_konfirmasi yang melewati batas 24 jam tanpa konfirmasi atau komplain dari customer.')]
 class AutoCompletePesananCommand extends Command
@@ -30,6 +39,7 @@ class AutoCompletePesananCommand extends Command
                 // Ambil riwayat TERAKHIR transisi ke MenungguKonfirmasi
                 $riwayatTerakhir = $pesanan->riwayatStatus->first(function ($r) {
                     $val = $r->status_baru instanceof \BackedEnum ? $r->status_baru->value : $r->status_baru;
+
                     return $val === StatusPesanan::MenungguKonfirmasi->value;
                 });
 
@@ -41,26 +51,32 @@ class AutoCompletePesananCommand extends Command
                 return $pesanan->updated_at <= $batasWaktu;
             });
 
-        $count = $pesanans->count();
+        $count = 0;
 
         foreach ($pesanans as $pesanan) {
-            DB::transaction(function () use ($pesanan) {
-                $pesanan->update([
+            DB::transaction(function () use ($pesanan, &$count) {
+                $lockedPesanan = Pesanan::where('id', $pesanan->id)->lockForUpdate()->first();
+                if (! $lockedPesanan || $lockedPesanan->status !== StatusPesanan::MenungguKonfirmasi) {
+                    return;
+                }
+
+                $lockedPesanan->update([
                     'status' => StatusPesanan::Selesai,
                     'selesai_at' => now(),
                 ]);
 
                 // Pastikan password akun game dihapus total
-                $pesanan->hapusPasswordAkunGame();
+                $lockedPesanan->hapusPasswordAkunGame();
 
                 // Catat ke timeline riwayat status
-                RiwayatStatusPesanan::create([
-                    'pesanan_id' => $pesanan->id,
-                    'status_lama' => StatusPesanan::MenungguKonfirmasi->value,
-                    'status_baru' => StatusPesanan::Selesai->value,
-                    'catatan' => 'Pesanan otomatis diselesaikan oleh sistem setelah 24 jam menunggu konfirmasi pelanggan. Kredensial akun game dihapus total.',
-                    'diubah_oleh' => null, // Sistem
-                ]);
+                $lockedPesanan->catatRiwayat(
+                    StatusPesanan::MenungguKonfirmasi,
+                    StatusPesanan::Selesai,
+                    null,
+                    'Pesanan otomatis diselesaikan oleh sistem setelah 24 jam menunggu konfirmasi pelanggan. Kredensial akun game dihapus total.'
+                );
+
+                $count++;
             });
         }
 

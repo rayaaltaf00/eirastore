@@ -6,6 +6,23 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Model MetodePembayaranTujuan — Rekening & QRIS Resmi EiraStore
+ *
+ * Mengelola daftar rekening bank / e-wallet / barcode QRIS tujuan transfer
+ * yang ditampilkan kepada pelanggan pada instruksi pembayaran.
+ *
+ * @property int $id
+ * @property string $nama_metode
+ * @property string $kategori
+ * @property string|null $nomor_rekening
+ * @property string|null $atas_nama
+ * @property string|null $logo
+ * @property string|null $gambar_qris
+ * @property string|null $petunjuk_transfer
+ * @property int $urutan
+ * @property bool $aktif
+ */
 class MetodePembayaranTujuan extends Model
 {
     protected $table = 'metode_pembayaran_tujuan';

@@ -3,8 +3,12 @@
 namespace App\Enums;
 
 /**
- * Role pengguna di sistem EiraStore.
- * Dipakai di kolom users.role
+ * Enum Role — Tingkatan Peran Pengguna di Sistem EiraStore
+ *
+ * Mendefinisikan 3 tingkat hak akses utama:
+ * - Customer: Pelanggan yang memesan jasa joki, melakukan pembayaran, memantau pesanan, dan memberi ulasan.
+ * - Worker: Penjoki mitra yang ditugaskan mengerjakan pesanan dan mengunggah bukti hasil penyelesaian.
+ * - Admin: Pengelola toko yang memverifikasi transaksi, menugaskan worker, dan mengelola katalog layanan.
  */
 enum Role: string
 {

@@ -7,7 +7,37 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
+/**
+ * Model Pesanan — Entitas Transaksi Inti EiraStore
+ *
+ * Mengelola seluruh siklus hidup transaksi joki, kredensial game yang diamankan
+ * dengan enkripsi simetris AES-256 (di-purge otomatis saat selesai/batal), relasi
+ * ke pelanggan dan worker, pencatatan audit log riwayat status, bukti pembayaran,
+ * laporan pengerjaan, hingga ulasan pelanggan.
+ *
+ * @property int $id
+ * @property string $kode_pesanan
+ * @property int $customer_id
+ * @property int|null $worker_id
+ * @property int $layanan_id
+ * @property string $no_wa_customer
+ * @property string|null $id_akun_game
+ * @property string|null $login_via
+ * @property string|null $username_akun_game
+ * @property string|null $password_akun_game
+ * @property string|null $nickname_game
+ * @property string|null $server_game
+ * @property array|null $data_tambahan
+ * @property string|null $catatan_customer
+ * @property float $total_harga
+ * @property StatusPesanan $status
+ * @property bool $data_disetujui
+ * @property Carbon|null $batas_waktu_bayar
+ * @property Carbon|null $selesai_at
+ * @property Carbon|null $kredensial_dihapus_at
+ */
 class Pesanan extends Model
 {
     protected $table = 'pesanan';
@@ -180,11 +210,11 @@ class Pesanan extends Model
 
         // Tambahkan 4 karakter alfanumerik random untuk anti-enumerasi
         $randomSuffix = strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
-        $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $randomSuffix;
+        $kode = $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT).'-'.$randomSuffix;
 
         while (static::where('kode_pesanan', $kode)->exists()) {
             $randomSuffix = strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
-            $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $randomSuffix;
+            $kode = $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT).'-'.$randomSuffix;
         }
 
         return $kode;

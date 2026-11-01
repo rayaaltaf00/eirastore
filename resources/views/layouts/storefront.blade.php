@@ -7,6 +7,11 @@
 
     <title>{{ $title ?? 'EiraStore - Layanan Joki Game Cepat & Terpercaya' }}</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-sm.png') }}">
+
     <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,11 +128,7 @@
                 
                 <!-- Logo & Brand -->
                 <a href="{{ route('beranda') }}" @click.prevent="navigateToHome()" class="flex items-center space-x-3 group flex-shrink-0">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue group-hover:scale-105 transition-transform duration-200">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6zm0 2a4 4 0 0 0-3.95 3.39l-.86 4.74A1.5 1.5 0 0 0 3.66 18H6a1 1 0 0 0 .95-.68l.5-1.5A3 3 0 0 1 10.28 14h3.44a3 3 0 0 1 2.83 1.82l.5 1.5a1 1 0 0 0 .95.68h2.34a1.5 1.5 0 0 0 1.47-1.87l-.86-4.74A4 4 0 0 0 17 8H7zm2 2h2v2h2v2h-2v2H9v-2H7v-2h2v-2zm7.5 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm2.5 2.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z"/>
-                        </svg>
-                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="EiraStore Logo" class="w-10 h-10 object-contain drop-shadow group-hover:scale-105 transition-transform duration-200">
                     <div class="flex flex-col leading-none">
                         <div class="flex items-center gap-1.5">
                             <span class="font-display font-black text-xl tracking-wider text-white">
@@ -212,6 +213,11 @@
                                         Pesanan Saya
                                     </a>
                                 @endif
+
+                                <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-brand-surface hover:text-white transition-colors">
+                                    <svg class="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    Pengaturan Profil
+                                </a>
 
                                 <form method="POST" action="{{ route('logout') }}" class="border-t border-brand-border mt-1 pt-1">
                                     @csrf
@@ -343,6 +349,9 @@
                             Pesanan Saya
                         </a>
                     @endif
+                    <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-white hover:bg-brand-surface">
+                        Pengaturan Profil
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-red-400 hover:bg-brand-surface">
@@ -354,24 +363,35 @@
         </div>
     </header>
 
-    <!-- ── Flash Message Notifikasi ── -->
+    <!-- ── Global Toast Notification (Tahap 2) ── -->
+    <x-toast-notification />
+
+    <!-- ── Flash Message Notifikasi Dismissible ── -->
     @if(session('success') || session('error') || session('status_error'))
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-3">
             @if(session('success'))
-                <div class="p-4 rounded-xl bg-emerald-950/70 border border-emerald-500/30 text-emerald-300 text-sm flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
+                <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+                     class="p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-sm flex items-center justify-between shadow-lg">
+                    <div class="flex items-center space-x-2.5">
                         <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         <span>{{ session('success') }}</span>
                     </div>
+                    <button type="button" @click="show = false" class="text-emerald-400/80 hover:text-emerald-200 p-1 rounded-lg transition-colors" title="Tutup">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
             @endif
 
             @if(session('error') || session('status_error'))
-                <div class="p-4 rounded-xl bg-red-950/70 border border-red-500/30 text-red-300 text-sm flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <svg class="w-5 h-5 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+                     class="p-4 rounded-xl bg-rose-950/80 border border-rose-500/30 text-rose-300 text-sm flex items-center justify-between shadow-lg">
+                    <div class="flex items-center space-x-2.5">
+                        <svg class="w-5 h-5 text-rose-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
                         <span>{{ session('error') ?? session('status_error') }}</span>
                     </div>
+                    <button type="button" @click="show = false" class="text-rose-400/80 hover:text-rose-200 p-1 rounded-lg transition-colors" title="Tutup">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
             @endif
         </div>
@@ -391,9 +411,7 @@
                 <!-- Kolom 1: Profil Brand -->
                 <div class="space-x-0 space-y-4">
                     <div class="flex items-center space-x-3">
-                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-blue to-brand-cyan flex items-center justify-center shadow-glow-blue">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M7 6h10a6 6 0 0 1 5.92 5.09l.86 4.74A3.5 3.5 0 0 1 20.34 20H18a3 3 0 0 1-2.83-2l-.5-1.5a1 1 0 0 0-.95-.68h-3.44a1 1 0 0 0-.95.68l-.5 1.5A3 3 0 0 1 6 20H3.66a3.5 3.5 0 0 1-3.44-4.17l.86-4.74A6 6 0 0 1 7 6z"/></svg>
-                        </div>
+                        <img src="{{ asset('images/logo.png') }}" alt="EiraStore Logo" class="w-9 h-9 object-contain drop-shadow">
                         <span class="font-display font-black text-lg tracking-wider text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
                     </div>
                     <p class="text-sm text-slate-400 leading-relaxed">

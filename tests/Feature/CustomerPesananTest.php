@@ -587,7 +587,7 @@ class CustomerPesananTest extends TestCase
     {
         foreach (StatusPesanan::cases() as $status) {
             $pesanan = Pesanan::create([
-                'kode_pesanan' => 'ES-' . now()->format('Ymd') . '-' . substr(md5($status->value), 0, 5),
+                'kode_pesanan' => 'ES-'.now()->format('Ymd').'-'.substr(md5($status->value), 0, 5),
                 'customer_id' => $this->customer->id,
                 'layanan_id' => $this->layananTangga->id,
                 'id_akun_game' => '12345678',

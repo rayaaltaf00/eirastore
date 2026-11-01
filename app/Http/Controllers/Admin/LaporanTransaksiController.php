@@ -9,6 +9,14 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Controller Laporan Transaksi & Keuangan (Sisi Panel Admin)
+ *
+ * Mengelola rekapitulasi data pendapatan toko dari pesanan yang telah tuntas:
+ * 1. Filter rentang waktu kustom (harian, bulanan, tahunan)
+ * 2. Agregasi total pendapatan dan nilai rata-rata transaksi di level database
+ * 3. Pagination terkontrol untuk mencegah pemborosan memori server
+ */
 class LaporanTransaksiController extends Controller
 {
     /**
@@ -37,10 +45,10 @@ class LaporanTransaksiController extends Controller
             ->where('status', StatusPesanan::Selesai)
             ->where(function ($q) use ($tanggalMulai, $tanggalAkhir) {
                 $q->whereBetween('selesai_at', [$tanggalMulai, $tanggalAkhir])
-                  ->orWhere(function ($sub) use ($tanggalMulai, $tanggalAkhir) {
-                      $sub->whereNull('selesai_at')
-                          ->whereBetween('updated_at', [$tanggalMulai, $tanggalAkhir]);
-                  });
+                    ->orWhere(function ($sub) use ($tanggalMulai, $tanggalAkhir) {
+                        $sub->whereNull('selesai_at')
+                            ->whereBetween('updated_at', [$tanggalMulai, $tanggalAkhir]);
+                    });
             })
             ->orderByRaw('COALESCE(selesai_at, updated_at) DESC');
 

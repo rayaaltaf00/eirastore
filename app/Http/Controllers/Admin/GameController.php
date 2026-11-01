@@ -12,6 +12,15 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Controller Katalog Game (Sisi Panel Admin)
+ *
+ * Mengelola master data game yang didukung EiraStore:
+ * 1. Pendaftaran game baru dengan proteksi nama mirip (anti-duplikasi)
+ * 2. Unggah poster/ikon game ke disk publik
+ * 3. Pemantauan jumlah paket layanan aktif per game
+ * 4. Toggle aktivasi game beserta dampak visibilitas katalog di publik
+ */
 class GameController extends Controller
 {
     /**

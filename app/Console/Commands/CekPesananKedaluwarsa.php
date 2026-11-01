@@ -9,6 +9,16 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Command Otomatisasi: Pengecekan Pesanan Kedaluwarsa (2 Jam)
+ *
+ * Alur Kerja:
+ * 1. Menjaring pesanan berstatus 'menunggu_pembayaran' yang telah melewati batas_waktu_bayar (2 jam).
+ * 2. Menggunakan transaksi atomik (DB::transaction) dan penguncian baris (lockForUpdate) agar aman dari persaingan aksi (race condition) saat pelanggan mengunggah bukti bayar pada detik yang sama.
+ * 3. Mengubah status pesanan menjadi 'kedaluwarsa'.
+ * 4. Melakukan penghapusan permanen password akun game (purging) untuk melindungi data privasi pengguna.
+ * 5. Mencatat riwayat ke linimasa audit status.
+ */
 #[Signature('pesanan:cek-kedaluwarsa')]
 #[Description('Otomatis mengubah pesanan berstatus menunggu_pembayaran yang melewati batas waktu bayar menjadi kedaluwarsa dan menghapus kredensial password game.')]
 class CekPesananKedaluwarsa extends Command

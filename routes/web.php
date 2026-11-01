@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Rute Web EiraStore (Web Routes)
+ *
+ * Mengelompokkan rute berdasarkan hak akses dan domain:
+ * 1. Rute Publik: Beranda, Katalog Game, Form Pemesanan, Pelacakan Pesanan
+ * 2. Rute Panel Admin: Verifikasi Transaksi, Penugasan Worker, Audit Laporan, Rekap Finansial
+ * 3. Rute Panel Worker: Daftar Pekerjaan, Mulai Joki in-game, Unggah Bukti Penyelesaian
+ * 4. Rute Pelanggan (Customer): Konfirmasi Draf, Invoice Checkout, Unggah Bukti Bayar, Komplain, Rating
+ */
+
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GameController;
@@ -16,6 +26,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Worker\PesananController as WorkerPesananController;
 use App\Models\Banner;
 use App\Models\Game;
+use App\Models\Pesanan;
 use App\Models\Ulasan;
 use Illuminate\Support\Facades\Route;
 
@@ -43,7 +54,7 @@ Route::get('/game/{game}', [GameCatalogController::class, 'show'])->name('game.s
 Route::get('/lacak', function () {
     $kode = trim(request('invoice', ''));
     if ($kode !== '') {
-        $pesanan = \App\Models\Pesanan::where('kode_pesanan', $kode)->first();
+        $pesanan = Pesanan::where('kode_pesanan', $kode)->first();
         if ($pesanan) {
             return redirect()->route('pesanan.show', $pesanan->kode_pesanan);
         }

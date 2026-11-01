@@ -3,8 +3,12 @@
 namespace App\Enums;
 
 /**
- * Status laporan penyelesaian Worker.
- * Dipakai di kolom laporan_penyelesaian.status
+ * Enum StatusLaporan — Status Verifikasi Bukti Pengerjaan Worker
+ *
+ * Mengontrol verifikasi bukti tangkapan layar (screenshot) penyelesaian pekerjaan yang dikirim oleh Worker:
+ * - MenungguVerifikasi: Laporan telah dikirim oleh Worker dan menunggu peninjauan Admin / Pelanggan.
+ * - Terverifikasi: Bukti pengerjaan dinyatakan valid dan sesuai target pesanan.
+ * - Ditolak: Bukti tidak sesuai atau belum mencapai target, Worker wajib melakukan revisi.
  */
 enum StatusLaporan: string
 {

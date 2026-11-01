@@ -3,8 +3,12 @@
 namespace App\Enums;
 
 /**
- * Status pembayaran.
- * Dipakai di kolom pembayaran.status
+ * Enum StatusPembayaran — Status Verifikasi Transaksi Pembayaran
+ *
+ * Mengontrol alur validasi bukti transfer/QRIS yang diunggah oleh pelanggan:
+ * - MenungguVerifikasi: Bukti pembayaran telah diunggah dan menunggu konfirmasi keaslian mutasi oleh Admin.
+ * - Disetujui: Admin telah mencocokkan mutasi rekening, pesanan otomatis berpindah ke status 'Menunggu Worker'.
+ * - Ditolak: Bukti tidak valid atau dana belum masuk, pelanggan dapat mengunggah bukti ulang atau konfirmasi ke Admin.
  */
 enum StatusPembayaran: string
 {

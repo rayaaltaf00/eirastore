@@ -3,32 +3,66 @@
 namespace App\Enums;
 
 /**
- * Status pesanan — mengatur seluruh alur kerja pesanan.
- * Dipakai di kolom pesanan.status
+ * Status Pesanan (State Machine) EiraStore
+ *
+ * Mengatur seluruh siklus hidup pesanan joki secara terstruktur:
+ * 1. Tahap Pembayaran: MenungguPembayaran -> MenungguVerifikasi (atau Kedaluwarsa/Dibatalkan)
+ * 2. Tahap Penugasan:  SiapDitugaskan -> Diproses (Worker ditugaskan)
+ * 3. Tahap Pengerjaan: SedangDikerjakan -> LaporanMasuk (atau PerluRevisiHasil jika ditolak Admin)
+ * 4. Tahap Verifikasi: WorkerSelesai -> MenungguKonfirmasi (Pelanggan memeriksa hasil)
+ * 5. Tahap Akhir:      HasilDisetujui / Selesai (atau Dikomplain oleh pelanggan)
+ *
+ * Kolom basis data: pesanan.status
  */
 enum StatusPesanan: string
 {
-    // Alur awal
+    // ── 1. Alur Awal & Pembayaran ──────────────────────────────────
+    /** Pesanan baru dibuat, menunggu pelanggan mengunggah bukti bayar (maksimal 2 jam) */
     case MenungguPembayaran = 'menunggu_pembayaran';
+
+    /** Pelanggan telah mengunggah bukti bayar, menunggu verifikasi Admin */
     case MenungguVerifikasi = 'menunggu_verifikasi';
+
+    /** Kredensial akun game bermasalah (salah password / butuh kode verifikasi) */
     case PerluRevisiData = 'perlu_revisi_data';
+
+    /** Pembayaran valid & akun game siap, pesanan siap ditugaskan ke Worker */
     case SiapDitugaskan = 'siap_ditugaskan';
 
-    // Pengerjaan
+    // ── 2. Alur Pengerjaan oleh Worker ────────────────────────────
+    /** Worker telah dipilih dan ditugaskan oleh Admin */
     case Diproses = 'diproses';
+
+    /** Worker sedang aktif login dan mengerjakan pesanan di dalam game */
     case SedangDikerjakan = 'sedang_dikerjakan';
+
+    /** Worker telah selesai dan mengirimkan screenshot bukti hasil pengerjaan */
     case LaporanMasuk = 'laporan_masuk';
+
+    /** Admin menolak bukti pengerjaan Worker dan meminta Worker merevisi hasil */
     case PerluRevisiHasil = 'perlu_revisi_hasil';
+
+    /** Admin menyetujui hasil pengerjaan Worker, siap diteruskan ke pelanggan */
     case WorkerSelesai = 'worker_selesai';
 
-    // Penyelesaian
+    // ── 3. Alur Konfirmasi Pelanggan & Penyelesaian ─────────────────
+    /** Menunggu konfirmasi dari pelanggan dalam 24 jam */
     case MenungguKonfirmasi = 'menunggu_konfirmasi';
+
+    /** Pelanggan merasa hasil tidak sesuai target dan mengajukan komplain */
     case Dikomplain = 'dikomplain';
+
+    /** Pelanggan menyetujui hasil pengerjaan joki */
     case HasilDisetujui = 'hasil_disetujui';
+
+    /** Pesanan selesai secara penuh (otomatis setelah 24 jam atau setelah ulasan) */
     case Selesai = 'selesai';
 
-    // Terminal (tidak bisa berubah lagi)
+    // ── 4. Status Terminal (Tidak dapat berubah kembali) ───────────
+    /** Pesanan dibatalkan oleh Admin (misal: pembayaran palsu) */
     case Dibatalkan = 'dibatalkan';
+
+    /** Batas waktu bayar 2 jam habis tanpa unggahan bukti bayar */
     case Kedaluwarsa = 'kedaluwarsa';
 
     /** Label tampilan untuk UI */

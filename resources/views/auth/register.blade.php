@@ -5,7 +5,7 @@
         <p class="text-xs text-slate-400 mt-1.5">Buat akun EiraStore untuk memesan dan melacak proses joki.</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+    <form method="POST" action="{{ route('register') }}" class="space-y-4" data-loading data-loading-text="Mendaftarkan Akun...">
         @csrf
 
         <!-- Nama Lengkap -->

@@ -19,8 +19,11 @@ class AdminPesananVerificationTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $worker;
+
     private User $customer;
+
     private Layanan $layanan;
 
     protected function setUp(): void
@@ -300,7 +303,7 @@ class AdminPesananVerificationTest extends TestCase
             ]);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('pembayaran', [
             'id' => $pembayaran->id,
             'status' => StatusPembayaran::Ditolak->value,

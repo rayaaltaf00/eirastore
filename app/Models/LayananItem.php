@@ -6,6 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Model LayananItem — Butir Rincian / Tingkatan Layanan Joki
+ *
+ * Mengelola komponen harga:
+ * - Utama: Tingkatan rank (tangga), persentase progres, atau opsi dasar.
+ * - Tambahan: Add-on pelengkap (misal: Live Streaming, Request Hero, Waktu Cepat).
+ * - Hierarki: Relasi parent/child untuk pengelompokan wilayah/region peta.
+ *
+ * @property int $id
+ * @property int $layanan_id
+ * @property int|null $parent_id
+ * @property string $jenis
+ * @property string|null $kategori
+ * @property string $nama
+ * @property int $urutan
+ * @property float $harga
+ * @property int|null $nilai_maks
+ * @property string|null $satuan
+ * @property bool $aktif
+ */
 class LayananItem extends Model
 {
     protected $table = 'layanan_item';

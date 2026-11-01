@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\StatusLaporan;
 use App\Enums\StatusPesanan;
+use App\Enums\TipeHarga;
 use App\Models\Game;
 use App\Models\LaporanPenyelesaian;
 use App\Models\Layanan;
@@ -11,7 +12,6 @@ use App\Models\Pesanan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -20,9 +20,13 @@ class WorkerWorkflowTest extends TestCase
     use RefreshDatabase;
 
     private User $worker;
+
     private User $workerLain;
+
     private User $customer;
+
     private Game $game;
+
     private Layanan $layanan;
 
     protected function setUp(): void
@@ -55,7 +59,7 @@ class WorkerWorkflowTest extends TestCase
         $this->layanan = Layanan::create([
             'game_id' => $this->game->id,
             'nama_layanan' => 'Joki Rank Bintang',
-            'tipe_harga' => \App\Enums\TipeHarga::Tangga,
+            'tipe_harga' => TipeHarga::Tangga,
             'aktif' => true,
         ]);
     }
@@ -63,7 +67,7 @@ class WorkerWorkflowTest extends TestCase
     private function buatPesanan(array $attributes = []): Pesanan
     {
         return Pesanan::create(array_merge([
-            'kode_pesanan' => 'ES-' . now()->format('Ymd') . '-' . str_pad((string) rand(1, 999), 3, '0', STR_PAD_LEFT),
+            'kode_pesanan' => 'ES-'.now()->format('Ymd').'-'.str_pad((string) rand(1, 999), 3, '0', STR_PAD_LEFT),
             'customer_id' => $this->customer->id,
             'worker_id' => $this->worker->id,
             'layanan_id' => $this->layanan->id,

@@ -7,6 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Model Layanan — Paket Joki Game EiraStore
+ *
+ * Mengelola jenis layanan joki (misal: Joki Rank, Eksplorasi Map, Paket Quest).
+ * Mendukung 3 model kalkulasi harga:
+ * 1. Tangga:  Perhitungan selisih level/rank awal ke tujuan.
+ * 2. Progres: Perhitungan persentase progres yang diinginkan.
+ * 3. Pilihan: Pemilihan satu atau beberapa paket item opsional.
+ *
+ * @property int $id
+ * @property int $game_id
+ * @property string $nama_layanan
+ * @property string|null $gambar
+ * @property string|null $deskripsi
+ * @property TipeHarga $tipe_harga
+ * @property string|null $estimasi_waktu
+ * @property bool $butuh_login_game
+ * @property bool $aktif
+ */
 class Layanan extends Model
 {
     protected $table = 'layanan'; // nama tabel tidak mengikuti konvensi plural Laravel

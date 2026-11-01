@@ -7,6 +7,11 @@
 
         <title>{{ config('app.name', 'EiraStore') }} - Masuk / Daftar</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('images/logo-sm.png') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -16,6 +21,9 @@
     </head>
     <body class="font-sans text-slate-100 bg-brand-darkest antialiased min-h-screen selection:bg-brand-blue selection:text-white relative overflow-x-hidden flex flex-col justify-between">
         
+        <!-- Global Toast Notification (Tahap 2) -->
+        <x-toast-notification />
+
         <!-- Subtle Ambient Lighting -->
         <div class="pointer-events-none fixed inset-0 flex justify-center -z-10 overflow-hidden">
             <div class="w-[600px] h-[600px] rounded-full bg-brand-blue/10 blur-[130px] -top-32"></div>
@@ -24,11 +32,7 @@
         <!-- Top Header Back Button -->
         <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
             <a href="{{ route('beranda') }}" class="flex items-center space-x-2.5 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-cyan p-0.5 shadow-glow-blue flex items-center justify-center transition-transform group-hover:scale-105">
-                    <div class="w-full h-full bg-brand-darkest rounded-[10px] flex items-center justify-center">
-                        <span class="text-white font-extrabold text-base tracking-tighter">E<span class="text-brand-cyan">S</span></span>
-                    </div>
-                </div>
+                <img src="{{ asset('images/logo.png') }}" alt="EiraStore Logo" class="w-9 h-9 object-contain drop-shadow transition-transform group-hover:scale-105">
                 <div class="flex flex-col">
                     <span class="text-lg font-black tracking-wider text-white">EIRA<span class="text-brand-cyan">STORE</span></span>
                     <span class="text-[9px] uppercase tracking-widest text-slate-400 font-semibold -mt-1">Joki Game Service</span>

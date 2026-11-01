@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Model Game — Master Data Judul Game
+ *
+ * Mengelola katalog game yang didukung EiraStore (misal: MLBB, Genshin Impact, Valorant),
+ * beserta opsi login akun game dinamis, kategori, dan relasi ke daftar layanan joki.
+ *
+ * @property int $id
+ * @property string $nama_game
+ * @property string|null $kategori
+ * @property string|null $deskripsi
+ * @property string|null $gambar
+ * @property bool $aktif
+ */
 class Game extends Model
 {
     protected $fillable = [

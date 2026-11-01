@@ -10,6 +10,15 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Controller Manajemen Worker (Sisi Panel Admin)
+ *
+ * Mengelola data mitra penjoki (Worker):
+ * 1. Pendaftaran worker baru (nama, email, nomor WhatsApp, kata sandi)
+ * 2. Pembaruan data dan reset kata sandi worker
+ * 3. Aktivasi / penonaktifan akun dengan proteksi guard (worker tidak boleh dinonaktifkan jika masih memegang pesanan aktif)
+ * 4. Pemantauan beban kerja aktif dan statistik performa per worker
+ */
 class WorkerController extends Controller
 {
     /**
@@ -215,11 +224,11 @@ class WorkerController extends Controller
         $clean = preg_replace('/[^0-9]/', '', $raw);
 
         if (str_starts_with($clean, '62')) {
-            return '08' . substr($clean, 2);
+            return '08'.substr($clean, 2);
         }
 
         if (str_starts_with($clean, '8')) {
-            return '08' . substr($clean, 1);
+            return '08'.substr($clean, 1);
         }
 
         return $clean;

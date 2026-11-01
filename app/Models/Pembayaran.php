@@ -5,7 +5,22 @@ namespace App\Models;
 use App\Enums\StatusPembayaran;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * Model Pembayaran — Bukti Pembayaran Pelanggan
+ *
+ * Mengelola data metode transfer yang dipilih pelanggan, berkas screenshot
+ * bukti transfer (tersimpan aman di disk privat lokal), serta verifikasi oleh Admin.
+ *
+ * @property int $id
+ * @property int $pesanan_id
+ * @property string $metode_pembayaran
+ * @property string $bukti_transfer
+ * @property StatusPembayaran $status
+ * @property int|null $diverifikasi_oleh
+ * @property Carbon|null $diverifikasi_at
+ */
 class Pembayaran extends Model
 {
     protected $table = 'pembayaran';

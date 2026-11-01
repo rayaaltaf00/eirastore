@@ -1,3 +1,9 @@
+{{--
+    Halaman Detail & Tagihan Pesanan Pelanggan (Customer Order & Checkout Page)
+    - Menyajikan rincian tagihan, nomor rekening tujuan transfer, dan hitung mundur pembayaran 2 jam
+    - Formulir unggah bukti transfer pembayaran manual
+    - Panel interaksi hasil pengerjaan (Setujui Hasil, Ajukan Komplain, Revisi Data, dan Ulasan Bintang)
+--}}
 @extends('layouts.storefront')
 
 @section('content')
@@ -15,8 +21,20 @@
                     <span class="text-white font-medium">{{ $pesanan->kode_pesanan }}</span>
                 </nav>
                 <div class="flex items-center gap-3">
-                    <h1 class="text-2xl sm:text-3xl font-black text-white">{{ $pesanan->kode_pesanan }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight">{{ $pesanan->kode_pesanan }}</h1>
                     
+                    <!-- Copy Button for Order Code -->
+                    <div x-data="{ copied: false }" class="relative inline-flex items-center">
+                        <button type="button"
+                                @click="copyToClipboard('{{ $pesanan->kode_pesanan }}', 'Kode Pesanan {{ $pesanan->kode_pesanan }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                class="p-1.5 rounded-xl bg-brand-surface border border-brand-border text-slate-400 hover:text-brand-cyan hover:border-brand-cyan/50 transition-all flex items-center gap-1 text-xs"
+                                title="Salin Kode Pesanan">
+                            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                            <svg x-show="copied" x-cloak class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span x-show="copied" x-cloak class="text-[10px] font-bold text-emerald-400">Tersalin!</span>
+                        </button>
+                    </div>
+
                     <!-- Status Badge -->
                     <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $pesanan->status->badgeColor() }}">
                         {{ $pesanan->status->label() }}
@@ -286,7 +304,7 @@
                                     <p class="text-xs text-slate-400 mt-0.5">Bagaimana pengalaman Anda memakai layanan joki EiraStore?</p>
                                 </div>
 
-                                <form action="{{ route('pesanan.simpan-ulasan', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+                                <form action="{{ route('pesanan.simpan-ulasan', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menyimpan Ulasan..." class="space-y-4">
                                     @csrf
                                     <input type="hidden" name="rating" :value="reviewRating">
 
@@ -459,12 +477,15 @@
                                         </div>
                                     @else
                                         <!-- Nomor Rekening & Salin -->
-                                        <div class="pt-2 flex items-center justify-between bg-brand-card px-3 py-2 rounded-xl border border-brand-border/60">
-                                            <span class="font-mono text-sm font-black text-white tracking-wider">{{ $metode->nomor_rekening }}</span>
-                                            <button type="button" @click="salinRekening('{{ $metode->nomor_rekening }}', '{{ $metode->nama_metode }}')"
-                                                    class="text-xs font-bold text-brand-cyan hover:text-white flex items-center gap-1 transition-colors">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                                                <span>Salin</span>
+                                        <div x-data="{ copied: false }" class="pt-2 flex items-center justify-between bg-brand-card px-3 py-2 rounded-xl border border-brand-border/60">
+                                            <span class="font-mono text-sm font-black text-white tracking-wider select-all">{{ $metode->nomor_rekening }}</span>
+                                            <button type="button"
+                                                    @click="copyToClipboard('{{ $metode->nomor_rekening }}', 'Nomor Rekening {{ $metode->nama_metode }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                                    class="text-xs font-bold transition-all flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-transparent hover:border-brand-border hover:bg-brand-surface"
+                                                    :class="copied ? 'text-emerald-400' : 'text-brand-cyan hover:text-white'">
+                                                <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                <span x-text="copied ? 'Tersalin!' : 'Salin'">Salin</span>
                                             </button>
                                         </div>
                                     @endif
@@ -484,7 +505,7 @@
                             <p class="text-xs text-slate-400">Setelah berhasil transfer, lampirkan bukti/struk agar pembayaran diverifikasi oleh Admin</p>
                         </div>
 
-                        <form action="{{ route('pesanan.bukti.unggah', $pesanan->kode_pesanan) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <form action="{{ route('pesanan.bukti.unggah', $pesanan->kode_pesanan) }}" method="POST" enctype="multipart/form-data" data-loading data-loading-text="Mengunggah Bukti..." class="space-y-4">
                             @csrf
 
                             <div>
@@ -576,7 +597,7 @@
                             </p>
                         </div>
 
-                        <form action="{{ route('pesanan.revisi-data', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+                        <form action="{{ route('pesanan.revisi-data', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menyimpan Revisi..." class="space-y-4">
                             @csrf
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -841,9 +862,21 @@
                     </div>
 
                     <!-- Total Tagihan -->
-                    <div class="pt-4 border-t border-brand-border flex items-baseline justify-between">
-                        <span class="text-sm font-bold text-slate-300">Total Pembayaran:</span>
-                        <span class="text-2xl font-black text-brand-cyan">Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</span>
+                    <div class="pt-4 border-t border-brand-border flex items-baseline justify-between" x-data="{ copied: false }">
+                        <div>
+                            <span class="text-sm font-bold text-slate-300 block">Total Pembayaran:</span>
+                            <span class="text-[10px] text-slate-400">Transfer sesuai nominal</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl font-black text-brand-cyan">Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</span>
+                            <button type="button"
+                                    @click="copyToClipboard('{{ $pesanan->total_harga }}', 'Nominal Transfer Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="p-1.5 rounded-xl bg-brand-surface border border-brand-border text-slate-400 hover:text-brand-cyan hover:border-brand-cyan/40 transition-colors"
+                                    title="Salin Nominal Transfer (angka)">
+                                <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -858,9 +891,16 @@
                     </div>
 
                     <div class="space-y-2 text-xs">
-                        <div class="flex justify-between py-1 border-b border-brand-border/40">
+                        <div class="flex justify-between items-center py-1 border-b border-brand-border/40" x-data="{ copied: false }">
                             <span class="text-slate-400">ID Akun:</span>
-                            <span class="font-bold text-white">{{ $pesanan->id_akun_game }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-white font-mono">{{ $pesanan->id_akun_game }}</span>
+                                <button type="button" @click="copyToClipboard('{{ $pesanan->id_akun_game }}', 'ID Akun Game'); copied = true; setTimeout(() => copied = false, 2000)"
+                                        class="text-slate-400 hover:text-brand-cyan transition-colors" title="Salin ID Akun">
+                                    <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="flex justify-between py-1 border-b border-brand-border/40">
@@ -868,9 +908,16 @@
                             <span class="font-bold text-white">{{ $pesanan->login_via }}</span>
                         </div>
 
-                        <div class="flex justify-between py-1 border-b border-brand-border/40">
+                        <div class="flex justify-between items-center py-1 border-b border-brand-border/40" x-data="{ copied: false }">
                             <span class="text-slate-400">Username / Email:</span>
-                            <span class="font-bold text-white">{{ $pesanan->username_akun_game }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-white">{{ $pesanan->username_akun_game }}</span>
+                                <button type="button" @click="copyToClipboard('{{ $pesanan->username_akun_game }}', 'Username Akun Game'); copied = true; setTimeout(() => copied = false, 2000)"
+                                        class="text-slate-400 hover:text-brand-cyan transition-colors" title="Salin Username">
+                                    <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="flex justify-between py-1 border-b border-brand-border/40">
@@ -966,7 +1013,7 @@
                     Tidak, Kembali
                 </button>
 
-                <form action="{{ route('pesanan.batalkan', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
+                <form action="{{ route('pesanan.batalkan', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Membatalkan..." class="flex-1">
                     @csrf
                     <button type="submit"
                             class="w-full py-3 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors">
@@ -1034,7 +1081,7 @@
                     Batal
                 </button>
 
-                <form action="{{ route('pesanan.setujui-hasil', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
+                <form action="{{ route('pesanan.setujui-hasil', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menyetujui..." class="flex-1">
                     @csrf
                     <button type="submit"
                             class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-white text-xs font-black shadow-glow-emerald transition-all">
@@ -1063,7 +1110,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('pesanan.ajukan-komplain', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+            <form action="{{ route('pesanan.ajukan-komplain', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Mengirim Komplain..." class="space-y-4">
                 @csrf
                 <div>
                     <label for="alasan_komplain" class="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -1111,7 +1158,7 @@
                     Kembali
                 </button>
 
-                <form action="{{ route('pesanan.konfirmasi-selesai', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
+                <form action="{{ route('pesanan.konfirmasi-selesai', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Memproses..." class="flex-1">
                     @csrf
                     <button type="submit"
                             class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand-blue to-brand-cyan text-white text-xs font-black shadow-glow-blue hover:opacity-95 transition-all">
@@ -1228,11 +1275,7 @@ function checkoutPage(initialSeconds) {
         },
 
         salinRekening(nomor, bank) {
-            navigator.clipboard.writeText(nomor).then(() => {
-                alert('Nomor rekening ' + bank + ' (' + nomor + ') berhasil disalin ke clipboard!');
-            }).catch(() => {
-                prompt('Salin nomor rekening secara manual:', nomor);
-            });
+            window.copyToClipboard(nomor, 'Nomor Rekening ' + bank);
         }
     };
 }

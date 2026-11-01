@@ -15,7 +15,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('lacak.index') }}" method="GET" class="mt-6 flex flex-col sm:flex-row gap-2">
+            <form action="{{ route('lacak.index') }}" method="GET" class="mt-6 flex flex-col sm:flex-row gap-2" data-loading data-loading-text="Mencari...">
                 <div class="relative flex-1">
                     <input 
                         type="text" 

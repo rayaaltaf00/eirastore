@@ -9,7 +9,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
+/**
+ * Model User — Entitas Pengguna Multi-Peran EiraStore
+ *
+ * Mengelola otentikasi dan hak akses untuk 3 peran sistem:
+ * 1. Customer: Pelanggan yang memesan layanan joki dan melacak progres.
+ * 2. Worker:   Penyedia jasa pengerjaan in-game yang ditugaskan oleh Admin.
+ * 3. Admin:    Pengelola sistem, verifikator transaksi, dan penugasan worker.
+ *
+ * @property int $id
+ * @property string $nama
+ * @property string $email
+ * @property string|null $no_hp
+ * @property string $password
+ * @property Role $role
+ * @property string $status_akun
+ * @property Carbon|null $email_verified_at
+ * @property int $jumlah_pesanan_aktif
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */

@@ -8,6 +8,14 @@ use App\Models\LaporanPenyelesaian;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Controller Laporan Pengerjaan Worker (Sisi Panel Admin)
+ *
+ * Mengelola audit dan rekapitulasi bukti penyelesaian yang diserahkan Worker:
+ * 1. Filter status laporan (Menunggu Verifikasi, Terverifikasi, Ditolak)
+ * 2. Pencarian cepat berdasarkan kode pesanan, nama game, atau nama worker
+ * 3. Penghitungan counter status dalam satu query agregat efisien
+ */
 class LaporanWorkerController extends Controller
 {
     /**
@@ -34,9 +42,9 @@ class LaporanWorkerController extends Controller
             $query->where(function ($q) use ($keyword) {
                 $q->whereHas('pesanan', function ($pq) use ($keyword) {
                     $pq->where('kode_pesanan', 'like', "%{$keyword}%")
-                       ->orWhereHas('layanan.game', function ($gq) use ($keyword) {
-                           $gq->where('nama_game', 'like', "%{$keyword}%");
-                       });
+                        ->orWhereHas('layanan.game', function ($gq) use ($keyword) {
+                            $gq->where('nama_game', 'like', "%{$keyword}%");
+                        });
                 })->orWhereHas('worker', function ($wq) use ($keyword) {
                     $wq->where('nama', 'like', "%{$keyword}%");
                 });
@@ -59,9 +67,9 @@ class LaporanWorkerController extends Controller
 
         $counts = [
             'menunggu_verifikasi' => (int) ($rawCounts->menunggu_verifikasi ?? 0),
-            'terverifikasi'       => (int) ($rawCounts->terverifikasi ?? 0),
-            'ditolak'             => (int) ($rawCounts->ditolak ?? 0),
-            'semua'               => (int) ($rawCounts->semua ?? 0),
+            'terverifikasi' => (int) ($rawCounts->terverifikasi ?? 0),
+            'ditolak' => (int) ($rawCounts->ditolak ?? 0),
+            'semua' => (int) ($rawCounts->semua ?? 0),
         ];
 
         return view('admin.laporan-worker.index', compact('laporanList', 'counts', 'statusFilter'));

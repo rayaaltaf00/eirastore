@@ -1,3 +1,9 @@
+{{--
+    Halaman Detail & Manajemen Pesanan Administrator (Admin Order Control Room)
+    - Verifikasi ganda: persetujuan data akun dan bukti pembayaran transfer pelanggan
+    - Modal tindakan: penolakan bukti bayar, minta revisi data, penugasan worker, dan minta revisi hasil
+    - Keamanan & Privasi: Kata sandi akun game disembunyikan total dari pandangan Admin
+--}}
 @extends('layouts.admin')
 
 @section('content')
@@ -22,6 +28,16 @@
             </nav>
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-black text-white font-mono">{{ $pesanan->kode_pesanan }}</h1>
+                <div x-data="{ copied: false }" class="relative inline-flex items-center">
+                    <button type="button"
+                            @click="copyToClipboard('{{ $pesanan->kode_pesanan }}', 'Kode Pesanan {{ $pesanan->kode_pesanan }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                            class="p-1.5 rounded-xl bg-brand-surface border border-brand-border text-slate-400 hover:text-brand-cyan hover:border-brand-cyan/50 transition-all flex items-center gap-1 text-xs"
+                            title="Salin Kode Pesanan">
+                        <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        <svg x-show="copied" x-cloak class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span x-show="copied" x-cloak class="text-[10px] font-bold text-emerald-400">Tersalin!</span>
+                    </button>
+                </div>
                 <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $pesanan->status->badgeColor() }}">
                     {{ $pesanan->status->label() }}
                 </span>
@@ -186,7 +202,7 @@
                     </a>
                 </div>
             @else
-                <form action="{{ route('admin.pesanan.tugaskan-worker', $pesanan->kode_pesanan) }}" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <form action="{{ route('admin.pesanan.tugaskan-worker', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menugaskan Worker..." class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                     @csrf
                     <div class="flex-1">
                         <select name="worker_id" required class="w-full px-4 py-2.5 rounded-xl bg-brand-card border border-brand-border text-white text-xs font-semibold focus:border-brand-cyan focus:outline-none">
@@ -260,7 +276,7 @@
             @endif
 
             <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                <form action="{{ route('admin.pesanan.verifikasi-laporan', $pesanan->kode_pesanan) }}" method="POST" class="flex-1 w-full">
+                <form action="{{ route('admin.pesanan.verifikasi-laporan', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Memverifikasi Laporan..." class="flex-1 w-full">
                     @csrf
                     <button type="submit" 
                             class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
@@ -400,9 +416,16 @@
 
                 <!-- Detail Isian Akun Game -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60">
-                        <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">ID Akun Game:</span>
-                        <span class="font-bold text-white text-sm font-mono mt-0.5 block">{{ $pesanan->id_akun_game }}</span>
+                    <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60" x-data="{ copied: false }">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">ID Akun Game:</span>
+                            <button type="button" @click="copyToClipboard('{{ $pesanan->id_akun_game }}', 'ID Akun Game'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="text-slate-400 hover:text-brand-cyan transition-colors" title="Salin ID Akun">
+                                <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                        </div>
+                        <span class="font-bold text-white text-sm font-mono mt-0.5 block select-all">{{ $pesanan->id_akun_game }}</span>
                     </div>
 
                     <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60">
@@ -410,9 +433,18 @@
                         <span class="font-bold text-white text-sm mt-0.5 block">{{ $pesanan->login_via ?? '-' }}</span>
                     </div>
 
-                    <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60">
-                        <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Username / Email Login:</span>
-                        <span class="font-semibold text-white mt-0.5 block">{{ $pesanan->username_akun_game ?? '-' }}</span>
+                    <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60" x-data="{ copied: false }">
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Username / Email Login:</span>
+                            @if($pesanan->username_akun_game)
+                                <button type="button" @click="copyToClipboard('{{ $pesanan->username_akun_game }}', 'Username Akun Game'); copied = true; setTimeout(() => copied = false, 2000)"
+                                        class="text-slate-400 hover:text-brand-cyan transition-colors" title="Salin Username">
+                                    <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                </button>
+                            @endif
+                        </div>
+                        <span class="font-semibold text-white mt-0.5 block select-all">{{ $pesanan->username_akun_game ?? '-' }}</span>
                     </div>
 
                     <div class="p-3 rounded-xl bg-brand-surface border border-brand-border/60">
@@ -473,7 +505,7 @@
                 <!-- Aksi Persetujuan / Permintaan Revisi Data -->
                 @if($pesanan->status === \App\Enums\StatusPesanan::MenungguVerifikasi && ! $pesanan->data_disetujui)
                     <div class="pt-3 border-t border-brand-border flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <form action="{{ route('admin.pesanan.setujui-data', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
+                        <form action="{{ route('admin.pesanan.setujui-data', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menyetujui Data..." class="flex-1">
                             @csrf
                             <button type="submit" class="w-full py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -576,7 +608,7 @@
                     <!-- Tombol Aksi Verifikasi Pembayaran -->
                     @if($pesanan->status === \App\Enums\StatusPesanan::MenungguVerifikasi && $pesanan->pembayaran->status === \App\Enums\StatusPembayaran::MenungguVerifikasi)
                         <div class="pt-3 border-t border-brand-border flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                            <form action="{{ route('admin.pesanan.setujui-pembayaran', $pesanan->kode_pesanan) }}" method="POST" class="flex-1">
+                            <form action="{{ route('admin.pesanan.setujui-pembayaran', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menyetujui Pembayaran..." class="flex-1">
                                 @csrf
                                 <button type="submit" class="w-full py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-white text-xs font-black shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -788,7 +820,7 @@
                 Tuliskan instruksi atau alasan detail bagian data akun game apa yang perlu diperbaiki oleh pelanggan (misal: ID tidak ditemukan, server salah, atau Zone ID kurang lengkap).
             </p>
 
-            <form action="{{ route('admin.pesanan.minta-revisi-data', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.pesanan.minta-revisi-data', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Mengirim Instruksi..." class="space-y-4">
                 @csrf
                 <div>
                     <label for="catatan_revisi" class="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -834,7 +866,7 @@
                 <strong>Peringatan Kebijakan:</strong> Menolak bukti transfer akan <strong>membatalkan pesanan secara permanen</strong> dan <strong>menghapus password akun game secara seketika</strong> demi keamanan.
             </div>
 
-            <form action="{{ route('admin.pesanan.tolak-pembayaran', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.pesanan.tolak-pembayaran', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Menolak & Membatalkan..." class="space-y-4">
                 @csrf
                 <div>
                     <label for="alasan_tolak" class="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -900,7 +932,7 @@
                 Tuliskan catatan detail untuk Worker <strong class="text-white">{{ $pesanan->worker->nama ?? 'Worker' }}</strong> mengenai bagian hasil jokian yang belum sesuai (misal: rank belum tercapai, bintang kurang, atau screenshot tidak jelas).
             </p>
 
-            <form action="{{ route('admin.pesanan.minta-revisi-hasil', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.pesanan.minta-revisi-hasil', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Mengirim Perintah Revisi..." class="space-y-4">
                 @csrf
                 <div>
                     <label for="catatan_revisi_hasil" class="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -945,7 +977,7 @@
                 Status pesanan akan diubah menjadi <strong class="text-brand-cyan">Menunggu Konfirmasi</strong>. Customer akan dapat memeriksa hasil jokian di detail pesanan dan memiliki opsi untuk Menyetujui Hasil atau Mengajukan Komplain.
             </p>
 
-            <form action="{{ route('admin.pesanan.kirim-notifikasi-selesai', $pesanan->kode_pesanan) }}" method="POST" class="space-y-4">
+            <form action="{{ route('admin.pesanan.kirim-notifikasi-selesai', $pesanan->kode_pesanan) }}" method="POST" data-loading data-loading-text="Mengirim Notifikasi..." class="space-y-4">
                 @csrf
                 <div>
                     <label for="pesan_singkat" class="block text-xs font-semibold text-slate-300 mb-1.5">

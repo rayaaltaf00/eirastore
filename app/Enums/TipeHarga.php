@@ -3,8 +3,12 @@
 namespace App\Enums;
 
 /**
- * Tipe harga layanan — menentukan cara menghitung harga pesanan.
- * Dipakai di kolom layanan.tipe_harga
+ * Enum TipeHarga — Formula Perhitungan Harga Layanan Joki
+ *
+ * Mendefinisikan skema kalkulasi biaya berdasarkan karakteristik game:
+ * - Tangga: Dihitung dari selisih peringkat/tingkatan awal ke tujuan (misal: Rank Epic ke Mythic di Mobile Legends).
+ * - Progres: Dihitung dari harga dasar dikurangi capaian progres pelanggan saat ini (misal: Eksplorasi 40% ke 100% di Genshin Impact).
+ * - Pilihan: Dihitung dari penjumlahan harga item/paket lepasan yang dicentang oleh pelanggan (misal: Quest harian, unlock karakter).
  */
 enum TipeHarga: string
 {

@@ -12,7 +12,6 @@ use App\Models\Layanan;
 use App\Models\Pesanan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -21,8 +20,11 @@ class AdminReportVerificationTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $worker;
+
     private User $customer;
+
     private Layanan $layanan;
 
     protected function setUp(): void

@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use Illuminate\View\View;
 
+/**
+ * Controller Katalog Game (Sisi Publik & Pelanggan)
+ *
+ * Menampilkan halaman rincian game dan daftar paket layanan joki aktif
+ * yang siap dipesan oleh pengunjung/pelanggan toko.
+ */
 class GameCatalogController extends Controller
 {
     /**

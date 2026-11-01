@@ -59,8 +59,15 @@
             @forelse($pesananAktif as $pesanan)
                 <div class="bg-brand-card/90 border {{ $pesanan->status === \App\Enums\StatusPesanan::MenungguKonfirmasi ? 'border-emerald-500/60 ring-1 ring-emerald-500/30' : ($pesanan->status === \App\Enums\StatusPesanan::HasilDisetujui ? 'border-teal-500/60 ring-1 ring-teal-500/30' : ($pesanan->status === \App\Enums\StatusPesanan::PerluRevisiData ? 'border-amber-500/60 ring-1 ring-amber-500/30' : 'border-brand-border')) }} rounded-3xl p-5 sm:p-6 shadow-card hover:border-slate-500 transition-all">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2" x-data="{ copied: false }">
                             <span class="font-mono text-sm font-black text-white">{{ $pesanan->kode_pesanan }}</span>
+                            <button type="button" 
+                                    @click="copyToClipboard('{{ $pesanan->kode_pesanan }}', 'Kode Pesanan {{ $pesanan->kode_pesanan }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="p-1 rounded-lg text-slate-400 hover:text-brand-cyan hover:bg-brand-surface transition-colors"
+                                    title="Salin Kode Pesanan">
+                                <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
                             <span class="text-xs text-slate-500">• {{ $pesanan->created_at->format('d M Y, H:i') }} WIB</span>
                         </div>
                         <span class="px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto {{ $pesanan->status->badgeColor() }}">
@@ -203,8 +210,15 @@
             @forelse($pesananRiwayat as $pesanan)
                 <div class="bg-brand-card/90 border border-brand-border rounded-3xl p-5 sm:p-6 shadow-card hover:border-slate-600 transition-all opacity-85 hover:opacity-100">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2" x-data="{ copied: false }">
                             <span class="font-mono text-sm font-black text-white">{{ $pesanan->kode_pesanan }}</span>
+                            <button type="button" 
+                                    @click="copyToClipboard('{{ $pesanan->kode_pesanan }}', 'Kode Pesanan {{ $pesanan->kode_pesanan }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="p-1 rounded-lg text-slate-400 hover:text-brand-cyan hover:bg-brand-surface transition-colors"
+                                    title="Salin Kode Pesanan">
+                                <svg x-show="!copied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <svg x-show="copied" x-cloak class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
                             <span class="text-xs text-slate-500">• {{ $pesanan->created_at->format('d M Y, H:i') }} WIB</span>
                         </div>
                         <span class="px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto {{ $pesanan->status->badgeColor() }}">

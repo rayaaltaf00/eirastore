@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
+/**
+ * Controller Metode Pembayaran Rekening/QRIS (Sisi Panel Admin)
+ *
+ * Mengelola rekening bank, dompet digital, dan barcode QRIS tujuan transfer:
+ * 1. Manajemen data rekening (nama bank/e-wallet, nomor akun, nama pemilik)
+ * 2. Unggah gambar barcode QRIS dan logo perbankan ke penyimpanan publik
+ * 3. Pengaturan urutan prioritas dan toggle status aktif penayangan di checkout
+ */
 class MetodePembayaranController extends Controller
 {
     /**

@@ -12,6 +12,15 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * Controller Layanan Joki (Sisi Panel Admin)
+ *
+ * Mengelola paket jasa joki game yang ditawarkan toko:
+ * 1. Manajemen data layanan (nama, deskripsi, estimasi waktu pengerjaan)
+ * 2. Pemilihan skema formula biaya (Tangga, Progres, atau Pilihan)
+ * 3. Konfigurasi kebutuhan kredensial game (butuh login vs mabar/gendong)
+ * 4. Filter katalog berdasarkan judul game dan tipe harga
+ */
 class LayananController extends Controller
 {
     /**

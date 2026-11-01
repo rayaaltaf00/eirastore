@@ -22,8 +22,11 @@ class CustomerCompletionWorkflowTest extends TestCase
     use RefreshDatabase;
 
     private User $customer;
+
     private User $worker;
+
     private User $otherCustomer;
+
     private Layanan $layanan;
 
     protected function setUp(): void
@@ -65,7 +68,7 @@ class CustomerCompletionWorkflowTest extends TestCase
     private function buatPesanan(StatusPesanan $status, array $override = []): Pesanan
     {
         return Pesanan::create(array_merge([
-            'kode_pesanan' => 'ES-' . now()->format('Ymd') . '-' . str_pad((string) rand(100, 999), 3, '0', STR_PAD_LEFT),
+            'kode_pesanan' => 'ES-'.now()->format('Ymd').'-'.str_pad((string) rand(100, 999), 3, '0', STR_PAD_LEFT),
             'customer_id' => $this->customer->id,
             'worker_id' => $this->worker->id,
             'layanan_id' => $this->layanan->id,
@@ -222,7 +225,7 @@ class CustomerCompletionWorkflowTest extends TestCase
     public function test_customer_dapat_melihat_bukti_selesai_laporan_worker(): void
     {
         $pesanan = $this->buatPesanan(StatusPesanan::MenungguKonfirmasi);
-        
+
         $fakeFile = UploadedFile::fake()->image('bukti_akhir.png');
         $storedPath = $fakeFile->store('bukti_selesai', 'local');
 
