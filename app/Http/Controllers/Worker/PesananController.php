@@ -29,6 +29,7 @@ class PesananController extends Controller
             ->where('worker_id', $worker->id);
 
         if ($search) {
+            $search = str_replace(['%', '_'], ['\%', '\_'], $search);
             $query->where(function ($q) use ($search) {
                 $q->where('kode_pesanan', 'like', "%{$search}%")
                     ->orWhere('id_akun_game', 'like', "%{$search}%")

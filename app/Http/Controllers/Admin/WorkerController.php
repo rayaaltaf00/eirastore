@@ -25,7 +25,7 @@ class WorkerController extends Controller
 
         // Pencarian berdasarkan nama, email, atau nomor HP
         if ($request->filled('q')) {
-            $search = trim($request->q);
+            $search = str_replace(['%', '_'], ['\%', '\_'], trim($request->q));
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")

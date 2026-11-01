@@ -17,23 +17,50 @@ class DashboardController extends Controller
      */
     public function index(): View
     {
-        // 11 Status pesanan penting sesuai PRD A-19
+        // Hitung semua status pesanan dalam 1 query agregat efisien (menggantikan 11 query terpisah)
+        $rawCounts = Pesanan::selectRaw('
+            COUNT(CASE WHEN status = ? THEN 1 END) as menunggu_verifikasi,
+            COUNT(CASE WHEN status = ? THEN 1 END) as perlu_revisi_data,
+            COUNT(CASE WHEN status = ? THEN 1 END) as siap_ditugaskan,
+            COUNT(CASE WHEN status = ? THEN 1 END) as diproses,
+            COUNT(CASE WHEN status = ? THEN 1 END) as sedang_dikerjakan,
+            COUNT(CASE WHEN status = ? THEN 1 END) as laporan_masuk,
+            COUNT(CASE WHEN status = ? THEN 1 END) as worker_selesai,
+            COUNT(CASE WHEN status = ? THEN 1 END) as menunggu_konfirmasi,
+            COUNT(CASE WHEN status = ? THEN 1 END) as dikomplain,
+            COUNT(CASE WHEN status = ? THEN 1 END) as perlu_revisi_hasil,
+            COUNT(CASE WHEN status = ? THEN 1 END) as selesai,
+            COUNT(*) as total
+        ', [
+            StatusPesanan::MenungguVerifikasi->value,
+            StatusPesanan::PerluRevisiData->value,
+            StatusPesanan::SiapDitugaskan->value,
+            StatusPesanan::Diproses->value,
+            StatusPesanan::SedangDikerjakan->value,
+            StatusPesanan::LaporanMasuk->value,
+            StatusPesanan::WorkerSelesai->value,
+            StatusPesanan::MenungguKonfirmasi->value,
+            StatusPesanan::Dikomplain->value,
+            StatusPesanan::PerluRevisiHasil->value,
+            StatusPesanan::Selesai->value,
+        ])->first();
+
         $statusCounts = [
-            'menunggu_verifikasi' => Pesanan::where('status', StatusPesanan::MenungguVerifikasi)->count(),
-            'perlu_revisi_data'   => Pesanan::where('status', StatusPesanan::PerluRevisiData)->count(),
-            'siap_ditugaskan'     => Pesanan::where('status', StatusPesanan::SiapDitugaskan)->count(),
-            'diproses'            => Pesanan::where('status', StatusPesanan::Diproses)->count(),
-            'sedang_dikerjakan'   => Pesanan::where('status', StatusPesanan::SedangDikerjakan)->count(),
-            'laporan_masuk'       => Pesanan::where('status', StatusPesanan::LaporanMasuk)->count(),
-            'worker_selesai'      => Pesanan::where('status', StatusPesanan::WorkerSelesai)->count(),
-            'menunggu_konfirmasi' => Pesanan::where('status', StatusPesanan::MenungguKonfirmasi)->count(),
-            'dikomplain'          => Pesanan::where('status', StatusPesanan::Dikomplain)->count(),
-            'perlu_revisi_hasil'  => Pesanan::where('status', StatusPesanan::PerluRevisiHasil)->count(),
-            'selesai'             => Pesanan::where('status', StatusPesanan::Selesai)->count(),
+            'menunggu_verifikasi' => (int) ($rawCounts->menunggu_verifikasi ?? 0),
+            'perlu_revisi_data'   => (int) ($rawCounts->perlu_revisi_data ?? 0),
+            'siap_ditugaskan'     => (int) ($rawCounts->siap_ditugaskan ?? 0),
+            'diproses'            => (int) ($rawCounts->diproses ?? 0),
+            'sedang_dikerjakan'   => (int) ($rawCounts->sedang_dikerjakan ?? 0),
+            'laporan_masuk'       => (int) ($rawCounts->laporan_masuk ?? 0),
+            'worker_selesai'      => (int) ($rawCounts->worker_selesai ?? 0),
+            'menunggu_konfirmasi' => (int) ($rawCounts->menunggu_konfirmasi ?? 0),
+            'dikomplain'          => (int) ($rawCounts->dikomplain ?? 0),
+            'perlu_revisi_hasil'  => (int) ($rawCounts->perlu_revisi_hasil ?? 0),
+            'selesai'             => (int) ($rawCounts->selesai ?? 0),
         ];
 
         // Ringkasan metrik global
-        $totalPesanan = Pesanan::count();
+        $totalPesanan = (int) ($rawCounts->total ?? 0);
 
         // Pesanan yang membutuhkan tindakan Admin segera
         $butuhTindakanCount = Pesanan::whereIn('status', [

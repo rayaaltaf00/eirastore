@@ -184,6 +184,7 @@ class OrderCalculationServiceTest extends TestCase
     public function test_generate_kode_pesanan_format(): void
     {
         $kode1 = $this->service->generateKodePesanan();
-        $this->assertMatchesRegularExpression('/^ES-\d{8}-001$/', $kode1);
+        // Format baru: ES-YYYYMMDD-XXX-ABCD (dengan 4 karakter random anti-enumerasi)
+        $this->assertMatchesRegularExpression('/^ES-\d{8}-001-[A-F0-9]{4}$/', $kode1);
     }
 }

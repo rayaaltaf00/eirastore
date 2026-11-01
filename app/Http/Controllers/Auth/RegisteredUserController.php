@@ -8,7 +8,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -57,11 +56,12 @@ class RegisteredUserController extends Controller
         ]);
 
         // Buat akun customer baru — role otomatis customer, status aktif
+        // Password otomatis di-hash oleh cast 'hashed' pada model User
         $user = User::create([
             'nama' => $request->nama,
             'email' => $request->email,
             'no_hp' => $request->no_hp,
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
             'role' => 'customer',
             'status_akun' => 'aktif',
         ]);

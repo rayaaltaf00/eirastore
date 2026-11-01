@@ -52,7 +52,7 @@ Route::get('/lacak', function () {
     }
 
     return view('lacak');
-})->name('lacak.index');
+})->middleware('throttle:15,1')->name('lacak.index');
 
 // ── Route Admin (harus login + role admin) ─────────────
 Route::middleware(['auth', 'role:admin'])
@@ -113,8 +113,10 @@ Route::middleware(['auth', 'role:worker'])
     });
 
 // ── Form Pemesanan Publik (Bisa diakses tanpa login) ──
-Route::get('/layanan/{layanan}/pesan', [PesananController::class, 'create'])->name('pesanan.create');
-Route::post('/layanan/{layanan}/pesan', [PesananController::class, 'store'])->name('pesanan.store');
+Route::middleware(['throttle:10,1'])->group(function () {
+    Route::get('/layanan/{layanan}/pesan', [PesananController::class, 'create'])->name('pesanan.create');
+    Route::post('/layanan/{layanan}/pesan', [PesananController::class, 'store'])->name('pesanan.store');
+});
 
 // ── Route Customer / Pengguna Terautentikasi ───────────
 Route::middleware(['auth'])->group(function () {

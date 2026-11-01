@@ -30,7 +30,7 @@ class LaporanWorkerController extends Controller
         }
 
         if ($request->filled('q')) {
-            $keyword = trim($request->q);
+            $keyword = str_replace(['%', '_'], ['\%', '\_'], trim($request->q));
             $query->where(function ($q) use ($keyword) {
                 $q->whereHas('pesanan', function ($pq) use ($keyword) {
                     $pq->where('kode_pesanan', 'like', "%{$keyword}%")

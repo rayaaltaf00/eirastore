@@ -32,7 +32,7 @@ class LayananController extends Controller
         }
 
         if ($request->filled('q')) {
-            $search = $request->q;
+            $search = str_replace(['%', '_'], ['\%', '\_'], $request->q);
             $query->where(function ($q) use ($search) {
                 $q->where('nama_layanan', 'like', "%{$search}%")
                     ->orWhereHas('game', function ($g) use ($search) {

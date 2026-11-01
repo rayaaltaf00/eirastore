@@ -23,7 +23,7 @@ class GameController extends Controller
         $query = Game::withCount('layanan');
 
         if ($request->filled('q')) {
-            $search = $request->q;
+            $search = str_replace(['%', '_'], ['\%', '\_'], $request->q);
             $query->where(function ($q) use ($search) {
                 $q->where('nama_game', 'like', "%{$search}%")
                     ->orWhere('kategori', 'like', "%{$search}%");

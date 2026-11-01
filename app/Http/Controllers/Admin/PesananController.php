@@ -53,7 +53,7 @@ class PesananController extends Controller
 
         // Pencarian berdasarkan kode_pesanan, nama customer, atau no wa
         if ($request->filled('q')) {
-            $keyword = trim($request->q);
+            $keyword = str_replace(['%', '_'], ['\%', '\_'], trim($request->q));
             $query->where(function ($q) use ($keyword) {
                 $q->where('kode_pesanan', 'like', "%{$keyword}%")
                     ->orWhere('no_wa_customer', 'like', "%{$keyword}%")

@@ -153,7 +153,10 @@ class Pesanan extends Model
     }
 
     /**
-     * Generate kode pesanan unik: ES-YYYYMMDD-XXX
+     * Generate kode pesanan unik: ES-YYYYMMDD-XXX-ABCD
+     *
+     * Format: ES-{tanggal}-{nomor_urut}-{random_4_char}
+     * Komponen random mencegah enumerasi/prediksi kode pesanan oleh pihak luar.
      */
     public static function generateKodePesanan(): string
     {
@@ -166,16 +169,22 @@ class Pesanan extends Model
 
         $nextNumber = 1;
         if ($lastOrder) {
-            $lastSuffix = substr($lastOrder->kode_pesanan, strlen($prefix));
-            if (is_numeric($lastSuffix)) {
-                $nextNumber = (int) $lastSuffix + 1;
+            // Ambil bagian nomor urut (setelah prefix, sebelum dash terakhir)
+            $afterPrefix = substr($lastOrder->kode_pesanan, strlen($prefix));
+            $parts = explode('-', $afterPrefix);
+            $numericPart = $parts[0] ?? '0';
+            if (is_numeric($numericPart)) {
+                $nextNumber = (int) $numericPart + 1;
             }
         }
 
-        $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        // Tambahkan 4 karakter alfanumerik random untuk anti-enumerasi
+        $randomSuffix = strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+        $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $randomSuffix;
+
         while (static::where('kode_pesanan', $kode)->exists()) {
-            $nextNumber++;
-            $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+            $randomSuffix = strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+            $kode = $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT) . '-' . $randomSuffix;
         }
 
         return $kode;

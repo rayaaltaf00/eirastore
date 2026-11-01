@@ -18,6 +18,7 @@ use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -173,6 +174,12 @@ class PesananController extends Controller
 
         // JIKA PENGUNJUNG BELUM LOGIN: Simpan draf ke sesi
         if (! Auth::check()) {
+            // Enkripsi password akun game sebelum disimpan ke session (defense-in-depth)
+            if (! empty($payload['password_akun_game'])) {
+                $payload['password_akun_game'] = Crypt::encryptString($payload['password_akun_game']);
+                $payload['_password_encrypted'] = true;
+            }
+
             session(['draft_pesanan' => $payload]);
 
             return redirect()->route('login')
@@ -224,6 +231,12 @@ class PesananController extends Controller
             return redirect()->route('beranda');
         }
 
+        // Dekripsi password akun game jika sebelumnya dienkripsi di session
+        if (! empty($draft['_password_encrypted']) && ! empty($draft['password_akun_game'])) {
+            $draft['password_akun_game'] = Crypt::decryptString($draft['password_akun_game']);
+            unset($draft['_password_encrypted']);
+        }
+
         /** @var Layanan|null $layanan */
         $layanan = Layanan::with('game')->find($draft['layanan_id']);
         if (! $layanan) {
@@ -251,6 +264,12 @@ class PesananController extends Controller
         $draft = session('draft_pesanan');
         if (! $draft || empty($draft['layanan_id'])) {
             return redirect()->route('beranda');
+        }
+
+        // Dekripsi password akun game jika sebelumnya dienkripsi di session
+        if (! empty($draft['_password_encrypted']) && ! empty($draft['password_akun_game'])) {
+            $draft['password_akun_game'] = Crypt::decryptString($draft['password_akun_game']);
+            unset($draft['_password_encrypted']);
         }
 
         $user = Auth::user();
@@ -827,6 +846,10 @@ class PesananController extends Controller
     protected function authorizeView(Pesanan $pesanan): void
     {
         $user = Auth::user();
+
+        if (! $user) {
+            abort(401, 'Silakan login terlebih dahulu untuk melihat pesanan ini.');
+        }
 
         if ($user->role === Role::Admin) {
             return;

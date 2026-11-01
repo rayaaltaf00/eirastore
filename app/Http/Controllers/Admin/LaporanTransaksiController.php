@@ -51,11 +51,8 @@ class LaporanTransaksiController extends Controller
         $rataRataTransaksi = $totalPesanan > 0 ? (int) round($totalPendapatan / $totalPesanan) : 0;
 
         $perPage = $request->input('per_page', 25);
-        if ($perPage === 'all' || $request->boolean('all')) {
-            $pesananList = $query->get();
-        } else {
-            $pesananList = $query->paginate(max(1, (int) $perPage))->withQueryString();
-        }
+        $perPage = min(max(1, (int) $perPage), 100); // Batasi 1-100 untuk mencegah memory exhaustion
+        $pesananList = $query->paginate($perPage)->withQueryString();
 
         return view('admin.laporan-transaksi.index', [
             'pesananList' => $pesananList,
