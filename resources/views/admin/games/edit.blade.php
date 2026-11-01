@@ -142,6 +142,10 @@
                                @change="handleFileUpload"
                                class="block w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-white hover:file:opacity-90 file:cursor-pointer cursor-pointer bg-brand-surface rounded-xl border border-brand-border p-2">
                         <p class="text-[11px] text-slate-500">JPG, PNG, atau WebP (Maksimal 2 MB). Bila diganti, berkas lama otomatis dihapus dari server.</p>
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 border border-brand-blue/20">
+                            <svg class="w-3.5 h-3.5 text-brand-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span class="text-[11px] text-slate-300">Rekomendasi: <strong class="text-brand-cyan">800 × 450 px</strong> (rasio 16:9)</span>
+                        </div>
                         @error('gambar_upload')
                             <p class="text-xs text-red-400">{{ $message }}</p>
                         @enderror

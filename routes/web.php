@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\LaporanTransaksiController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\GameCatalogController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Worker\PesananController as WorkerPesananController;
+use App\Models\Banner;
 use App\Models\Game;
 use App\Models\Ulasan;
 use Illuminate\Support\Facades\Route;
@@ -31,7 +33,9 @@ Route::get('/', function () {
     $totalUlasan = Ulasan::count();
     $rataRataRating = $totalUlasan > 0 ? round((float) Ulasan::avg('rating'), 1) : 5.0;
 
-    return view('beranda', compact('games', 'ulasanTerbaru', 'totalUlasan', 'rataRataRating'));
+    $banners = Banner::aktif()->get();
+
+    return view('beranda', compact('games', 'ulasanTerbaru', 'totalUlasan', 'rataRataRating', 'banners'));
 })->name('beranda');
 
 Route::get('/game/{game}', [GameCatalogController::class, 'show'])->name('game.show');
@@ -57,6 +61,9 @@ Route::middleware(['auth', 'role:admin'])
     ->group(function () {
         // Dashboard — halaman utama Admin setelah login (A-19)
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Fase 2: Kelola Banner Promosi (Carousel Landing Page)
+        Route::resource('banners', BannerController::class)->except(['show']);
 
         // Fase 4: Katalog Game & Layanan Joki
         Route::resource('games', GameController::class)->except(['show']);

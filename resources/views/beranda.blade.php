@@ -24,13 +24,16 @@
         <!-- ========================================================================= -->
         <!-- 1. BANNER PROMOSI (Carousel Slider)                                       -->
         <!-- ========================================================================= -->
+        @if($banners->isNotEmpty())
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
             <div x-data="{
                 currentSlide: 0,
-                totalSlides: 3,
+                totalSlides: {{ $banners->count() }},
                 autoplayInterval: null,
                 init() {
-                    this.autoplayInterval = setInterval(() => { this.next() }, 5000);
+                    if (this.totalSlides > 1) {
+                        this.autoplayInterval = setInterval(() => { this.next() }, 5000);
+                    }
                 },
                 next() {
                     this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
@@ -41,62 +44,27 @@
                 goTo(index) {
                     this.currentSlide = index;
                     clearInterval(this.autoplayInterval);
-                    this.autoplayInterval = setInterval(() => { this.next() }, 5000);
+                    if (this.totalSlides > 1) {
+                        this.autoplayInterval = setInterval(() => { this.next() }, 5000);
+                    }
                 }
             }" class="relative rounded-2xl overflow-hidden border border-brand-border shadow-2xl">
                 <!-- Slide Container -->
                 <div class="relative w-full aspect-[21/7] sm:aspect-[21/6] bg-brand-card">
-                    {{-- 
-                        BANNER PROMOSI: Ganti src dengan gambar banner custom dari Canva.
-                        Simpan file banner di: public/images/banners/banner-1.jpg, banner-2.jpg, dst.
-                        Ukuran rekomendasi: 1200x400px (rasio 3:1)
-                    --}}
-
-                    <!-- Slide 1: Promo Utama -->
-                    <div x-show="currentSlide === 0" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0">
-                        @if(file_exists(public_path('images/banners/banner-1.jpg')))
-                            <img src="{{ asset('images/banners/banner-1.jpg') }}" alt="Promo EiraStore" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full bg-gradient-to-r from-brand-blue/30 via-brand-card to-brand-cyan/20 flex items-center justify-center p-6 sm:p-10">
-                                <div class="max-w-lg">
-                                    <span class="inline-block px-3 py-1 rounded-full bg-brand-blue/20 text-brand-cyan text-xs font-bold mb-3">🔥 PROMO SPESIAL</span>
-                                    <h2 class="text-xl sm:text-3xl font-black text-white leading-tight">Diskon 20% Joki Rank<br><span class="text-brand-cyan">Mobile Legends</span></h2>
-                                    <p class="text-xs sm:text-sm text-slate-400 mt-2">Berlaku untuk semua paket joki rank. Proses cepat & bergaransi.</p>
-                                </div>
-                            </div>
-                        @endif
+                    @foreach($banners as $index => $banner)
+                    <div x-show="currentSlide === {{ $index }}"
+                         x-transition:enter="transition ease-out duration-500"
+                         x-transition:enter-start="opacity-0 translate-x-4"
+                         x-transition:enter-end="opacity-100 translate-x-0"
+                         x-transition:leave="transition ease-in duration-300"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="absolute inset-0">
+                        <img src="{{ $banner->gambar_url }}" alt="{{ $banner->judul }}" class="w-full h-full object-cover">
                     </div>
+                    @endforeach
 
-                    <!-- Slide 2: Keunggulan -->
-                    <div x-show="currentSlide === 1" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0">
-                        @if(file_exists(public_path('images/banners/banner-2.jpg')))
-                            <img src="{{ asset('images/banners/banner-2.jpg') }}" alt="Keunggulan EiraStore" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full bg-gradient-to-r from-emerald-900/40 via-brand-card to-brand-blue/20 flex items-center justify-center p-6 sm:p-10">
-                                <div class="max-w-lg">
-                                    <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold mb-3">✅ TERPERCAYA</span>
-                                    <h2 class="text-xl sm:text-3xl font-black text-white leading-tight">Worker Pro & Berpengalaman<br><span class="text-emerald-400">Garansi 100%</span></h2>
-                                    <p class="text-xs sm:text-sm text-slate-400 mt-2">Dikerjakan oleh pemain rank tinggi dengan win-rate terbaik.</p>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Slide 3: Game Baru -->
-                    <div x-show="currentSlide === 2" x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0">
-                        @if(file_exists(public_path('images/banners/banner-3.jpg')))
-                            <img src="{{ asset('images/banners/banner-3.jpg') }}" alt="Game Baru EiraStore" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full bg-gradient-to-r from-purple-900/40 via-brand-card to-amber-900/20 flex items-center justify-center p-6 sm:p-10">
-                                <div class="max-w-lg">
-                                    <span class="inline-block px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-bold mb-3">🎮 GAME BARU</span>
-                                    <h2 class="text-xl sm:text-3xl font-black text-white leading-tight">Valorant, Free Fire &<br><span class="text-amber-400">Game Populer Lainnya</span></h2>
-                                    <p class="text-xs sm:text-sm text-slate-400 mt-2">Tersedia layanan joki untuk semua game favorit kamu.</p>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
+                    @if($banners->count() > 1)
                     <!-- Prev/Next Buttons -->
                     <button @click="prev(); goTo(currentSlide)" class="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors z-10">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -111,9 +79,11 @@
                             <button @click="goTo(i - 1)" :class="currentSlide === (i - 1) ? 'bg-brand-cyan w-6' : 'bg-white/40 w-2 hover:bg-white/60'" class="h-2 rounded-full transition-all duration-300"></button>
                         </template>
                     </div>
+                    @endif
                 </div>
             </div>
         </section>
+        @endif
 
         <!-- ========================================================================= -->
         <!-- 2. HERO TEXT & RATING HOOK                                                -->

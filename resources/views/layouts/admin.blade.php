@@ -81,6 +81,13 @@
                 Kelola Layanan
             </a>
 
+            <!-- Kelola Banner Promosi -->
+            <a href="{{ route('admin.banners.index') }}" 
+               class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.banners.*') ? 'bg-brand-blue text-white shadow-glow-blue font-semibold' : 'text-slate-300 hover:bg-brand-surface hover:text-white' }}">
+                <svg class="w-5 h-5 mr-3 shrink-0 {{ request()->routeIs('admin.banners.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Kelola Banner
+            </a>
+
             <div class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Transaksi & Tim</div>
 
             <!-- Rekening Pembayaran -->
