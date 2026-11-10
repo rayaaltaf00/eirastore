@@ -850,11 +850,59 @@
                     <!-- Items Detail -->
                     <div class="space-y-2.5">
                         <span class="text-xs font-bold text-white uppercase tracking-wider block">Item Pengerjaan</span>
+
+                        @php
+                            $custItemAwal = $pesanan->pesananItems->firstWhere('peran', 'awal');
+                            $custItemTujuan = $pesanan->pesananItems->firstWhere('peran', 'tujuan');
+                            $custTipeHarga = $pesanan->layanan?->tipe_harga?->value ?? null;
+                        @endphp
+
+                        {{-- Ringkasan Awal → Tujuan untuk tipe tangga --}}
+                        @if($custTipeHarga === 'tangga' && ($custItemAwal || $custItemTujuan))
+                            <div class="p-3 rounded-xl bg-gradient-to-r from-amber-500/10 via-brand-surface to-brand-blue/10 border border-brand-border flex items-center gap-3 text-xs">
+                                @if($custItemAwal)
+                                    <div class="flex-1 text-center">
+                                        <span class="text-[10px] text-amber-400 font-semibold block">DARI</span>
+                                        <span class="font-bold text-white">{{ $custItemAwal->nama_item }}</span>
+                                        @if($custItemAwal->subtotal > 0)
+                                            <span class="text-[10px] text-amber-400/80 font-medium block">Rp {{ number_format($custItemAwal->subtotal, 0, ',', '.') }}</span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="flex-1 text-center">
+                                        <span class="text-[10px] text-slate-400 font-semibold block">DARI</span>
+                                        <span class="text-slate-500 italic">Tidak tersedia</span>
+                                    </div>
+                                @endif
+                                <svg class="w-4 h-4 text-brand-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                                @if($custItemTujuan)
+                                    <div class="flex-1 text-center">
+                                        <span class="text-[10px] text-brand-cyan font-semibold block">KE</span>
+                                        <span class="font-bold text-white">{{ $custItemTujuan->nama_item }}</span>
+                                        @if($custItemTujuan->subtotal > 0)
+                                            <span class="text-[10px] text-brand-cyan/80 font-medium block">Rp {{ number_format($custItemTujuan->subtotal, 0, ',', '.') }}</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
                         @foreach($pesanan->pesananItems as $item)
+                            @if($custTipeHarga === 'tangga' && in_array($item->peran, ['awal', 'tujuan']))
+                                @continue
+                            @endif
                             <div class="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-brand-surface border border-brand-border">
                                 <div>
                                     <span class="font-bold text-white block">{{ $item->nama_item }}</span>
-                                    <span class="text-[10px] text-slate-400">({{ $item->peran }})</span>
+                                    <span class="text-[10px] text-slate-400">
+                                        @if($item->peran === 'dipilih')
+                                            {{ $custTipeHarga === 'tangga' ? 'Tier Antara' : ($custTipeHarga === 'progres' ? 'Wilayah Eksplorasi' : 'Paket Terpilih') }}
+                                        @elseif($item->peran === 'tambahan')
+                                            Request Tambahan
+                                        @else
+                                            ({{ $item->peran }})
+                                        @endif
+                                    </span>
                                 </div>
                                 <span class="font-bold text-brand-cyan">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
                             </div>

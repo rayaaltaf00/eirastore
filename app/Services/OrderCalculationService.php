@@ -81,11 +81,22 @@ class OrderCalculationService
             $langkah = $bintangTujuan - $bintangAwal;
             $subtotal = round($langkah * (float) $tierAwal->harga, 2);
 
+            // Item awal: posisi saat ini (subtotal 0, hanya sebagai penanda)
+            $items[] = [
+                'layanan_item_id' => $tierAwal->id,
+                'peran' => 'awal',
+                'nilai' => $bintangAwal,
+                'nama_item' => "{$tierAwal->nama} ({$bintangAwal} ★)",
+                'harga_satuan' => 0,
+                'subtotal' => 0,
+            ];
+
+            // Item tujuan: target akhir
             $items[] = [
                 'layanan_item_id' => $tierAwal->id,
                 'peran' => 'tujuan',
-                'nilai' => $langkah,
-                'nama_item' => "{$tierAwal->nama} ({$bintangAwal} ★ -> {$bintangTujuan} ★)",
+                'nilai' => $bintangTujuan,
+                'nama_item' => "{$tierAwal->nama} (Target {$bintangTujuan} ★)",
                 'harga_satuan' => (float) $tierAwal->harga,
                 'subtotal' => $subtotal,
             ];
@@ -104,6 +115,16 @@ class OrderCalculationService
                     'subtotal' => $subtotalAwal,
                 ];
                 $totalHarga += $subtotalAwal;
+            } else {
+                // Posisi awal pas di nilai_maks (0 langkah di tier awal, hanya sebagai penanda titik awal)
+                $items[] = [
+                    'layanan_item_id' => $tierAwal->id,
+                    'peran' => 'awal',
+                    'nilai' => $bintangAwal,
+                    'nama_item' => "{$tierAwal->nama} ({$bintangAwal} ★)",
+                    'harga_satuan' => 0,
+                    'subtotal' => 0,
+                ];
             }
 
             // Tier di antara (jika ada)

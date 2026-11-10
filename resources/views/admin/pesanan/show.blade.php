@@ -746,11 +746,59 @@
                 <!-- Rincian Item Jokian -->
                 <div class="space-y-2">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Item / Paket Jokian:</span>
+
+                    @php
+                        $adminItemAwal = $pesanan->pesananItems->firstWhere('peran', 'awal');
+                        $adminItemTujuan = $pesanan->pesananItems->firstWhere('peran', 'tujuan');
+                        $adminTipeHarga = $pesanan->layanan?->tipe_harga?->value ?? null;
+                    @endphp
+
+                    {{-- Ringkasan Awal → Tujuan untuk tipe tangga --}}
+                    @if($adminTipeHarga === 'tangga' && ($adminItemAwal || $adminItemTujuan))
+                        <div class="p-3 rounded-xl bg-gradient-to-r from-amber-500/10 via-brand-surface to-brand-blue/10 border border-brand-border flex items-center gap-3 text-xs">
+                            @if($adminItemAwal)
+                                <div class="flex-1 text-center">
+                                    <span class="text-[10px] text-amber-400 font-semibold block">DARI</span>
+                                    <span class="font-bold text-white">{{ $adminItemAwal->nama_item }}</span>
+                                    @if($adminItemAwal->subtotal > 0)
+                                        <span class="text-[10px] text-amber-400/80 font-medium block">Rp {{ number_format($adminItemAwal->subtotal, 0, ',', '.') }}</span>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="flex-1 text-center">
+                                    <span class="text-[10px] text-slate-400 font-semibold block">DARI</span>
+                                    <span class="text-slate-500 italic">Tidak tersedia</span>
+                                </div>
+                            @endif
+                            <svg class="w-4 h-4 text-brand-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            @if($adminItemTujuan)
+                                <div class="flex-1 text-center">
+                                    <span class="text-[10px] text-brand-cyan font-semibold block">KE</span>
+                                    <span class="font-bold text-white">{{ $adminItemTujuan->nama_item }}</span>
+                                    @if($adminItemTujuan->subtotal > 0)
+                                        <span class="text-[10px] text-brand-cyan/80 font-medium block">Rp {{ number_format($adminItemTujuan->subtotal, 0, ',', '.') }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     @foreach($pesanan->pesananItems as $item)
+                        @if($adminTipeHarga === 'tangga' && in_array($item->peran, ['awal', 'tujuan']))
+                            @continue
+                        @endif
                         <div class="p-2.5 rounded-xl bg-brand-surface border border-brand-border/60 flex items-center justify-between text-xs">
                             <div>
                                 <span class="font-bold text-white block">{{ $item->nama_item }}</span>
-                                <span class="text-[10px] text-slate-400">({{ $item->peran }})</span>
+                                <span class="text-[10px] text-slate-400">
+                                    @if($item->peran === 'dipilih')
+                                        {{ $adminTipeHarga === 'tangga' ? 'Tier Antara' : ($adminTipeHarga === 'progres' ? 'Wilayah Eksplorasi' : 'Paket Terpilih') }}
+                                    @elseif($item->peran === 'tambahan')
+                                        Request Tambahan
+                                    @else
+                                        ({{ $item->peran }})
+                                    @endif
+                                </span>
                             </div>
                             <span class="font-bold text-brand-cyan">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
                         </div>

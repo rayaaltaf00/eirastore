@@ -248,8 +248,19 @@ class WorkerWorkflowTest extends TestCase
     public function test_worker_melihat_rincian_target_dan_item_pada_detail_pesanan(): void
     {
         $pesanan = $this->buatPesanan(['status' => StatusPesanan::SedangDikerjakan]);
+
+        // Buat item awal (penanda titik awal)
         $pesanan->pesananItems()->create([
-            'nama_item' => 'Mythic 25 Bintang',
+            'nama_item' => 'Mythic (10 ★)',
+            'peran' => 'awal',
+            'nilai' => 10,
+            'harga_satuan' => 0,
+            'subtotal' => 0,
+        ]);
+
+        // Buat item tujuan (target akhir)
+        $pesanan->pesananItems()->create([
+            'nama_item' => 'Mythic (Target 25 ★)',
             'peran' => 'tujuan',
             'nilai' => 25,
             'harga_satuan' => 150000,
@@ -259,10 +270,10 @@ class WorkerWorkflowTest extends TestCase
         $response = $this->actingAs($this->worker)->get(route('worker.pesanan.show', $pesanan->kode_pesanan));
 
         $response->assertStatus(200);
-        $response->assertSee('Mythic 25 Bintang');
-        $response->assertSee('Target Akhir');
-        $response->assertSee('25');
-        $response->assertDontSee('Varian Joki');
-        $response->assertDontSee('Jumlah target: x');
+        // Ringkasan tangga: DARI → KE
+        $response->assertSee('DARI');
+        $response->assertSee('Mythic (10 ★)');
+        $response->assertSee('KE');
+        $response->assertSee('Mythic (Target 25 ★)');
     }
 }

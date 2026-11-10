@@ -275,8 +275,91 @@
                     <div class="space-y-2">
                         @php
                             $orderItems = $pesanan->pesananItems->isNotEmpty() ? $pesanan->pesananItems : $pesanan->items;
+                            $itemAwal = $orderItems->firstWhere('peran', 'awal');
+                            $itemTujuan = $orderItems->firstWhere('peran', 'tujuan');
+                            $itemsDipilih = $orderItems->where('peran', 'dipilih');
+                            $itemsTambahan = $orderItems->where('peran', 'tambahan');
+                            $tipeHarga = $pesanan->layanan?->tipe_harga?->value ?? null;
                         @endphp
-                        @forelse($orderItems as $item)
+
+                        {{-- ══════════════════════════════════════════════════════ --}}
+                        {{-- RINGKASAN TARGET: Tipe Tangga (awal → tujuan)        --}}
+                        {{-- ══════════════════════════════════════════════════════ --}}
+                        @if($tipeHarga === 'tangga' && ($itemAwal || $itemTujuan))
+                            <div class="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-brand-surface to-brand-blue/10 border border-brand-border">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-3">Ringkasan Target Push Rank</span>
+                                <div class="flex items-center gap-3">
+                                    @if($itemAwal)
+                                        <div class="flex-1 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
+                                            <span class="text-[10px] text-amber-400 font-semibold block mb-1">DARI (Awal)</span>
+                                            <span class="text-sm font-bold text-white block">{{ $itemAwal->nama_item }}</span>
+                                        </div>
+                                    @else
+                                        <div class="flex-1 p-3 rounded-xl bg-slate-500/10 border border-slate-500/30 text-center">
+                                            <span class="text-[10px] text-slate-400 font-semibold block mb-1">DARI (Awal)</span>
+                                            <span class="text-xs text-slate-500 italic block">Data awal tidak tersedia</span>
+                                        </div>
+                                    @endif
+
+                                    <div class="shrink-0 flex flex-col items-center gap-1">
+                                        <svg class="w-6 h-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                                        <span class="text-[9px] text-slate-500 font-mono">PUSH</span>
+                                    </div>
+
+                                    @if($itemTujuan)
+                                        <div class="flex-1 p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/30 text-center">
+                                            <span class="text-[10px] text-brand-cyan font-semibold block mb-1">KE (Target)</span>
+                                            <span class="text-sm font-bold text-white block">{{ $itemTujuan->nama_item }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                        {{-- ══════════════════════════════════════════════════════ --}}
+                        {{-- RINGKASAN TARGET: Tipe Progres (wilayah eksplorasi)   --}}
+                        {{-- ══════════════════════════════════════════════════════ --}}
+                        @elseif($tipeHarga === 'progres' && $itemsDipilih->isNotEmpty())
+                            <div class="p-4 rounded-xl bg-gradient-to-r from-purple-500/10 via-brand-surface to-emerald-500/10 border border-brand-border">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-3">Ringkasan Target Eksplorasi ({{ $itemsDipilih->count() }} Wilayah)</span>
+                                <div class="grid grid-cols-1 gap-2">
+                                    @foreach($itemsDipilih as $dp)
+                                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-brand-surface border border-brand-border/60">
+                                            <span class="text-xs font-bold text-white">{{ $dp->nama_item }}</span>
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                                Progres Saat Ini: {{ rtrim(rtrim(number_format($dp->nilai, 1), '0'), '.') }}%
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- ══════════════════════════════════════════════════════ --}}
+                        {{-- DAFTAR DETAIL: Tier antara + item tambahan            --}}
+                        {{-- ══════════════════════════════════════════════════════ --}}
+                        @php
+                            // Untuk tangga: hanya tampilkan tier antara (dipilih) + tambahan di daftar detail
+                            // Item awal & tujuan sudah ditampilkan di ringkasan di atas
+                            $detailItems = ($tipeHarga === 'tangga')
+                                ? $orderItems->whereIn('peran', ['dipilih', 'tambahan'])
+                                : (($tipeHarga === 'progres')
+                                    ? $orderItems->where('peran', 'tambahan')
+                                    : $orderItems);
+                        @endphp
+
+                        @if($detailItems->isNotEmpty())
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block pt-1">
+                                @if($tipeHarga === 'tangga' && $detailItems->where('peran', 'dipilih')->isNotEmpty())
+                                    Tier Antara & Item Tambahan:
+                                @elseif($tipeHarga === 'pilihan')
+                                    Paket & Item Terpilih:
+                                @else
+                                    Item Tambahan:
+                                @endif
+                            </span>
+                        @endif
+
+                        @forelse($detailItems as $item)
                             <div class="p-3 rounded-xl bg-brand-surface border border-brand-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                                 <div class="min-w-0">
                                     <span class="text-xs font-bold text-white block">
@@ -284,25 +367,14 @@
                                     </span>
                                     <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
                                         @if($item->nilai)
-                                            <span>Target / Nilai: <strong class="text-white">{{ $item->nilai }}</strong> {{ $item->layananItem?->satuan ?? '' }}</span>
-                                        @endif
-                                        @if($item->layananItem?->satuan && !$item->nilai)
-                                            <span>Satuan: <strong class="text-white">{{ $item->layananItem->satuan }}</strong></span>
+                                            <span>Nilai: <strong class="text-white">{{ $item->nilai }}</strong> {{ $item->layananItem?->satuan ?? '' }}</span>
                                         @endif
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
-                                    @if($item->peran === 'awal')
-                                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                                            Kondisi Awal
-                                        </span>
-                                    @elseif($item->peran === 'tujuan')
-                                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-blue/15 text-brand-cyan border border-brand-blue/30">
-                                            Target Akhir
-                                        </span>
-                                    @elseif($item->peran === 'dipilih')
+                                    @if($item->peran === 'dipilih')
                                         <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                                            Paket Terpilih
+                                            {{ $tipeHarga === 'tangga' ? 'Tier Antara' : 'Paket Terpilih' }}
                                         </span>
                                     @elseif($item->peran === 'tambahan')
                                         <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
@@ -310,7 +382,7 @@
                                         </span>
                                     @else
                                         <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-500/15 text-slate-300 border border-slate-500/30">
-                                            Target Joki
+                                            Item Joki
                                         </span>
                                     @endif
                                 </div>

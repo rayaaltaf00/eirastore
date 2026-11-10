@@ -59,7 +59,15 @@ class OrderCalculationServiceTest extends TestCase
         ]);
 
         $this->assertEquals(30000, $result['total_harga']);
-        $this->assertCount(1, $result['items']);
+        $this->assertCount(2, $result['items']);
+
+        // Item pertama: posisi awal (subtotal 0, hanya penanda)
+        $this->assertEquals('awal', $result['items'][0]['peran']);
+        $this->assertEquals(0, $result['items'][0]['subtotal']);
+
+        // Item kedua: target tujuan (subtotal = harga sebenarnya)
+        $this->assertEquals('tujuan', $result['items'][1]['peran']);
+        $this->assertEquals(30000, $result['items'][1]['subtotal']);
     }
 
     public function test_tangga_calculation_cross_tier_with_intermediate(): void
@@ -120,6 +128,63 @@ class OrderCalculationServiceTest extends TestCase
 
         $this->assertEquals(345000, $result['total_harga']);
         $this->assertCount(3, $result['items']);
+    }
+
+    public function test_tangga_calculation_cross_tier_when_starting_at_max_stars(): void
+    {
+        $layanan = Layanan::create([
+            'game_id' => $this->game->id,
+            'nama_layanan' => 'Joki Push Rank MLBB Edge Case Max Stars',
+            'tipe_harga' => TipeHarga::Tangga,
+            'aktif' => true,
+        ]);
+
+        // Mythical Honor (maks 25 bintang, harga 35.000)
+        $honor = LayananItem::create([
+            'layanan_id' => $layanan->id,
+            'nama' => 'Mythical Honor',
+            'jenis' => 'utama',
+            'harga' => 35000,
+            'satuan' => 'bintang',
+            'nilai_maks' => 25,
+            'urutan' => 1,
+            'aktif' => true,
+        ]);
+
+        // Mythical Glory (harga 45.000)
+        $glory = LayananItem::create([
+            'layanan_id' => $layanan->id,
+            'nama' => 'Mythical Glory',
+            'jenis' => 'utama',
+            'harga' => 45000,
+            'satuan' => 'bintang',
+            'nilai_maks' => 50,
+            'urutan' => 2,
+            'aktif' => true,
+        ]);
+
+        // Dari Mythical Honor 25 bintang (bintang awal = nilai_maks, langkahAwal = 0)
+        // Menuju Mythical Glory 50 bintang (50 * 45.000 = 2.250.000)
+        // Item awal harus TETAP DIBUAT sebagai penanda dengan subtotal 0!
+        $result = $this->service->hitung($layanan, [
+            'tier_awal_id' => $honor->id,
+            'bintang_awal' => 25,
+            'tier_tujuan_id' => $glory->id,
+            'bintang_tujuan' => 50,
+        ]);
+
+        $this->assertEquals(2250000, $result['total_harga']);
+        $this->assertCount(2, $result['items']);
+
+        // Item 0: awal (penanda posisi awal)
+        $this->assertEquals('awal', $result['items'][0]['peran']);
+        $this->assertEquals('Mythical Honor (25 ★)', $result['items'][0]['nama_item']);
+        $this->assertEquals(0, $result['items'][0]['subtotal']);
+
+        // Item 1: tujuan
+        $this->assertEquals('tujuan', $result['items'][1]['peran']);
+        $this->assertEquals('Mythical Glory (Target 50 ★)', $result['items'][1]['nama_item']);
+        $this->assertEquals(2250000, $result['items'][1]['subtotal']);
     }
 
     public function test_progres_calculation(): void
